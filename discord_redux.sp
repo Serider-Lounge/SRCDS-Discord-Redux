@@ -3,13 +3,11 @@
 #include <multicolors>
 #include <ripext>
 
-#include "discord_redux/stocks.sp"
-
 #define PLUGIN_NAME        "Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
 #define PLUGIN_VERSION     "1.0"
-#define PLUGIN_URL         "https://github.com/Heapons/Discord-Redux"
+#define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
 {
@@ -33,6 +31,12 @@ char g_SteamAPIKey[64];
 
 Discord g_Discord = null;
 DiscordWebhook g_Webhook = null;
+
+// Avatar cache: stores avatar URLs per client
+char g_sClientAvatar[MAXPLAYERS + 1][256];
+
+// Pending message queue for clients waiting on avatar fetch
+ArrayList g_PendingMessages[MAXPLAYERS + 1];
 
 public void OnPluginStart()
 {
@@ -76,8 +80,15 @@ public void OnPluginStart()
     // Store Steam API key in global buffer for later use
     g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
 
-    // Re-fetch Steam Avatars for all connected clients using the stock
-    RefreshAllClientSteamAvatars(g_SteamAPIKey);
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        g_sClientAvatar[i][0] = '\0';
+        if (g_PendingMessages[i] != null)
+        {
+            delete g_PendingMessages[i];
+            g_PendingMessages[i] = null;
+        }
+    }
 }
 
 public void OnConfigsExecuted()
@@ -134,91 +145,22 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     CPrintToChatAll("%t", "Chat Format", author, content);
 }
 
-public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
     if (!g_cvarRelayServerToDiscord.BoolValue)
-        return Plugin_Continue;
+        return;
 
     if (IsConsole(client))
     {
-        // Send as Discord bot user, as embed, message as-is (no code block)
         DiscordEmbed embed = new DiscordEmbed();
         embed.SetDescription(sArgs);
         g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
         delete embed;
-        return Plugin_Continue;
+        return;
     }
 
-    if (g_Webhook == null)
-        return Plugin_Continue;
-
-    char name[64];
-    // Select name type based on cvar
-    switch (g_cvarUsernameMode.IntValue)
-    {
-        case 0: GetClientName(client, name, sizeof(name)); // Username (default)
-        case 1: GetClientName(client, name, sizeof(name)); // No global name for players, fallback to name
-        case 2: GetClientName(client, name, sizeof(name)); // No nickname API, fallback to name
-        default: GetClientName(client, name, sizeof(name));
-    }
-
-    // Set webhook name to sender's name before sending message
-    g_Webhook.SetName(name);
-
-    // Fetch Steam avatar and set as webhook avatar
-    char steamId[32];
-    GetClientAuthId(client, AuthId_SteamID64, steamId, sizeof(steamId));
-
-    HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/");
-    req.AppendQueryParam("key", g_SteamAPIKey);
-    req.AppendQueryParam("steamids", steamId);
-    req.AppendQueryParam("format", "json"); // Explicitly request JSON format
-
-    // Set webhook avatar to the last known avatar for this client, if available
-    static char g_sClientAvatar[MAXPLAYERS + 1][256];
-    int userid = GetClientUserId(client);
-    if (g_sClientAvatar[client][0] != '\0')
-    {
-        g_Webhook.SetAvatarUrl(g_sClientAvatar[client]);
-    }
-
-    req.Get(OnSteamAvatarResponse, userid);
-
-    // Send only the message itself, no prefix
-    g_Discord.ExecuteWebhook(g_Webhook, sArgs);
-
-    return Plugin_Continue;
+    SendDiscordMessageWithAvatar(client, sArgs);
 }
 
-public void OnSteamAvatarResponse(HTTPResponse response, any userid)
-{
-    if (response.Status != HTTPStatus_OK)
-        return;
-
-    JSON data = response.Data;
-    if (data == null)
-        return;
-
-    JSONObject root = view_as<JSONObject>(data);
-    JSONObject responseObj = view_as<JSONObject>(root.Get("response"));
-    JSONArray players = view_as<JSONArray>(responseObj.Get("players"));
-    if (players.Length == 0)
-        return;
-
-    JSONObject player = view_as<JSONObject>(players.Get(0));
-    char avatarUrl[256];
-    if (!player.GetString("avatarfull", avatarUrl, sizeof(avatarUrl)))
-        return;
-
-    int client = GetClientOfUserId(userid);
-    if (client <= 0 || !IsClientInGame(client))
-        return;
-
-    static char g_sClientAvatar[MAXPLAYERS + 1][256];
-    strcopy(g_sClientAvatar[client], sizeof(g_sClientAvatar[]), avatarUrl);
-
-    if (g_Webhook != null)
-    {
-        g_Webhook.SetAvatarUrl(avatarUrl);
-    }
-}
+#include "discord_redux/stocks.sp"
+#include "discord_redux/steam.sp"

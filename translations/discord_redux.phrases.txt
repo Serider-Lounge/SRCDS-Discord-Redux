@@ -3,18 +3,73 @@
     "Chat Format"
     {
         "#format" "{1:s},{2:s}"
-        "en"        "{steelblue}[Discord] {default}{1}{default} : {2}"
+        "en"        "*DISCORD* {gray}{1}{default} : {2}"
     }
-    "Bot Not Set"
+    "Chat Format (Reply)"
     {
-        "en"        "[Discord Redux] Bot token not set. Set discord_bot_token and reload plugin."
+        "#format" "{1:s},{2:s}"
+        "en"        "*DISCORD* {gray}(Reply) {1}{default} : {2}"
     }
-    "Bot Failed"
+    "Discord Message"
     {
-        "en"        "[Discord Redux] Failed to start Discord bot."
+        "#format"	"{1:s},{2:s},{3:i},{4:s},{5:s}" // {1} = Message | {2} = Player Name | {3} = SteamID64 | {4} = SteamID2 | {5} = Server Name
+        "en"		"{1}"
     }
-    "Bot Ready"
+    "Player Join"
     {
-        "en"        "[Discord Redux] Discord bot is ready."
+        "#format"	"{1:s},{2:s}" // {1} = Player Name | {2} = SteamID
+        "en"		"[{1}](http://www.steamcommunity.com/profiles/{2}) joined the game"
+    }
+    "Player Leave"
+    {
+		"#format"	"{1:s},{2:s}"
+        "en" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) left the game"
+    }
+    "Player Kicked"
+    {
+		"#format"	"{1:s},{2:s}"
+        "en" 		"Kicked [{1}](http://www.steamcommunity.com/profiles/{2})"
+    }
+    "Player Banned"
+    {
+		"#format"	"{1:s},{2:s}"
+        "en" 		"Banned [{1}](http://www.steamcommunity.com/profiles/{2})"
+    }
+    "Map Reloading"
+    {
+        "#format"	"{1:s},{2:s}" // {1} = Map Name | {2} = Map URL
+        "en"		"[{1}]({2}) is reloading..."
+    }
+    "Player Count"
+    {
+        "en"        "Player Count:"
+    }
+    "Server Tags"
+    {
+        "en"        "Server Tags:"
+    }
+    "Server Name"
+    {
+        "en"        "Server Name:"
+    }
+    "Previous Map"
+    {
+        "en"        "Previous Map:"
+    }
+    "Current Map"
+    {
+        "en"        "Current Map:"
+    }
+    "Bot Unset"
+    {
+        "en"        "[Discord] Bot token not set. Set discord_bot_token and reload plugin."
+    }
+    "Bot Failure"
+    {
+        "en"        "[Discord] Failed to start Discord bot."
+    }
+    "Bot Success"
+    {
+        "en"        "[Discord] Discord bot is ready."
     }
 }
