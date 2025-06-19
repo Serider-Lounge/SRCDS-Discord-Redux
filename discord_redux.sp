@@ -79,16 +79,6 @@ public void OnPluginStart()
 
     // Store Steam API key in global buffer for later use
     g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
-
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        g_sClientAvatar[i][0] = '\0';
-        if (g_PendingMessages[i] != null)
-        {
-            delete g_PendingMessages[i];
-            g_PendingMessages[i] = null;
-        }
-    }
 }
 
 public void OnConfigsExecuted()
