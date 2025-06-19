@@ -6,7 +6,7 @@
 #define PLUGIN_NAME        "Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.0"
+#define PLUGIN_VERSION     "1.0.0"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -41,7 +41,7 @@ ArrayList g_PendingMessages[MAXPLAYERS + 1];
 public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
-    
+
     g_cvarBotToken = CreateConVar("discord_bot_token", "", "Discord bot token", FCVAR_PROTECTED);
     g_cvarDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages");
     g_cvarRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -50,7 +50,7 @@ public void OnPluginStart()
     g_cvarUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name)", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvarSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam API key for fetching user avatars", FCVAR_PROTECTED);
 
-    AutoExecConfig(true);
+    AutoExecConfig(true, "discord_redux");
 
     g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
     g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
@@ -67,14 +67,14 @@ public void OnPluginStart()
     g_cvarBotToken.GetString(token, sizeof(token));
     if (token[0] == '\0')
     {
-        PrintToServer("%T", "Bot Not Set", LANG_SERVER); // Use translation key: Bot Not Set
+        PrintToServer("%T", "Bot Unset", LANG_SERVER); // Use translation key: Bot Unset
         return;
     }
 
     g_Discord = new Discord(token);
     if (!g_Discord.Start())
     {
-        PrintToServer("%T", "Bot Failed", LANG_SERVER); // Use translation key: Bot Failed
+        PrintToServer("%T", "Bot Failure", LANG_SERVER); // Use translation key: Bot Failure
     }
 
     // Store Steam API key in global buffer for later use
@@ -105,7 +105,7 @@ public void OnConfigsExecuted()
 
 public void Discord_OnReady(Discord discord)
 {
-    PrintToServer("%T", "Bot Ready", LANG_SERVER); // Use translation key: Bot Ready
+    PrintToServer("%T", "Bot Success", LANG_SERVER); // Use translation key: Bot Success
 }
 
 public void Discord_OnMessage(Discord discord, DiscordMessage message)
@@ -150,6 +150,80 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     }
 
     SendDiscordMessageWithAvatar(client, sArgs);
+}
+
+public void OnClientPutInServer(int client)
+{
+    if (IsFakeClient(client) ||
+        g_Discord == null ||
+        !g_cvarRelayServerToDiscord.BoolValue) return;
+    
+    char playerName[MAX_NAME_LENGTH];
+    char steamId64[32];
+    char steamId2[32];
+
+    GetClientName(client, playerName, sizeof(playerName));
+    bool hasSteam64 = GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
+    bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
+
+    char description[256];
+    if (hasSteam64 && steamId64[0] != '\0')
+    {
+        Format(description, sizeof(description), "[%s](https://steamcommunity.com/profiles/%s) joined the game", playerName, steamId64);
+    }
+    else
+    {
+        Format(description, sizeof(description), "%s joined the game", playerName);
+    }
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetDescription(description);
+    embed.SetColor(0x57F287); // Discord green
+
+    if (hasSteam2 && steamId2[0] != '\0')
+    {
+        embed.SetFooter(steamId2, "");
+    }
+
+    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+    delete embed;
+}
+
+public void OnClientDisconnect(int client)
+{
+    if (IsFakeClient(client) ||
+        g_Discord == null ||
+        !g_cvarRelayServerToDiscord.BoolValue) return;
+    
+    char playerName[MAX_NAME_LENGTH];
+    char steamId64[32];
+    char steamId2[32];
+
+    GetClientName(client, playerName, sizeof(playerName));
+    bool hasSteam64 = GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
+    bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
+
+    char description[256];
+    if (hasSteam64 && steamId64[0] != '\0')
+    {
+        Format(description, sizeof(description), "[%s](https://steamcommunity.com/profiles/%s) left the game", playerName, steamId64);
+    }
+    else
+    {
+        Format(description, sizeof(description), "%s left the game", playerName);
+    }
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetDescription(description);
+    embed.SetColor(0xED4245); // Discord red
+
+    if (hasSteam2 && steamId2[0] != '\0')
+    {
+        embed.SetFooter(steamId2, "");
+    }
+
+    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+    delete embed;
 }
 
 #include "discord_redux/stocks.sp"
