@@ -1,0 +1,20 @@
+"Phrases"
+{
+    "Chat Format"
+    {
+        "#format" "{1:s},{2:s}"
+        "en"        "{steelblue}[Discord] {default}{1}{default} : {2}"
+    }
+    "Bot Not Set"
+    {
+        "en"        "[Discord Redux] Bot token not set. Set discord_bot_token and reload plugin."
+    }
+    "Bot Failed"
+    {
+        "en"        "[Discord Redux] Failed to start Discord bot."
+    }
+    "Bot Ready"
+    {
+        "en"        "[Discord Redux] Discord bot is ready."
+    }
+}
