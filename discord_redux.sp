@@ -38,6 +38,8 @@ char g_sClientAvatar[MAXPLAYERS + 1][256];
 // Pending message queue for clients waiting on avatar fetch
 ArrayList g_PendingMessages[MAXPLAYERS + 1];
 
+bool g_bClientBanned[MAXPLAYERS + 1];
+
 public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
@@ -79,6 +81,237 @@ public void OnPluginStart()
 
     // Store Steam API key in global buffer for later use
     g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+}
+
+public void OnMapStart()
+{
+    if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
+        return;
+
+    char map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+
+    int playerCount = 0;
+    int botCount = 0;
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i))
+        {
+            if (IsFakeClient(i))
+                botCount++;
+            else
+                playerCount++;
+        }
+    }
+    int maxPlayers = MaxClients;
+
+    char description[DISCORD_DESC_LENGTH];
+    char displayName[PLATFORM_MAX_PATH];
+    displayName[0] = '\0';
+
+    bool hasDisplay = GetMapDisplayName(map, displayName, sizeof(displayName));
+
+    // Check for workshop map by prefix
+    if (StrContains(map, "workshop/") == 0)
+    {
+        // Example: workshop/mapname.ugc123456789
+        // Display: mapname, Workshop ID: 123456789
+        int ugcPos = StrContains(map, ".ugc");
+        if (ugcPos != -1)
+        {
+            int slash = -1;
+            int mapLen = strlen(map);
+            for (int i = mapLen - 1; i >= 0; --i)
+            {
+                if (map[i] == '/')
+                {
+                    slash = i;
+                    break;
+                }
+            }
+            char mapDisplay[PLATFORM_MAX_PATH];
+            char workshopId[32];
+            if (slash != -1 && ugcPos > slash)
+            {
+                int nameLen = ugcPos - (slash + 1);
+                strcopy(mapDisplay, sizeof(mapDisplay), map[slash + 1]);
+                mapDisplay[nameLen] = '\0';
+                strcopy(workshopId, sizeof(workshopId), map[ugcPos + 4]);
+                int idEnd = FindCharInString(workshopId, '/', false);
+                if (idEnd != -1)
+                    workshopId[idEnd] = '\0';
+                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
+            }
+            else
+            {
+                char shown[PLATFORM_MAX_PATH];
+                if (hasDisplay && displayName[0] != '\0')
+                    strcopy(shown, sizeof(shown), displayName);
+                else
+                    strcopy(shown, sizeof(shown), map);
+                Format(description, sizeof(description), "%s", shown);
+            }
+        }
+        else
+        {
+            char shown[PLATFORM_MAX_PATH];
+            if (hasDisplay && displayName[0] != '\0')
+                strcopy(shown, sizeof(shown), displayName);
+            else
+                strcopy(shown, sizeof(shown), map);
+            Format(description, sizeof(description), "%s", shown);
+        }
+    }
+    else
+    {
+        char shown[PLATFORM_MAX_PATH];
+        if (hasDisplay && displayName[0] != '\0')
+            strcopy(shown, sizeof(shown), displayName);
+        else
+            strcopy(shown, sizeof(shown), map);
+        Format(description, sizeof(description), "%s", shown);
+    }
+
+    // Use translation for "Current Map"
+    char title[64];
+    Format(title, sizeof(title), "%T", "Current Map", LANG_SERVER);
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetTitle(title);
+    embed.SetDescription(description);
+    embed.SetColor(0x5865F2);
+
+    // Player count field
+    char playerCountStr[64];
+    if (botCount > 0)
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+%d)", playerCount, maxPlayers, botCount);
+    else
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
+
+    char playerCountLabel[32];
+    Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
+    embed.AddField(playerCountLabel, playerCountStr, true);
+
+    char hostname[256];
+    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
+    embed.SetFooter(hostname, "");
+
+    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+    delete embed;
+}
+
+public void OnMapEnd()
+{
+    if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
+        return;
+
+    char map[PLATFORM_MAX_PATH];
+    GetCurrentMap(map, sizeof(map));
+
+    int playerCount = 0;
+    int botCount = 0;
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i))
+        {
+            if (IsFakeClient(i))
+                botCount++;
+            else
+                playerCount++;
+        }
+    }
+    int maxPlayers = MaxClients;
+
+    char description[DISCORD_DESC_LENGTH];
+    char displayName[PLATFORM_MAX_PATH];
+    displayName[0] = '\0';
+
+    bool hasDisplay = GetMapDisplayName(map, displayName, sizeof(displayName));
+
+    if (StrContains(map, "workshop/") == 0)
+    {
+        int ugcPos = StrContains(map, ".ugc");
+        if (ugcPos != -1)
+        {
+            int slash = -1;
+            int mapLen = strlen(map);
+            for (int i = mapLen - 1; i >= 0; --i)
+            {
+                if (map[i] == '/')
+                {
+                    slash = i;
+                    break;
+                }
+            }
+            char mapDisplay[PLATFORM_MAX_PATH];
+            char workshopId[32];
+            if (slash != -1 && ugcPos > slash)
+            {
+                int nameLen = ugcPos - (slash + 1);
+                strcopy(mapDisplay, sizeof(mapDisplay), map[slash + 1]);
+                mapDisplay[nameLen] = '\0';
+                strcopy(workshopId, sizeof(workshopId), map[ugcPos + 4]);
+                int idEnd = FindCharInString(workshopId, '/', false);
+                if (idEnd != -1)
+                    workshopId[idEnd] = '\0';
+                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
+            }
+            else
+            {
+                char shown[PLATFORM_MAX_PATH];
+                if (hasDisplay && displayName[0] != '\0')
+                    strcopy(shown, sizeof(shown), displayName);
+                else
+                    strcopy(shown, sizeof(shown), map);
+                Format(description, sizeof(description), "%s", shown);
+            }
+        }
+        else
+        {
+            char shown[PLATFORM_MAX_PATH];
+            if (hasDisplay && displayName[0] != '\0')
+                strcopy(shown, sizeof(shown), displayName);
+            else
+                strcopy(shown, sizeof(shown), map);
+            Format(description, sizeof(description), "%s", shown);
+        }
+    }
+    else
+    {
+        char shown[PLATFORM_MAX_PATH];
+        if (hasDisplay && displayName[0] != '\0')
+            strcopy(shown, sizeof(shown), displayName);
+        else
+            strcopy(shown, sizeof(shown), map);
+        Format(description, sizeof(description), "%s", shown);
+    }
+
+    // Use translation for "Previous Map"
+    char title[64];
+    Format(title, sizeof(title), "%T", "Previous Map", LANG_SERVER);
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetTitle(title);
+    embed.SetDescription(description);
+    embed.SetColor(0x23272A);
+
+    // Player count field
+    char playerCountStr[64];
+    if (botCount > 0)
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+%d)", playerCount, maxPlayers, botCount);
+    else
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
+
+    char playerCountLabel[32];
+    Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
+    embed.AddField(playerCountLabel, playerCountStr, true);
+
+    char hostname[256];
+    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
+    embed.SetFooter(hostname, "");
+
+    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+    delete embed;
 }
 
 public void OnConfigsExecuted()
@@ -149,7 +382,22 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         return;
     }
 
-    SendDiscordMessageWithAvatar(client, sArgs);
+    // Use Discord Message phrase for formatting
+    char playerName[MAX_NAME_LENGTH];
+    char steamId64[32];
+    char steamId2[32];
+    char hostname[256];
+
+    GetClientName(client, playerName, sizeof(playerName));
+    GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
+    GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
+    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
+
+    char formatted[MAX_DISCORD_MESSAGE_LENGTH + 256];
+    Format(formatted, sizeof(formatted), "%T", "Discord Message", LANG_SERVER, sArgs, playerName, steamId64, steamId2, hostname);
+
+    // Send as player via webhook, not as embed
+    SendDiscordMessageWithAvatar(client, formatted);
 }
 
 public void OnClientPutInServer(int client)
@@ -169,17 +417,12 @@ public void OnClientPutInServer(int client)
     char description[256];
     if (hasSteam64 && steamId64[0] != '\0')
     {
-        Format(description, sizeof(description), "[%s](https://steamcommunity.com/profiles/%s) joined the game", playerName, steamId64);
-    }
-    else
-    {
-        Format(description, sizeof(description), "%s joined the game", playerName);
+        Format(description, sizeof(description), "%T", "Player Join", LANG_SERVER, playerName, steamId64);
     }
 
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetDescription(description);
-    embed.SetColor(0x57F287); // Discord green
-
+    embed.SetColor(0x57F287);
     if (hasSteam2 && steamId2[0] != '\0')
     {
         embed.SetFooter(steamId2, "");
@@ -204,18 +447,28 @@ public void OnClientDisconnect(int client)
     bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
 
     char description[256];
+    bool banned = g_bClientBanned[client];
+    bool kicked = IsClientInKickQueue(client);
+
     if (hasSteam64 && steamId64[0] != '\0')
     {
-        Format(description, sizeof(description), "[%s](https://steamcommunity.com/profiles/%s) left the game", playerName, steamId64);
-    }
-    else
-    {
-        Format(description, sizeof(description), "%s left the game", playerName);
+        if (banned)
+        {
+            Format(description, sizeof(description), "%T", "Player Banned", LANG_SERVER, playerName, steamId64);
+        }
+        else if (kicked)
+        {
+            Format(description, sizeof(description), "%T", "Player Kicked", LANG_SERVER, playerName, steamId64);
+        }
+        else
+        {
+            Format(description, sizeof(description), "%T", "Player Leave", LANG_SERVER, playerName, steamId64);
+        }
     }
 
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetDescription(description);
-    embed.SetColor(0xED4245); // Discord red
+    embed.SetColor(0xED4245);
 
     if (hasSteam2 && steamId2[0] != '\0')
     {
@@ -224,6 +477,21 @@ public void OnClientDisconnect(int client)
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+
+    // Reset ban flag for next connection
+    g_bClientBanned[client] = false;
+
+    // Remove avatar from cache
+    g_sClientAvatar[client][0] = '\0';
+}
+
+public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
+{
+    if (client > 0 && client <= MaxClients)
+    {
+        g_bClientBanned[client] = true;
+    }
+    return Plugin_Continue;
 }
 
 #include "discord_redux/stocks.sp"
