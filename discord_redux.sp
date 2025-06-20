@@ -184,7 +184,7 @@ public void OnMapStart()
     // Player count field
     char playerCountStr[64];
     if (botCount > 0)
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+%d)", playerCount, maxPlayers, botCount);
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
     else
         Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
 
@@ -298,7 +298,7 @@ public void OnMapEnd()
     // Player count field
     char playerCountStr[64];
     if (botCount > 0)
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+%d)", playerCount, maxPlayers, botCount);
+        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
     else
         Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
 
