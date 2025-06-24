@@ -60,6 +60,10 @@
     {
         "en"        "Current Map:"
     }
+    "Scoreboard"
+    {
+        "en"        "Scoreboard"
+    }
     "Bot Unset"
     {
         "en"        "[Discord] Bot token not set. Set discord_bot_token and reload plugin."

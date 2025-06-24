@@ -1,3 +1,5 @@
+#include <serider/core>
+
 #include <sourcemod>
 #include <discord>
 #include <multicolors>
@@ -32,13 +34,11 @@ char g_SteamAPIKey[64];
 Discord g_Discord = null;
 DiscordWebhook g_Webhook = null;
 
-// Avatar cache: stores avatar URLs per client
-char g_sClientAvatar[MAXPLAYERS + 1][256];
+ArrayList g_PendingMessages[MAXPLAYERS+1];
 
-// Pending message queue for clients waiting on avatar fetch
-ArrayList g_PendingMessages[MAXPLAYERS + 1];
+char g_sClientAvatar[MAXPLAYERS+1][256];
 
-bool g_bClientBanned[MAXPLAYERS + 1];
+bool g_bClientBanned[MAXPLAYERS+1];
 
 public void OnPluginStart()
 {
@@ -69,17 +69,16 @@ public void OnPluginStart()
     g_cvarBotToken.GetString(token, sizeof(token));
     if (token[0] == '\0')
     {
-        PrintToServer("%T", "Bot Unset", LANG_SERVER); // Use translation key: Bot Unset
+        PrintToServer("%T", "Bot Unset", LANG_SERVER);
         return;
     }
 
     g_Discord = new Discord(token);
     if (!g_Discord.Start())
     {
-        PrintToServer("%T", "Bot Failure", LANG_SERVER); // Use translation key: Bot Failure
+        PrintToServer("%T", "Bot Failure", LANG_SERVER);
     }
 
-    // Store Steam API key in global buffer for later use
     g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
 }
 
@@ -111,11 +110,8 @@ public void OnMapStart()
 
     bool hasDisplay = GetMapDisplayName(map, displayName, sizeof(displayName));
 
-    // Check for workshop map by prefix
     if (StrContains(map, "workshop/") == 0)
     {
-        // Example: workshop/mapname.ugc123456789
-        // Display: mapname, Workshop ID: 123456789
         int ugcPos = StrContains(map, ".ugc");
         if (ugcPos != -1)
         {
@@ -198,6 +194,15 @@ public void OnMapStart()
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+
+    /* Games */
+    /*switch (GetEngineVersion())
+    {
+        case Engine_TF2:
+        {
+            HookEvent("teamplay_round_start", TF2_OnRoundStart, EventHookMode_PostNoCopy);
+        }
+    }*/
 }
 
 public void OnMapEnd()
@@ -312,6 +317,17 @@ public void OnMapEnd()
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+
+    if (g_Discord != null)
+    {
+        delete g_Discord;
+        g_Discord = null;
+    }
+    if (g_Webhook != null)
+    {
+        delete g_Webhook;
+        g_Webhook = null;
+    }
 }
 
 public void OnConfigsExecuted()
@@ -359,7 +375,22 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
-    char author[64];
+    // Commands
+    if (content[0] == '!')
+    {
+        if (StrContains(content, "score", false) != -1)
+        {
+            TF2_SendScoreboardEmbed();
+        }
+        else if (StrContains(content, "stat", false) != -1 ||
+                 StrContains(content, "map", false) != -1)
+        {
+            OnMapStart();
+            return;
+        }
+    }
+
+    char author[MAX_DISCORD_NAME_LENGTH];
     if (g_cvarUsernameMode.BoolValue)
         user.GetGlobalName(author, sizeof(author));
     else
@@ -382,7 +413,6 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         return;
     }
 
-    // Use Discord Message phrase for formatting
     char playerName[MAX_NAME_LENGTH];
     char steamId64[32];
     char steamId2[32];
@@ -405,31 +435,15 @@ public void OnClientPutInServer(int client)
     if (IsFakeClient(client) ||
         g_Discord == null ||
         !g_cvarRelayServerToDiscord.BoolValue) return;
-    
-    char playerName[MAX_NAME_LENGTH];
-    char steamId64[32];
-    char steamId2[32];
 
-    GetClientName(client, playerName, sizeof(playerName));
-    bool hasSteam64 = GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
-    bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
+    // Always fetch avatar on join
+    RefreshClientSteamAvatar(client, g_SteamAPIKey);
 
-    char description[256];
-    if (hasSteam64 && steamId64[0] != '\0')
-    {
-        Format(description, sizeof(description), "%T", "Player Join", LANG_SERVER, playerName, steamId64);
-    }
+    // Queue a join marker for OnSteamAvatarResponse to send the join embed after avatar is fetched
+    if (g_PendingMessages[client] == null)
+        g_PendingMessages[client] = new ArrayList(256);
 
-    DiscordEmbed embed = new DiscordEmbed();
-    embed.SetDescription(description);
-    embed.SetColor(0x57F287);
-    if (hasSteam2 && steamId2[0] != '\0')
-    {
-        embed.SetFooter(steamId2, "");
-    }
-
-    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
-    delete embed;
+    g_PendingMessages[client].PushString("[JOIN]");
 }
 
 public void OnClientDisconnect(int client)
@@ -437,7 +451,7 @@ public void OnClientDisconnect(int client)
     if (IsFakeClient(client) ||
         g_Discord == null ||
         !g_cvarRelayServerToDiscord.BoolValue) return;
-    
+
     char playerName[MAX_NAME_LENGTH];
     char steamId64[32];
     char steamId2[32];
@@ -470,7 +484,15 @@ public void OnClientDisconnect(int client)
     embed.SetDescription(description);
     embed.SetColor(0xED4245);
 
-    if (hasSteam2 && steamId2[0] != '\0')
+    // Always use avatar as footer icon if available
+    if (g_sClientAvatar[client][0] != '\0')
+    {
+        if (hasSteam2 && steamId2[0] != '\0')
+            embed.SetFooter(steamId2, g_sClientAvatar[client]);
+        else
+            embed.SetFooter("", g_sClientAvatar[client]);
+    }
+    else if (hasSteam2 && steamId2[0] != '\0')
     {
         embed.SetFooter(steamId2, "");
     }
@@ -496,3 +518,5 @@ public Action OnBanClient(int client, int time, int flags, const char[] reason, 
 
 #include "discord_redux/stocks.sp"
 #include "discord_redux/steam.sp"
+
+#include "discord_redux/game.sp"
