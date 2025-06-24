@@ -516,6 +516,20 @@ public Action OnBanClient(int client, int time, int flags, const char[] reason, 
     return Plugin_Continue;
 }
 
+public void OnPluginEnd()
+{
+    if (g_Discord != null)
+    {
+        delete g_Discord;
+        g_Discord = null;
+    }
+    if (g_Webhook != null)
+    {
+        delete g_Webhook;
+        g_Webhook = null;
+    }
+}
+
 #include "discord_redux/stocks.sp"
 #include "discord_redux/steam.sp"
 
