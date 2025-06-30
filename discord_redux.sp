@@ -5,7 +5,7 @@
 #include <multicolors>
 #include <ripext>
 
-#define PLUGIN_NAME        "Discord Redux"
+#define PLUGIN_NAME        "[ANY] Discord Redux | x64 Support"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
 #define PLUGIN_VERSION     "1.0.0"
@@ -30,6 +30,7 @@ char g_WebhookUrl[256];
 ConVar g_cvarUsernameMode;
 ConVar g_cvarSteamAPIKey;
 char g_SteamAPIKey[64];
+ConVar g_cvarPluginVersion;
 
 Discord g_Discord = null;
 DiscordWebhook g_Webhook = null;
@@ -44,15 +45,17 @@ public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
 
-    g_cvarBotToken = CreateConVar("discord_bot_token", "", "Discord bot token", FCVAR_PROTECTED);
-    g_cvarDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages");
-    g_cvarRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord", FCVAR_PROTECTED);
-    g_cvarUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name)", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam API key for fetching user avatars", FCVAR_PROTECTED);
+    g_cvarBotToken = CreateConVar("discord_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
+    g_cvarDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages.");
+    g_cvarRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
+    g_cvarUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
 
     AutoExecConfig(true, "discord_redux");
+
+    g_cvarPluginVersion = CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
 
     g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
     g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
@@ -71,6 +74,61 @@ public void OnPluginStart()
     {
         PrintToServer("%T", "Bot Unset", LANG_SERVER);
         return;
+    }
+
+    g_Discord = new Discord(token);
+    if (!g_Discord.Start())
+    {
+        PrintToServer("%T", "Bot Failure", LANG_SERVER);
+    }
+
+    g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+
+    // Properly initialize g_PendingMessages array
+    for (int i = 0; i <= MAXPLAYERS; i++)
+        g_PendingMessages[i] = null;
+
+    // Optionally clear avatars and ban flags
+    for (int i = 0; i <= MAXPLAYERS; i++)
+    {
+        g_sClientAvatar[i][0] = '\0';
+        g_bClientBanned[i] = false;
+    }
+}
+
+public void OnConfigsExecuted()
+{
+    g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
+    g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
+    if (g_WebhookUrl[0] != '\0')
+    {
+        if (g_Webhook != null)
+        {
+            delete g_Webhook;
+        }
+        g_Webhook = new DiscordWebhook(g_WebhookUrl);
+    }
+    else
+    {
+        if (g_Webhook != null)
+        {
+            delete g_Webhook;
+            g_Webhook = null;
+        }
+    }
+
+    char token[256];
+    g_cvarBotToken.GetString(token, sizeof(token));
+    if (token[0] == '\0')
+    {
+        PrintToServer("%T", "Bot Unset", LANG_SERVER);
+        return;
+    }
+
+    if (g_Discord != null)
+    {
+        delete g_Discord;
+        g_Discord = null;
     }
 
     g_Discord = new Discord(token);
@@ -330,31 +388,10 @@ public void OnMapEnd()
     }
 }
 
-public void OnConfigsExecuted()
-{
-    g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
-    g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
-    if (g_WebhookUrl[0] != '\0')
-    {
-        if (g_Webhook != null)
-        {
-            delete g_Webhook;
-        }
-        g_Webhook = new DiscordWebhook(g_WebhookUrl);
-    }
-    else
-    {
-        if (g_Webhook != null)
-        {
-            delete g_Webhook;
-            g_Webhook = null;
-        }
-    }
-}
-
 public void Discord_OnReady(Discord discord)
 {
     PrintToServer("%T", "Bot Success", LANG_SERVER); // Use translation key: Bot Success
+    OnMapStart();
 }
 
 public void Discord_OnMessage(Discord discord, DiscordMessage message)
@@ -378,15 +415,20 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     // Commands
     if (content[0] == '!')
     {
-        if (StrContains(content, "score", false) != -1)
+        if (StrContains(content, "scoreboard", false) != -1)
         {
-            TF2_SendScoreboardEmbed();
+            switch (GetEngineVersion())
+            {
+                case Engine_TF2:
+                {
+                    TF2_SendScoreboardEmbed();
+                }
+            }
         }
-        else if (StrContains(content, "stat", false) != -1 ||
+        else if (StrContains(content, "status", false) != -1 ||
                  StrContains(content, "map", false) != -1)
         {
             OnMapStart();
-            return;
         }
     }
 
@@ -396,7 +438,26 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     else
         user.GetUsername(author, sizeof(author));
 
-    CPrintToChatAll("%t", "Chat Format", author, content);
+        //CPrintToChatAll("%t", "Chat Format", author, content);
+        
+        // Strip {color} tags from the message before printing
+        char cleanContent[MAX_DISCORD_MESSAGE_LENGTH];
+        int j = 0;
+        for (int i = 0; content[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
+        {
+            if (content[i] == '{')
+            {
+            // Skip until closing }
+            while (content[i] != '\0' && content[i] != '}')
+                i++;
+            if (content[i] == '}')
+                continue;
+            }
+            cleanContent[j++] = content[i];
+        }
+        cleanContent[j] = '\0';
+
+        CPrintToChatAll("%t", "Chat Format", author, cleanContent);
 }
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
@@ -426,7 +487,6 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     char formatted[MAX_DISCORD_MESSAGE_LENGTH + 256];
     Format(formatted, sizeof(formatted), "%T", "Discord Message", LANG_SERVER, sArgs, playerName, steamId64, steamId2, hostname);
 
-    // Send as player via webhook, not as embed
     SendDiscordMessageWithAvatar(client, formatted);
 }
 
@@ -436,10 +496,8 @@ public void OnClientPutInServer(int client)
         g_Discord == null ||
         !g_cvarRelayServerToDiscord.BoolValue) return;
 
-    // Always fetch avatar on join
     RefreshClientSteamAvatar(client, g_SteamAPIKey);
 
-    // Queue a join marker for OnSteamAvatarResponse to send the join embed after avatar is fetched
     if (g_PendingMessages[client] == null)
         g_PendingMessages[client] = new ArrayList(256);
 
@@ -484,7 +542,6 @@ public void OnClientDisconnect(int client)
     embed.SetDescription(description);
     embed.SetColor(0xED4245);
 
-    // Always use avatar as footer icon if available
     if (g_sClientAvatar[client][0] != '\0')
     {
         if (hasSteam2 && steamId2[0] != '\0')
@@ -500,10 +557,7 @@ public void OnClientDisconnect(int client)
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
 
-    // Reset ban flag for next connection
     g_bClientBanned[client] = false;
-
-    // Remove avatar from cache
     g_sClientAvatar[client][0] = '\0';
 }
 

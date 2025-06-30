@@ -16,6 +16,7 @@ public void TF2_SendScoreboardEmbed()
     specList[0] = '\0';
 
     char playerName[MAX_NAME_LENGTH];
+    char steamId64[32];
     bool firstRed = true, firstBlu = true, firstSpec = true;
 
     for (int i = 1; i <= MaxClients; i++)
@@ -24,26 +25,31 @@ public void TF2_SendScoreboardEmbed()
             continue;
 
         GetClientName(i, playerName, sizeof(playerName));
+        GetClientAuthId(i, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
         int team = TF2_GetClientTeam(i);
+
+        // Format as markdown link with bullet point
+        char playerLink[MAX_NAME_LENGTH+64];
+        Format(playerLink, sizeof(playerLink), "- [%s](http://www.steamcommunity.com/profiles/%s)", playerName, steamId64);
 
         switch (team)
         {
             case TFTeam_Red:
             {
                 if (!firstRed) strcopy(redList[strlen(redList)], sizeof(redList) - strlen(redList), "\n");
-                strcopy(redList[strlen(redList)], sizeof(redList) - strlen(redList), playerName);
+                strcopy(redList[strlen(redList)], sizeof(redList) - strlen(redList), playerLink);
                 firstRed = false;
             }
             case TFTeam_Blue:
             {
                 if (!firstBlu) strcopy(bluList[strlen(bluList)], sizeof(bluList) - strlen(bluList), "\n");
-                strcopy(bluList[strlen(bluList)], sizeof(bluList) - strlen(bluList), playerName);
+                strcopy(bluList[strlen(bluList)], sizeof(bluList) - strlen(bluList), playerLink);
                 firstBlu = false;
             }
             default:
             {
                 if (!firstSpec) strcopy(specList[strlen(specList)], sizeof(specList) - strlen(specList), "\n");
-                strcopy(specList[strlen(specList)], sizeof(specList) - strlen(specList), playerName);
+                strcopy(specList[strlen(specList)], sizeof(specList) - strlen(specList), playerLink);
                 firstSpec = false;
             }
         }

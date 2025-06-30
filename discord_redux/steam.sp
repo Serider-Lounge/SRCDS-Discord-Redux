@@ -25,50 +25,45 @@ public void OnSteamAvatarResponse(HTTPResponse response, any userid)
     // Cache Avatar
     strcopy(g_sClientAvatar[client], sizeof(g_sClientAvatar[]), avatarUrl);
 
-    // Send all pending messages for this client
-    if (g_PendingMessages[client] != null)
+    // Send join embed if queued
+    if (g_PendingMessages[client] != null && g_PendingMessages[client].Length > 0)
     {
-        int count = g_PendingMessages[client].Length;
-        for (int i = 0; i < count; i++)
+        char marker[32];
+        g_PendingMessages[client].GetString(0, marker, sizeof(marker));
+        g_PendingMessages[client].Erase(0);
+
+        if (StrEqual(marker, "[JOIN]"))
         {
-            char msg[256];
-            g_PendingMessages[client].GetString(i, msg, sizeof(msg));
-            if (StrEqual(msg, "[JOIN]"))
+            char playerName[MAX_NAME_LENGTH];
+            char steamId64[32];
+            char steamId2[32];
+
+            GetClientName(client, playerName, sizeof(playerName));
+            GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
+            GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
+
+            char description[256];
+            Format(description, sizeof(description), "%T", "Player Join", LANG_SERVER, playerName, steamId64);
+
+            DiscordEmbed embed = new DiscordEmbed();
+            embed.SetDescription(description);
+            embed.SetColor(0x57F287);
+
+            if (g_sClientAvatar[client][0] != '\0')
             {
-                // Send join embed with avatar as footer icon
-                char playerName[MAX_NAME_LENGTH];
-                char steamId64[32];
-                char steamId2[32];
-                GetClientName(client, playerName, sizeof(playerName));
-                bool hasSteam64 = GetClientAuthId(client, AuthId_SteamID64, steamId64, sizeof(steamId64), true);
-                bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
-
-                char description[256];
-                if (hasSteam64 && steamId64[0] != '\0')
-                {
-                    Format(description, sizeof(description), "%T", "Player Join", LANG_SERVER, playerName, steamId64);
-                }
-
-                DiscordEmbed embed = new DiscordEmbed();
-                embed.SetDescription(description);
-                embed.SetColor(0x57F287);
-                if (hasSteam2 && steamId2[0] != '\0')
-                    embed.SetFooter(steamId2, avatarUrl);
+                if (steamId2[0] != '\0')
+                    embed.SetFooter(steamId2, g_sClientAvatar[client]);
                 else
-                    embed.SetFooter("", avatarUrl);
-                g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
-                delete embed;
+                    embed.SetFooter("", g_sClientAvatar[client]);
             }
-            else
+            else if (steamId2[0] != '\0')
             {
-                g_Webhook.SetAvatarUrl(avatarUrl);
-                char name[MAX_DISCORD_NAME_LENGTH];
-                GetClientName(client, name, sizeof(name));
-                g_Webhook.SetName(name);
-                g_Discord.ExecuteWebhook(g_Webhook, msg);
+                embed.SetFooter(steamId2, "");
             }
+
+            g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+            delete embed;
         }
-        g_PendingMessages[client].Clear();
     }
 }
 
