@@ -1,7 +1,7 @@
 # [ANY] Discord Redux | x64 support‼
 Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discordrelay).
-> ![NOTE]
-> This plugin has been developed in [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/); but pull requests to support other games are VERY MUCH welcome!
+> [!NOTE]
+> This plugin has been developed in [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/); but pull requests to extend support for other games are VERY MUCH welcome!
 
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord)
@@ -9,7 +9,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 
 ## Discord Commands (prefixed with `!`)
 ### General
-- `map` or `status`.
+- `map`, `status`
     - Displays `Current Map` embed.
 ### Team Fortress 2
 - `scoreboard`
@@ -39,12 +39,12 @@ You need to set up a [Webhook](https://support.discord.com/hc/en-us/articles/228
 
 ### Why don't Player Avatars not show up❓
 You need to register your [Steam Web API Key](https://steamcommunity.com/dev/apikey).
-> ![NOTE]
+> [!NOTE]
 > Avatars are only cached once on player join‼
 
 ### `/lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_2.38' not found`
 As far as my (albeit, limited) Linux knowledge goes, you need to be the latest version of your distro.
-> ![WARNING]
+> [!WARNING]
 > Untested on Windows‼
 
 ### Why using `!` commands instead of Discord slash commands❓
