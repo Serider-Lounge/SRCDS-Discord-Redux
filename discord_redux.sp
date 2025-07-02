@@ -584,6 +584,7 @@ public void OnPluginEnd()
     }
 }
 
+#include "discord_redux/accelerator.sp"
 #include "discord_redux/stocks.sp"
 #include "discord_redux/steam.sp"
 
