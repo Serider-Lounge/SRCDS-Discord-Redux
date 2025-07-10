@@ -30,7 +30,10 @@ char g_WebhookUrl[256];
 ConVar g_cvarUsernameMode;
 ConVar g_cvarSteamAPIKey;
 char g_SteamAPIKey[64];
-ConVar g_cvarPluginVersion;
+ConVar g_cvarAllowColorTags;
+ConVar g_cvarFooterServerIP;
+ConVar g_cvarFooterIcon;
+ConVar g_cvarRandomizeNameColors;
 
 Discord g_Discord = null;
 DiscordWebhook g_Webhook = null;
@@ -52,10 +55,14 @@ public void OnPluginStart()
     g_cvarWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
     g_cvarUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvarSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
+    g_cvarAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarFooterServerIP = CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarFooterIcon = CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
+    g_cvarRandomizeNameColors = CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
 
     AutoExecConfig(true, "discord_redux");
 
-    g_cvarPluginVersion = CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
+    CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
 
     g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
     g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
@@ -84,11 +91,9 @@ public void OnPluginStart()
 
     g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
 
-    // Properly initialize g_PendingMessages array
     for (int i = 0; i <= MAXPLAYERS; i++)
         g_PendingMessages[i] = null;
 
-    // Optionally clear avatars and ban flags
     for (int i = 0; i <= MAXPLAYERS; i++)
     {
         g_sClientAvatar[i][0] = '\0';
@@ -144,6 +149,16 @@ public void OnMapStart()
 {
     if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
         return;
+
+    /* Games */
+    //switch (GetEngineVersion())
+    //{
+    //    case Engine_TF2:
+    //    {
+    //        //HookEvent("teamplay_round_start", TF2_OnRoundStart);
+    //        HookEvent("teamplay_round_win", TF2_OnRoundEnd);
+    //    }
+    //}
 
     char map[PLATFORM_MAX_PATH];
     GetCurrentMap(map, sizeof(map));
@@ -246,9 +261,24 @@ public void OnMapStart()
     Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
     embed.AddField(playerCountLabel, playerCountStr, true);
 
-    char hostname[256];
-    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
-    embed.SetFooter(hostname, "");
+    char footerIcon[256];
+    g_cvarFooterIcon.GetString(footerIcon, sizeof(footerIcon));
+    char ipStr[64];
+    char ipStrRaw[32];
+    char portStr[16];
+    GetConVarString(FindConVar("hostip"), ipStrRaw, sizeof(ipStrRaw));
+    GetConVarString(FindConVar("hostport"), portStr, sizeof(portStr));
+    if (g_cvarFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
+    {
+        char ipDotted[32];
+        HostIpStringToDotted(ipStrRaw, ipDotted, sizeof(ipDotted));
+        Format(ipStr, sizeof(ipStr), "steam://connect/%s:%s", ipDotted, portStr);
+        embed.SetFooter(ipStr, footerIcon);
+    }
+    else
+    {
+        embed.SetFooter("", footerIcon);
+    }
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
@@ -369,9 +399,24 @@ public void OnMapEnd()
     Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
     embed.AddField(playerCountLabel, playerCountStr, true);
 
-    char hostname[256];
-    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
-    embed.SetFooter(hostname, "");
+    char footerIcon[256];
+    g_cvarFooterIcon.GetString(footerIcon, sizeof(footerIcon));
+    char ipStr[64];
+    char ipStrRaw[32];
+    char portStr[16];
+    GetConVarString(FindConVar("hostip"), ipStrRaw, sizeof(ipStrRaw));
+    GetConVarString(FindConVar("hostport"), portStr, sizeof(portStr));
+    if (g_cvarFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
+    {
+        char ipDotted[32];
+        HostIpStringToDotted(ipStrRaw, ipDotted, sizeof(ipDotted));
+        Format(ipStr, sizeof(ipStr), "steam://connect/%s:%s", ipDotted, portStr);
+        embed.SetFooter(ipStr, footerIcon);
+    }
+    else
+    {
+        embed.SetFooter("", footerIcon);
+    }
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
@@ -409,7 +454,7 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     if (user.IsBot())
         return;
 
-    char content[MAX_DISCORD_MESSAGE_LENGTH];
+    char content[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
     // Commands
@@ -438,26 +483,56 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     else
         user.GetUsername(author, sizeof(author));
 
-        //CPrintToChatAll("%t", "Chat Format", author, content);
-        
+    static char colorHex[7];
+    GenerateColorHexFromName(author, colorHex, sizeof(colorHex));
+
+    static char coloredAuthor[MAX_DISCORD_NAME_LENGTH + 16];
+    if (g_cvarRandomizeNameColors.BoolValue)
+        Format(coloredAuthor, sizeof(coloredAuthor), "{#%s}%s{default}", colorHex, author);
+    else
+        strcopy(coloredAuthor, sizeof(coloredAuthor), author);
+
+    char line[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+    int start = 0;
+    int len = strlen(content);
+    while (start < len)
+    {
+        int end = start;
+        while (end < len && content[end] != '\n' && content[end] != '\r')
+            end++;
+
+        int lineLen = end - start;
+        if (lineLen > sizeof(line) - 1)
+            lineLen = sizeof(line) - 1;
+
+        if (lineLen > 0)
+            strcopy(line, sizeof(line), content[start]);
+        line[lineLen] = '\0';
+
         // Strip {color} tags from the message before printing
-        char cleanContent[MAX_DISCORD_MESSAGE_LENGTH];
+        char cleanContent[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
         int j = 0;
-        for (int i = 0; content[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
+        for (int i = 0; line[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
         {
-            if (content[i] == '{')
+            if (line[i] == '{')
             {
-            // Skip until closing }
-            while (content[i] != '\0' && content[i] != '}')
-                i++;
-            if (content[i] == '}')
-                continue;
+                // Skip until closing }
+                while (line[i] != '\0' && line[i] != '}')
+                    i++;
+                if (line[i] == '}')
+                    continue;
             }
-            cleanContent[j++] = content[i];
+            cleanContent[j++] = line[i];
         }
         cleanContent[j] = '\0';
 
-        CPrintToChatAll("%t", "Chat Format", author, cleanContent);
+        CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvarAllowColorTags.BoolValue ? line : cleanContent);
+        PrintToServer("%t", "Chat Format", author, cleanContent);
+
+        while (end < len && (content[end] == '\n' || content[end] == '\r'))
+            end++;
+        start = end;
+    }
 }
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
@@ -484,7 +559,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
     GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
 
-    char formatted[MAX_DISCORD_MESSAGE_LENGTH + 256];
+    char formatted[MAX_DISCORD_NITRO_MESSAGE_LENGTH + 256];
     Format(formatted, sizeof(formatted), "%T", "Discord Message", LANG_SERVER, sArgs, playerName, steamId64, steamId2, hostname);
 
     SendDiscordMessageWithAvatar(client, formatted);
@@ -570,21 +645,30 @@ public Action OnBanClient(int client, int time, int flags, const char[] reason, 
     return Plugin_Continue;
 }
 
-public void OnPluginEnd()
+void HostIpStringToDotted(const char[] ipStrRaw, char[] buffer, int maxlen)
 {
-    if (g_Discord != null)
+    if (StrContains(ipStrRaw, ".") != -1)
     {
-        delete g_Discord;
-        g_Discord = null;
+        strcopy(buffer, maxlen, ipStrRaw);
+        return;
     }
-    if (g_Webhook != null)
-    {
-        delete g_Webhook;
-        g_Webhook = null;
-    }
+    strcopy(buffer, maxlen, "unknown");
 }
 
-#include "discord_redux/accelerator.sp"
+void GenerateColorHexFromName(const char[] name, char[] hex, int hexLen)
+{
+    int hash = 5381;
+    for (int i = 0; name[i] != '\0'; i++)
+        hash = ((hash << 5) + hash) + name[i]; // djb2
+
+    int r = ((hash >> 16) & 0x7F) + 64;
+    int g = ((hash >> 8) & 0x7F) + 64;
+    int b = (hash & 0x7F) + 64;
+
+    Format(hex, hexLen, "%02X%02X%02X", r, g, b);
+}
+
+//#include "discord_redux/accelerator.sp"
 #include "discord_redux/stocks.sp"
 #include "discord_redux/steam.sp"
 

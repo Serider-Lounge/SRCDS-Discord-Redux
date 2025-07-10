@@ -64,6 +64,14 @@
     {
         "en"        "Scoreboard"
     }
+    "Round Win"
+    {
+        "en"        "%s Wins!"
+    }
+    "Stalemate"
+    {
+        "en"        "Stalemate!"
+    }
     "Crash Report Title"
     {
         "en"        "Server Crashed!"

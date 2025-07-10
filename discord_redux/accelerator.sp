@@ -1,3 +1,5 @@
+#tryinclude <accelerator>
+
 public void OnCrashUpdated(int num, const char[] crashId)
 {
     if (g_Discord == null || g_DiscordChannelId[0] == '\0')
@@ -8,7 +10,6 @@ public void OnCrashUpdated(int num, const char[] crashId)
 
     DiscordEmbed embed = new DiscordEmbed();
 
-    // Format title and description using translations
     char title[DISCORD_TITLE_LENGTH];
     char description[DISCORD_DESC_LENGTH];
     Format(title, sizeof(title), "%T", "Crash Report Title", LANG_SERVER);

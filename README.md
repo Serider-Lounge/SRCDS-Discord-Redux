@@ -40,12 +40,7 @@ You need to set up a [Webhook](https://support.discord.com/hc/en-us/articles/228
 ### Why don't Player Avatars not show up❓
 You need to register your [Steam Web API Key](https://steamcommunity.com/dev/apikey).
 > [!NOTE]
-> Avatars are only cached once on player join‼
-
-### `/lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_2.38' not found`
-As far as my (albeit, limited) Linux knowledge goes, you need to be the latest version of your distro.
-> [!WARNING]
-> Untested on Windows‼
+> Avatars are only cached once on player join.
 
 ### Why using `!` commands instead of Discord slash commands❓
-Because I haven't figured them out yet. It's that simple. 😅
+Because I haven't figured them out yet... 😅

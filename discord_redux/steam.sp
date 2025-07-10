@@ -1,3 +1,4 @@
+/** RIP Ext **/
 public void OnSteamAvatarResponse(HTTPResponse response, any userid)
 {
     if (response.Status != HTTPStatus_OK)

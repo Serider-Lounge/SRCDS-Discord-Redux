@@ -5,6 +5,67 @@ public Action TF2_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 }
 */
 
+//public Action TF2_OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
+//{
+//    int winner = event.GetInt("team");
+//
+//    // Prepare embed for Discord
+//    DiscordEmbed embed = new DiscordEmbed();
+//    char title[64];
+//    char winnerStr[8];
+//    char thumbUrl[128];
+//
+//    switch (winner)
+//    {
+//        case TFTeam_Red:
+//        {
+//            strcopy(winnerStr, sizeof(winnerStr), "RED");
+//            strcopy(thumbUrl, sizeof(thumbUrl), "https://wiki.teamfortress.com/w/images/8/80/Team_red.png");
+//        }
+//        case TFTeam_Blue:
+//        {
+//            strcopy(winnerStr, sizeof(winnerStr), "BLU");
+//            strcopy(thumbUrl, sizeof(thumbUrl), "https://wiki.teamfortress.com/w/images/0/07/Team_blu.png");
+//        }
+//        default:
+//        {
+//            strcopy(winnerStr, sizeof(winnerStr), "UNASSIGNED");
+//            thumbUrl[0] = '\0';
+//        }
+//    }
+//
+//    float elapsed = event.GetFloat("round_time");
+//    char timeStr[32];
+//    int minutes = RoundToFloor(elapsed / 60.0);
+//    int seconds = RoundToFloor(elapsed) % 60;
+//    Format(timeStr, sizeof(timeStr), "%d:%02d", minutes, seconds);
+//
+//    // Update title formatting to use translation strings
+//    if (winner == view_as<int>(TFTeam_Red) || winner == view_as<int>(TFTeam_Blue))
+//    {
+//        // "Round Win Title" expects {1} = RED/BLU
+//        Format(title, sizeof(title), "%T", "Round Win", LANG_SERVER, winnerStr);
+//    }
+//    else
+//    {
+//        // "Round Stalemate Title" expects no args
+//        Format(title, sizeof(title), "%T", "Stalemate", LANG_SERVER);
+//    }
+//    embed.SetTitle(title);
+//    embed.SetColor((winner == view_as<int>(TFTeam_Red)) ? 0xA75D51 : (winner == view_as<int>(TFTeam_Blue)) ? 0x4F7888 : 0x1C1918);
+//    embed.AddField("Elapsed Time", timeStr, false);
+//
+//    if (thumbUrl[0] != '\0')
+//    {
+//        embed.SetThumbnail(thumbUrl);
+//    }
+//
+//    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+//    delete embed;
+//
+//    return Plugin_Continue;
+//}
+
 public void TF2_SendScoreboardEmbed()
 {
     // Prepare player lists
@@ -63,8 +124,13 @@ public void TF2_SendScoreboardEmbed()
 
     embed.AddField("BLU:", (bluList[0] != '\0') ? bluList : "`N/A`", true);
     embed.AddField("RED:", (redList[0] != '\0') ? redList : "`N/A`", true);
-    embed.AddField("SPEC", (specList[0] != '\0') ? specList : "`N/A`", false);
+    embed.AddField("SPEC:", (specList[0] != '\0') ? specList : "`N/A`", false);
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+
+    // Clear memory for large buffers
+    redList[0] = '\0';
+    bluList[0] = '\0';
+    specList[0] = '\0';
 }
