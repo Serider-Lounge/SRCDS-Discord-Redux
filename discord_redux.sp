@@ -8,7 +8,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux | x64 Support"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.0.0"
+#define PLUGIN_VERSION     "1.0.0-alpha"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 

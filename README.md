@@ -1,4 +1,4 @@
-# [ANY] Discord Redux | x64 support‼
+# [ANY] Discord Redux | x64 support ~ IN ALPHA‼
 Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discordrelay).
 > [!NOTE]
 > This plugin has been developed in [Team Fortress 2](https://store.steampowered.com/app/440/Team_Fortress_2/); but pull requests to extend support for other games are VERY MUCH welcome!
