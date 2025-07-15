@@ -413,7 +413,10 @@ public void OnMapEnd()
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+}
 
+public void OnPluginEnd()
+{
     if (g_Discord != null)
     {
         delete g_Discord;
