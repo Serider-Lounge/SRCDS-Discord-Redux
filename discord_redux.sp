@@ -44,6 +44,8 @@ char g_sClientAvatar[MAXPLAYERS+1][256];
 
 bool g_bClientBanned[MAXPLAYERS+1];
 
+char g_mapName[PLATFORM_MAX_PATH];
+
 public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
@@ -160,19 +162,17 @@ public void OnMapStart()
     //    }
     //}
 
-    char map[PLATFORM_MAX_PATH];
-    GetCurrentMap(map, sizeof(map));
+    
+    GetCurrentMap(g_mapName, sizeof(g_mapName));
 
-    int playerCount = 0;
+    int playerCount = GetClientCount(false);
     int botCount = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i))
+        if (IsClientInGame(i) && IsFakeClient(i))
         {
-            if (IsFakeClient(i))
-                botCount++;
-            else
-                playerCount++;
+            botCount++;
+            playerCount--;
         }
     }
     int maxPlayers = MaxClients;
@@ -181,18 +181,18 @@ public void OnMapStart()
     char displayName[PLATFORM_MAX_PATH];
     displayName[0] = '\0';
 
-    bool hasDisplay = GetMapDisplayName(map, displayName, sizeof(displayName));
+    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
 
-    if (StrContains(map, "workshop/") == 0)
+    if (StrContains(g_mapName, "workshop/") == 0)
     {
-        int ugcPos = StrContains(map, ".ugc");
+        int ugcPos = StrContains(g_mapName, ".ugc");
         if (ugcPos != -1)
         {
             int slash = -1;
-            int mapLen = strlen(map);
+            int mapLen = strlen(g_mapName);
             for (int i = mapLen - 1; i >= 0; --i)
             {
-                if (map[i] == '/')
+                if (g_mapName[i] == '/')
                 {
                     slash = i;
                     break;
@@ -203,9 +203,9 @@ public void OnMapStart()
             if (slash != -1 && ugcPos > slash)
             {
                 int nameLen = ugcPos - (slash + 1);
-                strcopy(mapDisplay, sizeof(mapDisplay), map[slash + 1]);
+                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
                 mapDisplay[nameLen] = '\0';
-                strcopy(workshopId, sizeof(workshopId), map[ugcPos + 4]);
+                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
                 int idEnd = FindCharInString(workshopId, '/', false);
                 if (idEnd != -1)
                     workshopId[idEnd] = '\0';
@@ -217,7 +217,7 @@ public void OnMapStart()
                 if (hasDisplay && displayName[0] != '\0')
                     strcopy(shown, sizeof(shown), displayName);
                 else
-                    strcopy(shown, sizeof(shown), map);
+                    strcopy(shown, sizeof(shown), g_mapName);
                 Format(description, sizeof(description), "%s", shown);
             }
         }
@@ -227,7 +227,7 @@ public void OnMapStart()
             if (hasDisplay && displayName[0] != '\0')
                 strcopy(shown, sizeof(shown), displayName);
             else
-                strcopy(shown, sizeof(shown), map);
+                strcopy(shown, sizeof(shown), g_mapName);
             Format(description, sizeof(description), "%s", shown);
         }
     }
@@ -237,11 +237,10 @@ public void OnMapStart()
         if (hasDisplay && displayName[0] != '\0')
             strcopy(shown, sizeof(shown), displayName);
         else
-            strcopy(shown, sizeof(shown), map);
+            strcopy(shown, sizeof(shown), g_mapName);
         Format(description, sizeof(description), "%s", shown);
     }
 
-    // Use translation for "Current Map"
     char title[64];
     Format(title, sizeof(title), "%T", "Current Map", LANG_SERVER);
 
@@ -250,7 +249,6 @@ public void OnMapStart()
     embed.SetDescription(description);
     embed.SetColor(0x5865F2);
 
-    // Player count field
     char playerCountStr[64];
     if (botCount > 0)
         Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
@@ -298,19 +296,16 @@ public void OnMapEnd()
     if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
         return;
 
-    char map[PLATFORM_MAX_PATH];
-    GetCurrentMap(map, sizeof(map));
+    GetCurrentMap(g_mapName, sizeof(g_mapName));
 
-    int playerCount = 0;
+    int playerCount = GetClientCount(false);
     int botCount = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientInGame(i))
+        if (IsClientInGame(i) && IsFakeClient(i))
         {
-            if (IsFakeClient(i))
-                botCount++;
-            else
-                playerCount++;
+            botCount++;
+            playerCount--;
         }
     }
     int maxPlayers = MaxClients;
@@ -319,18 +314,18 @@ public void OnMapEnd()
     char displayName[PLATFORM_MAX_PATH];
     displayName[0] = '\0';
 
-    bool hasDisplay = GetMapDisplayName(map, displayName, sizeof(displayName));
+    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
 
-    if (StrContains(map, "workshop/") == 0)
+    if (StrContains(g_mapName, "workshop/") == 0)
     {
-        int ugcPos = StrContains(map, ".ugc");
+        int ugcPos = StrContains(g_mapName, ".ugc");
         if (ugcPos != -1)
         {
             int slash = -1;
-            int mapLen = strlen(map);
+            int mapLen = strlen(g_mapName);
             for (int i = mapLen - 1; i >= 0; --i)
             {
-                if (map[i] == '/')
+                if (g_mapName[i] == '/')
                 {
                     slash = i;
                     break;
@@ -341,9 +336,9 @@ public void OnMapEnd()
             if (slash != -1 && ugcPos > slash)
             {
                 int nameLen = ugcPos - (slash + 1);
-                strcopy(mapDisplay, sizeof(mapDisplay), map[slash + 1]);
+                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
                 mapDisplay[nameLen] = '\0';
-                strcopy(workshopId, sizeof(workshopId), map[ugcPos + 4]);
+                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
                 int idEnd = FindCharInString(workshopId, '/', false);
                 if (idEnd != -1)
                     workshopId[idEnd] = '\0';
@@ -355,7 +350,7 @@ public void OnMapEnd()
                 if (hasDisplay && displayName[0] != '\0')
                     strcopy(shown, sizeof(shown), displayName);
                 else
-                    strcopy(shown, sizeof(shown), map);
+                    strcopy(shown, sizeof(shown), g_mapName);
                 Format(description, sizeof(description), "%s", shown);
             }
         }
@@ -365,7 +360,7 @@ public void OnMapEnd()
             if (hasDisplay && displayName[0] != '\0')
                 strcopy(shown, sizeof(shown), displayName);
             else
-                strcopy(shown, sizeof(shown), map);
+                strcopy(shown, sizeof(shown), g_mapName);
             Format(description, sizeof(description), "%s", shown);
         }
     }
@@ -375,11 +370,10 @@ public void OnMapEnd()
         if (hasDisplay && displayName[0] != '\0')
             strcopy(shown, sizeof(shown), displayName);
         else
-            strcopy(shown, sizeof(shown), map);
+            strcopy(shown, sizeof(shown), g_mapName);
         Format(description, sizeof(description), "%s", shown);
     }
 
-    // Use translation for "Previous Map"
     char title[64];
     Format(title, sizeof(title), "%T", "Previous Map", LANG_SERVER);
 
@@ -388,7 +382,6 @@ public void OnMapEnd()
     embed.SetDescription(description);
     embed.SetColor(0x23272A);
 
-    // Player count field
     char playerCountStr[64];
     if (botCount > 0)
         Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
@@ -435,7 +428,7 @@ public void OnMapEnd()
 
 public void Discord_OnReady(Discord discord)
 {
-    PrintToServer("%T", "Bot Success", LANG_SERVER); // Use translation key: Bot Success
+    PrintToServer("%T", "Bot Success", LANG_SERVER);
     OnMapStart();
 }
 
@@ -471,7 +464,7 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
             }
         }
         else if (StrContains(content, "status", false) != -1 ||
-                 StrContains(content, "map", false) != -1)
+                 StrContains(content, "g_mapName", false) != -1)
         {
             OnMapStart();
         }
