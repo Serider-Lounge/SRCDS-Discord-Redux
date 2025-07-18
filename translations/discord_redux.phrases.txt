@@ -3,12 +3,12 @@
     "Chat Format"
     {
         "#format" "{1:s},{2:s}"
-        "en"        "*DISCORD* {gray}{1}{default} : {2}"
+        "en"        "*DISCORD* {gray}{1}{default} :  {2}"
     }
     "Chat Format (Reply)"
     {
         "#format" "{1:s},{2:s}"
-        "en"        "*DISCORD* {gray}(Reply) {1}{default} : {2}"
+        "en"        "*DISCORD* {gray}(Reply) {1}{default} :  {2}"
     }
     "Discord Message"
     {
@@ -72,24 +72,51 @@
     {
         "en"        "Stalemate!"
     }
+    "Blocked Word"
+    {
+        "#format"   "{1:s},{2:s}" // {1} = Player | {2} = Detected Word
+        "en"        "[Discord Redux] {1} said a bad word! '{2}'"
+    }
     "Crash Report Title"
     {
         "en"        "Server Crashed!"
     }
     "Crash Report Description"
     {
+        "#format"   "{1:s},{2:s}" // {1} = Crash Report Link | {2} = Crash Report ID
         "en"        "Crash Report Link: [{1}](https://crash.limetech.org/{2})"
+    }
+    "RCON Print Error"
+    {
+        // ```diff\n
+        // -Unable to print command response-\n
+        // ```
+        "en"		"```diff\n-Unable to print command response-\n```" // Use '\n' for new lines
+    }
+    "RCON Output"
+    {
+        // ```<programming_language>\n
+        // <output>\n
+        // ```
+        "en"		"```dsconfig\n%s\n```" // Use '\n' for new lines
+    }
+    "RCON Input"
+    {
+        // ```<programming_language>\n
+        // <input>\n
+        // ```
+        "en"		"```hs\n%s\n```" // Use '\n' for new lines
     }
     "Bot Unset"
     {
-        "en"        "[Discord] Bot token not set. Set discord_bot_token and reload plugin."
+        "en"        "[Discord Redux] Bot token not set. Set discord_bot_token and reload plugin."
     }
     "Bot Failure"
     {
-        "en"        "[Discord] Failed to start Discord bot."
+        "en"        "[Discord Redux] Failed to start Discord bot."
     }
     "Bot Success"
     {
-        "en"        "[Discord] Discord bot is ready."
+        "en"        "[Discord Redux] Discord bot is ready."
     }
 }

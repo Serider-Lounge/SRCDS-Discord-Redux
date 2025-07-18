@@ -24,7 +24,7 @@ public void OnSteamAvatarResponse(HTTPResponse response, any userid)
         return;
 
     // Cache Avatar
-    strcopy(g_sClientAvatar[client], sizeof(g_sClientAvatar[]), avatarUrl);
+    strcopy(g_ClientAvatar[client], sizeof(g_ClientAvatar[]), avatarUrl);
 
     // Send join embed if queued
     if (g_PendingMessages[client] != null && g_PendingMessages[client].Length > 0)
@@ -48,14 +48,16 @@ public void OnSteamAvatarResponse(HTTPResponse response, any userid)
 
             DiscordEmbed embed = new DiscordEmbed();
             embed.SetDescription(description);
-            embed.SetColor(0x57F287);
 
-            if (g_sClientAvatar[client][0] != '\0')
+            g_cvEmbedJoinColor.GetString(g_EmbedJoinColor, sizeof(g_EmbedJoinColor));
+            embed.SetColor(HexColorStringToInt(g_EmbedJoinColor));
+
+            if (g_ClientAvatar[client][0] != '\0')
             {
                 if (steamId2[0] != '\0')
-                    embed.SetFooter(steamId2, g_sClientAvatar[client]);
+                    embed.SetFooter(steamId2, g_ClientAvatar[client]);
                 else
-                    embed.SetFooter("", g_sClientAvatar[client]);
+                    embed.SetFooter("", g_ClientAvatar[client]);
             }
             else if (steamId2[0] != '\0')
             {

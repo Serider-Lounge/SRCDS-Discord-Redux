@@ -20,29 +20,67 @@ public Plugin myinfo =
     url = PLUGIN_URL
 };
 
-ConVar g_cvarBotToken;
-ConVar g_cvarDiscordChannel;
+ConVar g_cvBotToken;
+
+ConVar g_cvDiscordChannel;
 char g_DiscordChannelId[SNOWFLAKE_SIZE];
-ConVar g_cvarRelayServerToDiscord;
-ConVar g_cvarRelayDiscordToServer;
-ConVar g_cvarWebhookUrl;
+
+ConVar g_cvRelayServerToDiscord;
+ConVar g_cvRelayDiscordToServer;
+
+ConVar g_cvWebhookUrl;
 char g_WebhookUrl[256];
-ConVar g_cvarUsernameMode;
-ConVar g_cvarSteamAPIKey;
+
+ConVar g_cvUsernameMode;
+
+ConVar g_cvSteamAPIKey;
 char g_SteamAPIKey[64];
-ConVar g_cvarAllowColorTags;
-ConVar g_cvarFooterServerIP;
-ConVar g_cvarFooterIcon;
-ConVar g_cvarRandomizeNameColors;
+
+ConVar g_cvAllowColorTags;
+ConVar g_cvFooterServerIP;
+ConVar g_cvFooterIcon;
+ConVar g_cvRandomizeNameColors;
+ConVar g_cvShowTeamChat;
+
+ConVar g_cvWordBlacklist;
+char g_WordBlacklist[1024];
+ConVar g_cvHideCommandPrefix;
+char g_HideCommandPrefix[256];
+ConVar g_cvMapThumbnail;
+ConVar g_cvMapThumbnailProvider;
+char g_MapThumbnailProvider[256];
+
+ConVar g_cvDiscordStaffChannel;
+char g_DiscordStaffChannelId[SNOWFLAKE_SIZE];
+
+ConVar g_cvDiscordRCONChannel;
+char g_DiscordRCONChannelId[SNOWFLAKE_SIZE];
+
+ConVar g_cvEmbedCurrentMapColor;
+char g_EmbedCurrentMapColor[8];
+ConVar g_cvEmbedPreviousMapColor;
+char g_EmbedPreviousMapColor[8];
+ConVar g_cvEmbedJoinColor;
+char g_EmbedJoinColor[8];
+ConVar g_cvEmbedLeaveColor;
+char g_EmbedLeaveColor[8];
+ConVar g_cvEmbedKickColor;
+char g_EmbedKickColor[8];
+ConVar g_cvEmbedBanColor;
+char g_EmbedBanColor[8];
+ConVar g_cvEmbedConsoleColor;
+char g_EmbedConsoleColor[8];
+ConVar g_cvEmbedScoreboardColor;
+char g_EmbedScoreboardColor[8];
 
 Discord g_Discord = null;
 DiscordWebhook g_Webhook = null;
 
 ArrayList g_PendingMessages[MAXPLAYERS+1];
 
-char g_sClientAvatar[MAXPLAYERS+1][256];
+char g_ClientAvatar[MAXPLAYERS+1][256];
 
-bool g_bClientBanned[MAXPLAYERS+1];
+bool g_ClientBanned[MAXPLAYERS+1];
 
 char g_mapName[PLATFORM_MAX_PATH];
 
@@ -50,24 +88,45 @@ public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
 
-    g_cvarBotToken = CreateConVar("discord_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
-    g_cvarDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages.");
-    g_cvarRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
-    g_cvarUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
-    g_cvarAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarFooterServerIP = CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvarFooterIcon = CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
-    g_cvarRandomizeNameColors = CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
+    /* ConVars */
+    g_cvBotToken = CreateConVar("discord_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
+    g_cvDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages.");
+    g_cvRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
+    g_cvUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
+    g_cvAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvFooterServerIP = CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvFooterIcon = CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
+    g_cvRandomizeNameColors = CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvShowTeamChat = CreateConVar("discord_show_team_chat", "0", "Relay team chat to Discord (requires discord_relay_server_to_discord).", FCVAR_NONE, true, 0.0, true, 1.0);
+    
+    g_cvWordBlacklist = CreateConVar("discord_word_blacklist", "", "Blacklist words using a regex pattern.", FCVAR_NONE);
+    HookConVarChange(g_cvWordBlacklist, OnWordBlacklistChanged);
+
+    g_cvHideCommandPrefix = CreateConVar("discord_hide_command_prefix", "!,/", "Hide specified command prefixes on Discord (separated by commas).", FCVAR_NONE);
+    g_cvMapThumbnail = CreateConVar("discord_map_thumbnail", "1", "Show map thumbnail in embeds.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvMapThumbnailProvider = CreateConVar("discord_map_thumbnail_provider", "http://image.gametracker.com/images/maps/160x120/tf2/", "Map thumbnail provider url.", FCVAR_NONE);
+    g_cvDiscordStaffChannel = CreateConVar("discord_staff_channel_id", "", "Discord channel ID for staff messages.", FCVAR_NONE);
+    g_cvDiscordRCONChannel = CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
+
+    g_cvEmbedCurrentMapColor = CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
+    g_cvEmbedPreviousMapColor = CreateConVar("discord_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
+    g_cvEmbedJoinColor = CreateConVar("discord_embed_join_color", "77b255", "Embed color for join embeds.");
+    g_cvEmbedLeaveColor = CreateConVar("discord_embed_leave_color", "be1831", "Embed color for leave embeds.");
+    g_cvEmbedKickColor = CreateConVar("discord_embed_kick_color", "dd2e44", "Embed color for kick embeds.");
+    g_cvEmbedBanColor = CreateConVar("discord_embed_ban_color", "dd2e44", "Embed color for ban embeds.");
+    g_cvEmbedConsoleColor = CreateConVar("discord_embed_console_color", "e3e8ec", "Embed color for console messages.");
+    g_cvEmbedScoreboardColor = CreateConVar("discord_embed_scoreboard_color", "c1694f", "Embed color for the scoreboard.");
 
     AutoExecConfig(true, "discord_redux");
 
     CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
 
-    g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
-    g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
+    /* Strings */
+    g_cvDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
+    g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
     if (g_WebhookUrl[0] != '\0')
     {
         if (g_Webhook != null)
@@ -78,7 +137,7 @@ public void OnPluginStart()
     }
 
     char token[256];
-    g_cvarBotToken.GetString(token, sizeof(token));
+    g_cvBotToken.GetString(token, sizeof(token));
     if (token[0] == '\0')
     {
         PrintToServer("%T", "Bot Unset", LANG_SERVER);
@@ -91,22 +150,32 @@ public void OnPluginStart()
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
     }
 
-    g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+    g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
 
     for (int i = 0; i <= MAXPLAYERS; i++)
         g_PendingMessages[i] = null;
 
     for (int i = 0; i <= MAXPLAYERS; i++)
     {
-        g_sClientAvatar[i][0] = '\0';
-        g_bClientBanned[i] = false;
+        g_ClientAvatar[i][0] = '\0';
+        g_ClientBanned[i] = false;
     }
+
+    g_cvWordBlacklist.GetString(g_WordBlacklist, sizeof(g_WordBlacklist));
+    WordFilter_Compile();
+
+    g_cvHideCommandPrefix.GetString(g_HideCommandPrefix, sizeof(g_HideCommandPrefix));
+    g_cvMapThumbnailProvider.GetString(g_MapThumbnailProvider, sizeof(g_MapThumbnailProvider));
+
+    g_cvDiscordStaffChannel.GetString(g_DiscordStaffChannelId, sizeof(g_DiscordStaffChannelId));
+
+    g_cvDiscordRCONChannel.GetString(g_DiscordRCONChannelId, sizeof(g_DiscordRCONChannelId));
 }
 
 public void OnConfigsExecuted()
 {
-    g_cvarDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
-    g_cvarWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
+    g_cvDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
+    g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
     if (g_WebhookUrl[0] != '\0')
     {
         if (g_Webhook != null)
@@ -125,7 +194,7 @@ public void OnConfigsExecuted()
     }
 
     char token[256];
-    g_cvarBotToken.GetString(token, sizeof(token));
+    g_cvBotToken.GetString(token, sizeof(token));
     if (token[0] == '\0')
     {
         PrintToServer("%T", "Bot Unset", LANG_SERVER);
@@ -144,12 +213,170 @@ public void OnConfigsExecuted()
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
     }
 
-    g_cvarSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+    g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+
+    g_cvWordBlacklist.GetString(g_WordBlacklist, sizeof(g_WordBlacklist));
+    WordFilter_Compile();
+
+    g_cvHideCommandPrefix.GetString(g_HideCommandPrefix, sizeof(g_HideCommandPrefix));
+    g_cvMapThumbnailProvider.GetString(g_MapThumbnailProvider, sizeof(g_MapThumbnailProvider));
+
+    g_cvDiscordStaffChannel.GetString(g_DiscordStaffChannelId, sizeof(g_DiscordStaffChannelId));
+
+    g_cvDiscordRCONChannel.GetString(g_DiscordRCONChannelId, sizeof(g_DiscordRCONChannelId));
 }
 
-public void OnMapStart()
+public void OnMapEnd()
 {
-    if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
+    if (g_Discord == null || !g_cvRelayServerToDiscord.BoolValue)
+        return;
+
+    GetCurrentMap(g_mapName, sizeof(g_mapName));
+
+    char description[DISCORD_DESC_LENGTH];
+    char displayName[PLATFORM_MAX_PATH];
+    displayName[0] = '\0';
+
+    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
+
+    if (StrContains(g_mapName, "workshop/") == 0)
+    {
+        int ugcPos = StrContains(g_mapName, ".ugc");
+        if (ugcPos != -1)
+        {
+            int slash = -1;
+            int mapLen = strlen(g_mapName);
+            for (int i = mapLen - 1; i >= 0; --i)
+            {
+                if (g_mapName[i] == '/')
+                {
+                    slash = i;
+                    break;
+                }
+            }
+            char mapDisplay[PLATFORM_MAX_PATH];
+            char workshopId[32];
+            if (slash != -1 && ugcPos > slash)
+            {
+                int nameLen = ugcPos - (slash + 1);
+                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
+                mapDisplay[nameLen] = '\0';
+                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
+                int idEnd = FindCharInString(workshopId, '/', false);
+                if (idEnd != -1)
+                    workshopId[idEnd] = '\0';
+                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
+            }
+            else
+            {
+                char shown[PLATFORM_MAX_PATH];
+                if (hasDisplay && displayName[0] != '\0')
+                    strcopy(shown, sizeof(shown), displayName);
+                else
+                    strcopy(shown, sizeof(shown), g_mapName);
+                Format(description, sizeof(description), "%s", shown);
+            }
+        }
+        else
+        {
+            char shown[PLATFORM_MAX_PATH];
+            if (hasDisplay && displayName[0] != '\0')
+                strcopy(shown, sizeof(shown), displayName);
+            else
+                strcopy(shown, sizeof(shown), g_mapName);
+            Format(description, sizeof(description), "%s", shown);
+        }
+    }
+    else
+    {
+        char shown[PLATFORM_MAX_PATH];
+        if (hasDisplay && displayName[0] != '\0')
+            strcopy(shown, sizeof(shown), displayName);
+        else
+            strcopy(shown, sizeof(shown), g_mapName);
+        Format(description, sizeof(description), "%s", shown);
+    }
+
+    char title[64];
+    Format(title, sizeof(title), "%T", "Previous Map", LANG_SERVER);
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetTitle(title);
+    embed.SetDescription(description);
+
+    // Map thumbnail support
+    if (g_cvMapThumbnail.BoolValue)
+    {
+        char mapThumbUrl[512];
+        // Remove workshop/ prefix if present
+        char mapName[PLATFORM_MAX_PATH];
+        strcopy(mapName, sizeof(mapName), g_mapName);
+        if (StrContains(mapName, "workshop/") == 0)
+        {
+            int slash = -1;
+            int len = strlen(mapName);
+            for (int i = len - 1; i >= 0; --i)
+            {
+                if (mapName[i] == '/')
+                {
+                    slash = i;
+                    break;
+                }
+            }
+            if (slash != -1)
+                strcopy(mapName, sizeof(mapName), mapName[slash + 1]);
+        }
+
+        // Set thumbnail URL
+        Format(mapThumbUrl, sizeof(mapThumbUrl), "%s%s.jpg", g_MapThumbnailProvider, mapName);
+        embed.SetThumbnail(mapThumbUrl);
+    }
+
+    g_cvEmbedPreviousMapColor.GetString(g_EmbedPreviousMapColor, sizeof(g_EmbedPreviousMapColor));
+    embed.SetColor(HexColorStringToInt(g_EmbedPreviousMapColor));
+
+    char footerIcon[256];
+    g_cvFooterIcon.GetString(footerIcon, sizeof(footerIcon));
+    char ipStr[64];
+    char ipStrRaw[32];
+    char portStr[16];
+    GetConVarString(FindConVar("hostip"), ipStrRaw, sizeof(ipStrRaw));
+    GetConVarString(FindConVar("hostport"), portStr, sizeof(portStr));
+    if (g_cvFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
+    {
+        char ipDotted[32];
+        HostIpStringToDotted(ipStrRaw, ipDotted, sizeof(ipDotted));
+        Format(ipStr, sizeof(ipStr), "steam://connect/%s:%s", ipDotted, portStr);
+        embed.SetFooter(ipStr, footerIcon);
+    }
+    else
+    {
+        embed.SetFooter("", footerIcon);
+    }
+
+    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
+    delete embed;
+}
+
+public void OnPluginEnd()
+{
+    if (g_Discord != null)
+    {
+        delete g_Discord;
+        g_Discord = null;
+    }
+    if (g_Webhook != null)
+    {
+        delete g_Webhook;
+        g_Webhook = null;
+    }
+}
+
+public void Discord_OnReady()
+{
+    PrintToServer("%T", "Bot Success", LANG_SERVER);
+
+    if (g_Discord == null || !g_cvRelayServerToDiscord.BoolValue)
         return;
 
     /* Games */
@@ -162,7 +389,6 @@ public void OnMapStart()
     //    }
     //}
 
-    
     GetCurrentMap(g_mapName, sizeof(g_mapName));
 
     int playerCount = GetClientCount(false);
@@ -247,7 +473,37 @@ public void OnMapStart()
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(title);
     embed.SetDescription(description);
-    embed.SetColor(0x5865F2);
+
+    // Map thumbnail support
+    if (g_cvMapThumbnail.BoolValue)
+    {
+        char mapThumbUrl[512];
+        // Remove workshop/ prefix if present
+        char mapName[PLATFORM_MAX_PATH];
+        strcopy(mapName, sizeof(mapName), g_mapName);
+        if (StrContains(mapName, "workshop/") == 0)
+        {
+            int slash = -1;
+            int len = strlen(mapName);
+            for (int i = len - 1; i >= 0; --i)
+            {
+                if (mapName[i] == '/')
+                {
+                    slash = i;
+                    break;
+                }
+            }
+            if (slash != -1)
+                strcopy(mapName, sizeof(mapName), mapName[slash + 1]);
+        }
+
+        // Set thumbnail URL
+        Format(mapThumbUrl, sizeof(mapThumbUrl), "%s%s.jpg", g_MapThumbnailProvider, mapName);
+        embed.SetThumbnail(mapThumbUrl);
+    }
+
+    g_cvEmbedCurrentMapColor.GetString(g_EmbedCurrentMapColor, sizeof(g_EmbedCurrentMapColor));
+    embed.SetColor(HexColorStringToInt(g_EmbedCurrentMapColor));
 
     char playerCountStr[64];
     if (botCount > 0)
@@ -260,13 +516,13 @@ public void OnMapStart()
     embed.AddField(playerCountLabel, playerCountStr, true);
 
     char footerIcon[256];
-    g_cvarFooterIcon.GetString(footerIcon, sizeof(footerIcon));
+    g_cvFooterIcon.GetString(footerIcon, sizeof(footerIcon));
     char ipStr[64];
     char ipStrRaw[32];
     char portStr[16];
     GetConVarString(FindConVar("hostip"), ipStrRaw, sizeof(ipStrRaw));
     GetConVarString(FindConVar("hostport"), portStr, sizeof(portStr));
-    if (g_cvarFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
+    if (g_cvFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
     {
         char ipDotted[32];
         HostIpStringToDotted(ipStrRaw, ipDotted, sizeof(ipDotted));
@@ -291,255 +547,193 @@ public void OnMapStart()
     }*/
 }
 
-public void OnMapEnd()
-{
-    if (g_Discord == null || !g_cvarRelayServerToDiscord.BoolValue)
-        return;
-
-    GetCurrentMap(g_mapName, sizeof(g_mapName));
-
-    int playerCount = GetClientCount(false);
-    int botCount = 0;
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientInGame(i) && IsFakeClient(i))
-        {
-            botCount++;
-            playerCount--;
-        }
-    }
-    int maxPlayers = MaxClients;
-
-    char description[DISCORD_DESC_LENGTH];
-    char displayName[PLATFORM_MAX_PATH];
-    displayName[0] = '\0';
-
-    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
-
-    if (StrContains(g_mapName, "workshop/") == 0)
-    {
-        int ugcPos = StrContains(g_mapName, ".ugc");
-        if (ugcPos != -1)
-        {
-            int slash = -1;
-            int mapLen = strlen(g_mapName);
-            for (int i = mapLen - 1; i >= 0; --i)
-            {
-                if (g_mapName[i] == '/')
-                {
-                    slash = i;
-                    break;
-                }
-            }
-            char mapDisplay[PLATFORM_MAX_PATH];
-            char workshopId[32];
-            if (slash != -1 && ugcPos > slash)
-            {
-                int nameLen = ugcPos - (slash + 1);
-                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
-                mapDisplay[nameLen] = '\0';
-                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
-                int idEnd = FindCharInString(workshopId, '/', false);
-                if (idEnd != -1)
-                    workshopId[idEnd] = '\0';
-                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
-            }
-            else
-            {
-                char shown[PLATFORM_MAX_PATH];
-                if (hasDisplay && displayName[0] != '\0')
-                    strcopy(shown, sizeof(shown), displayName);
-                else
-                    strcopy(shown, sizeof(shown), g_mapName);
-                Format(description, sizeof(description), "%s", shown);
-            }
-        }
-        else
-        {
-            char shown[PLATFORM_MAX_PATH];
-            if (hasDisplay && displayName[0] != '\0')
-                strcopy(shown, sizeof(shown), displayName);
-            else
-                strcopy(shown, sizeof(shown), g_mapName);
-            Format(description, sizeof(description), "%s", shown);
-        }
-    }
-    else
-    {
-        char shown[PLATFORM_MAX_PATH];
-        if (hasDisplay && displayName[0] != '\0')
-            strcopy(shown, sizeof(shown), displayName);
-        else
-            strcopy(shown, sizeof(shown), g_mapName);
-        Format(description, sizeof(description), "%s", shown);
-    }
-
-    char title[64];
-    Format(title, sizeof(title), "%T", "Previous Map", LANG_SERVER);
-
-    DiscordEmbed embed = new DiscordEmbed();
-    embed.SetTitle(title);
-    embed.SetDescription(description);
-    embed.SetColor(0x23272A);
-
-    char playerCountStr[64];
-    if (botCount > 0)
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
-    else
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
-
-    char playerCountLabel[32];
-    Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
-    embed.AddField(playerCountLabel, playerCountStr, true);
-
-    char footerIcon[256];
-    g_cvarFooterIcon.GetString(footerIcon, sizeof(footerIcon));
-    char ipStr[64];
-    char ipStrRaw[32];
-    char portStr[16];
-    GetConVarString(FindConVar("hostip"), ipStrRaw, sizeof(ipStrRaw));
-    GetConVarString(FindConVar("hostport"), portStr, sizeof(portStr));
-    if (g_cvarFooterServerIP.BoolValue && ipStrRaw[0] != '\0' && portStr[0] != '\0')
-    {
-        char ipDotted[32];
-        HostIpStringToDotted(ipStrRaw, ipDotted, sizeof(ipDotted));
-        Format(ipStr, sizeof(ipStr), "steam://connect/%s:%s", ipDotted, portStr);
-        embed.SetFooter(ipStr, footerIcon);
-    }
-    else
-    {
-        embed.SetFooter("", footerIcon);
-    }
-
-    g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
-    delete embed;
-}
-
-public void OnPluginEnd()
-{
-    if (g_Discord != null)
-    {
-        delete g_Discord;
-        g_Discord = null;
-    }
-    if (g_Webhook != null)
-    {
-        delete g_Webhook;
-        g_Webhook = null;
-    }
-}
-
-public void Discord_OnReady(Discord discord)
-{
-    PrintToServer("%T", "Bot Success", LANG_SERVER);
-    OnMapStart();
-}
-
 public void Discord_OnMessage(Discord discord, DiscordMessage message)
 {
-    if (!g_cvarRelayDiscordToServer.BoolValue)
+    if (!g_cvRelayDiscordToServer.BoolValue)
         return;
 
     char channelId[SNOWFLAKE_SIZE];
     message.GetChannelId(channelId, sizeof(channelId));
-    if (!StrEqual(channelId, g_DiscordChannelId))
-        return;
 
     DiscordUser user = message.GetAuthor();
-
-    if (user.IsBot())
-        return;
-
     char content[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
-    // Commands
-    if (content[0] == '!')
+    if (StrEqual(channelId, g_DiscordChannelId))
     {
-        if (StrContains(content, "scoreboard", false) != -1)
+        if (user.IsBot())
+            return;
+
+        // Commands
+        if (content[0] == '!')
         {
-            switch (GetEngineVersion())
+            if (StrContains(content, "scoreboard", false) != -1)
             {
-                case Engine_TF2:
+                g_cvEmbedScoreboardColor.GetString(g_EmbedScoreboardColor, sizeof(g_EmbedScoreboardColor));
+
+                switch (GetEngineVersion())
                 {
-                    TF2_SendScoreboardEmbed();
+                    case Engine_TF2:
+                    {
+                        TF2_SendScoreboardEmbed();
+                    }
                 }
             }
-        }
-        else if (StrContains(content, "status", false) != -1 ||
-                 StrContains(content, "g_mapName", false) != -1)
-        {
-            OnMapStart();
-        }
-    }
-
-    char author[MAX_DISCORD_NAME_LENGTH];
-    if (g_cvarUsernameMode.BoolValue)
-        user.GetGlobalName(author, sizeof(author));
-    else
-        user.GetUsername(author, sizeof(author));
-
-    static char colorHex[7];
-    GenerateColorHexFromName(author, colorHex, sizeof(colorHex));
-
-    static char coloredAuthor[MAX_DISCORD_NAME_LENGTH + 16];
-    if (g_cvarRandomizeNameColors.BoolValue)
-        Format(coloredAuthor, sizeof(coloredAuthor), "{#%s}%s{default}", colorHex, author);
-    else
-        strcopy(coloredAuthor, sizeof(coloredAuthor), author);
-
-    char line[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
-    int start = 0;
-    int len = strlen(content);
-    while (start < len)
-    {
-        int end = start;
-        while (end < len && content[end] != '\n' && content[end] != '\r')
-            end++;
-
-        int lineLen = end - start;
-        if (lineLen > sizeof(line) - 1)
-            lineLen = sizeof(line) - 1;
-
-        if (lineLen > 0)
-            strcopy(line, sizeof(line), content[start]);
-        line[lineLen] = '\0';
-
-        // Strip {color} tags from the message before printing
-        char cleanContent[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
-        int j = 0;
-        for (int i = 0; line[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
-        {
-            if (line[i] == '{')
+            else if (StrContains(content, "status", false) != -1 ||
+                     StrContains(content, "map", false) != -1)
             {
-                // Skip until closing }
-                while (line[i] != '\0' && line[i] != '}')
-                    i++;
-                if (line[i] == '}')
-                    continue;
+                Discord_OnReady();
             }
-            cleanContent[j++] = line[i];
         }
-        cleanContent[j] = '\0';
 
-        CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvarAllowColorTags.BoolValue ? line : cleanContent);
-        PrintToServer("%t", "Chat Format", author, cleanContent);
+        if (ShouldHideCommandPrefix(content))
+            return;
 
-        while (end < len && (content[end] == '\n' || content[end] == '\r'))
-            end++;
-        start = end;
+        char author[MAX_DISCORD_NAME_LENGTH];
+        if (g_cvUsernameMode.BoolValue)
+            user.GetGlobalName(author, sizeof(author));
+        else
+            user.GetUsername(author, sizeof(author));
+
+        static char colorHex[7];
+        GenerateColorHexFromName(author, colorHex, sizeof(colorHex));
+
+        static char coloredAuthor[MAX_DISCORD_NAME_LENGTH + 16];
+        if (g_cvRandomizeNameColors.BoolValue)
+            Format(coloredAuthor, sizeof(coloredAuthor), "{#%s}%s{default}", colorHex, author);
+        else
+            strcopy(coloredAuthor, sizeof(coloredAuthor), author);
+
+        char line[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+        int start = 0;
+        int len = strlen(content);
+        while (start < len)
+        {
+            int end = start;
+            while (end < len && content[end] != '\n' && content[end] != '\r')
+                end++;
+
+            int lineLen = end - start;
+            if (lineLen > sizeof(line) - 1)
+                lineLen = sizeof(line) - 1;
+
+            if (lineLen > 0)
+                strcopy(line, sizeof(line), content[start]);
+            line[lineLen] = '\0';
+
+            // Strip {color} tags from the message before printing
+            char cleanContent[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+            int j = 0;
+            for (int i = 0; line[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
+            {
+                if (line[i] == '{')
+                {
+                    // Skip until closing }
+                    while (line[i] != '\0' && line[i] != '}')
+                        i++;
+                    if (line[i] == '}')
+                        continue;
+                }
+                cleanContent[j++] = line[i];
+            }
+            cleanContent[j] = '\0';
+
+            CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+            PrintToServer("*DISCORD* %s: %s", author, cleanContent);
+
+            while (end < len && (content[end] == '\n' || content[end] == '\r'))
+                end++;
+            start = end;
+        }
     }
+
+    // RCON channel command execution
+    char rconChannelId[SNOWFLAKE_SIZE];
+    g_cvDiscordRCONChannel.GetString(rconChannelId, sizeof(rconChannelId));
+    char msgChannelId[SNOWFLAKE_SIZE];
+    message.GetChannelId(msgChannelId, sizeof(msgChannelId));
+    if (StrEqual(msgChannelId, rconChannelId))
+    {
+        if (user.IsBot())
+            return;
+
+        if (content[0] == '\0')
+            return;
+
+        // Optionally: Add command restrictions here (e.g., whitelist, admin check)
+
+        // Execute the command on the server
+        char response[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+        ServerCommandEx(response, sizeof(response), "%s", content);
+
+        // Prepare feedback embed
+        if (g_DiscordRCONChannelId[0] != '\0')
+        {
+            // Check for "Unknown Command" in the response
+            if (StrContains(response, "Unknown Command", false) != -1)
+            {
+                return;
+            }
+
+            char username[MAX_DISCORD_NAME_LENGTH];
+            user.GetUsername(username, sizeof(username));
+            char avatar[256];
+            user.GetAvatarUrl(false, avatar, sizeof(avatar));
+
+            // Use phrases file for RCON input/output formatting
+            char inputMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+            char outputMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
+
+            // If output is empty, use "RCON Print Error" translation
+            if (response[0] == '\0')
+            {
+                Format(outputMsg, sizeof(outputMsg), "%T", "RCON Print Error", LANG_SERVER);
+            }
+            else
+            {
+                Format(outputMsg, sizeof(outputMsg), "%T", "RCON Output", LANG_SERVER, response);
+            }
+            Format(inputMsg, sizeof(inputMsg), "%T", "RCON Input", LANG_SERVER, content);
+
+            DiscordEmbed embed = new DiscordEmbed();
+            char embedMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH * 2];
+            Format(embedMsg, sizeof(embedMsg), "%s\n%s", outputMsg, inputMsg);
+            embed.SetDescription(embedMsg);
+
+            g_Discord.SendMessageEmbed(g_DiscordRCONChannelId, "", embed);
+            delete embed;
+        }
+    }
+}
+
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
+{
+    char detectedWord[MAX_MESSAGE_LENGTH];
+    if (WordFilter_IsBlocked(sArgs, detectedWord))
+    {
+        PrintToServer("%t", "Blocked Word", LANG_SERVER, client, detectedWord);
+        return Plugin_Handled;
+    }
+
+    return Plugin_Continue;
 }
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-    if (!g_cvarRelayServerToDiscord.BoolValue)
+    if (!g_cvRelayServerToDiscord.BoolValue)
+        return;
+
+    if (ShouldHideCommandPrefix(sArgs) || WordFilter_IsBlocked(sArgs) || (StrEqual(command, "say_team", false) && !g_cvShowTeamChat.BoolValue))
         return;
 
     if (IsConsole(client))
     {
         DiscordEmbed embed = new DiscordEmbed();
         embed.SetDescription(sArgs);
+
+        g_cvEmbedConsoleColor.GetString(g_EmbedConsoleColor, sizeof(g_EmbedConsoleColor));
+        embed.SetColor(HexColorStringToInt(g_EmbedConsoleColor));
+
         g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
         delete embed;
         return;
@@ -565,7 +759,7 @@ public void OnClientPutInServer(int client)
 {
     if (IsFakeClient(client) ||
         g_Discord == null ||
-        !g_cvarRelayServerToDiscord.BoolValue) return;
+        !g_cvRelayServerToDiscord.BoolValue) return;
 
     RefreshClientSteamAvatar(client, g_SteamAPIKey);
 
@@ -579,7 +773,7 @@ public void OnClientDisconnect(int client)
 {
     if (IsFakeClient(client) ||
         g_Discord == null ||
-        !g_cvarRelayServerToDiscord.BoolValue) return;
+        !g_cvRelayServerToDiscord.BoolValue) return;
 
     char playerName[MAX_NAME_LENGTH];
     char steamId64[32];
@@ -590,35 +784,44 @@ public void OnClientDisconnect(int client)
     bool hasSteam2 = GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2), true);
 
     char description[256];
-    bool banned = g_bClientBanned[client];
+    bool banned = g_ClientBanned[client];
     bool kicked = IsClientInKickQueue(client);
 
     if (hasSteam64 && steamId64[0] != '\0')
     {
         if (banned)
         {
+            g_cvEmbedBanColor.GetString(g_EmbedBanColor, sizeof(g_EmbedBanColor));
             Format(description, sizeof(description), "%T", "Player Banned", LANG_SERVER, playerName, steamId64);
         }
         else if (kicked)
         {
+            g_cvEmbedKickColor.GetString(g_EmbedKickColor, sizeof(g_EmbedKickColor));
             Format(description, sizeof(description), "%T", "Player Kicked", LANG_SERVER, playerName, steamId64);
         }
         else
         {
+            g_cvEmbedLeaveColor.GetString(g_EmbedLeaveColor, sizeof(g_EmbedLeaveColor));
             Format(description, sizeof(description), "%T", "Player Leave", LANG_SERVER, playerName, steamId64);
         }
     }
 
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetDescription(description);
-    embed.SetColor(0xED4245);
 
-    if (g_sClientAvatar[client][0] != '\0')
+    if (banned)
+        embed.SetColor(HexColorStringToInt(g_EmbedBanColor));
+    else if (kicked)
+        embed.SetColor(HexColorStringToInt(g_EmbedKickColor));
+    else
+        embed.SetColor(HexColorStringToInt(g_EmbedLeaveColor));
+
+    if (g_ClientAvatar[client][0] != '\0')
     {
         if (hasSteam2 && steamId2[0] != '\0')
-            embed.SetFooter(steamId2, g_sClientAvatar[client]);
+            embed.SetFooter(steamId2, g_ClientAvatar[client]);
         else
-            embed.SetFooter("", g_sClientAvatar[client]);
+            embed.SetFooter("", g_ClientAvatar[client]);
     }
     else if (hasSteam2 && steamId2[0] != '\0')
     {
@@ -628,44 +831,27 @@ public void OnClientDisconnect(int client)
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
 
-    g_bClientBanned[client] = false;
-    g_sClientAvatar[client][0] = '\0';
+    g_ClientBanned[client] = false;
+    g_ClientAvatar[client][0] = '\0';
 }
 
 public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
 {
     if (client > 0 && client <= MaxClients)
     {
-        g_bClientBanned[client] = true;
+        g_ClientBanned[client] = true;
     }
     return Plugin_Continue;
 }
 
-void HostIpStringToDotted(const char[] ipStrRaw, char[] buffer, int maxlen)
+public void OnWordBlacklistChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-    if (StrContains(ipStrRaw, ".") != -1)
-    {
-        strcopy(buffer, maxlen, ipStrRaw);
-        return;
-    }
-    strcopy(buffer, maxlen, "unknown");
+    g_cvWordBlacklist.GetString(g_WordBlacklist, sizeof(g_WordBlacklist));
+    WordFilter_Compile();
 }
 
-void GenerateColorHexFromName(const char[] name, char[] hex, int hexLen)
-{
-    int hash = 5381;
-    for (int i = 0; name[i] != '\0'; i++)
-        hash = ((hash << 5) + hash) + name[i]; // djb2
-
-    int r = ((hash >> 16) & 0x7F) + 64;
-    int g = ((hash >> 8) & 0x7F) + 64;
-    int b = (hash & 0x7F) + 64;
-
-    Format(hex, hexLen, "%02X%02X%02X", r, g, b);
-}
-
-//#include "discord_redux/accelerator.sp"
 #include "discord_redux/stocks.sp"
 #include "discord_redux/steam.sp"
+#include "discord_redux/wordfilter.sp"
 
 #include "discord_redux/game.sp"
