@@ -15,7 +15,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
   - Steam avatars are also displayed.
 - Server commands can be executed from a Discord channel (RCON).
 - **[Toggle]** Show usernames or display names in **Discord→Server** messages.
-- **[Toggle]** color tags (in case you want to prevent griefing).
+- **[Toggle]** Parse color tags (or not, in case you want to prevent griefing).
   - Mostly useful for those who use [Chat Processor](https://github.com/KeithGDR/chat-processor) like me.
 - **[Toggle]** Randomize name colors in **Discord→Server** messages.
   - Implemented it for readability as per requested.
