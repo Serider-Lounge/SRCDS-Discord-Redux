@@ -14,15 +14,15 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 - Chat is relayed between Server and Discord in both ways.
   - Steam avatars are also displayed.
 - Server commands can be executed from a Discord channel (RCON).
-- [Toggle] Show usernames or display names in **Discord→Server** messages.
-- [Toggle] color tags (in case you want to prevent griefing).
+- **[Toggle]** Show usernames or display names in **Discord→Server** messages.
+- **[Toggle]** color tags (in case you want to prevent griefing).
   - Mostly useful for those who use [Chat Processor](https://github.com/KeithGDR/chat-processor) like me.
-- [Toggle] Randomize name colors in **Discord→Server** messages.
+- **[Toggle]** Randomize name colors in **Discord→Server** messages.
   - Implemented it for readability as per requested.
 - Hide things:
-  - [Toggle] Team chat.
-  - [Toggle] Command prefixes.
-  - [Regex] Filter keywords/-phrases.
+  - **[Toggle]** Team chat.
+  - **[Toggle]** Command prefixes.
+  - **[Regex]** Filter keywords/-phrases.
 
 ## Discord Commands (prefixed with `!`)
 ### General
