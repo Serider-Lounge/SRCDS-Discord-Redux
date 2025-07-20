@@ -1,3 +1,6 @@
+#include <tf2>
+#include <tf2_stocks>
+
 /*
 public Action TF2_OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
@@ -68,7 +71,6 @@ public Action TF2_OnRoundStart(Event event, const char[] name, bool dontBroadcas
 
 public void TF2_SendScoreboardEmbed()
 {
-    // Prepare player lists
     char redList[512];
     char bluList[512];
     char specList[512];
@@ -129,7 +131,6 @@ public void TF2_SendScoreboardEmbed()
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
 
-    // Clear memory for large buffers
     redList[0] = '\0';
     bluList[0] = '\0';
     specList[0] = '\0';

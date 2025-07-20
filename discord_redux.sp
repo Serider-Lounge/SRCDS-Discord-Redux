@@ -1,5 +1,3 @@
-#include <serider/core>
-
 #include <sourcemod>
 #include <discord>
 #include <multicolors>
@@ -46,12 +44,9 @@ ConVar g_cvWordBlacklist;
 char g_WordBlacklist[1024];
 ConVar g_cvHideCommandPrefix;
 char g_HideCommandPrefix[256];
-ConVar g_cvMapThumbnail;
-ConVar g_cvMapThumbnailProvider;
-char g_MapThumbnailProvider[256];
 
-ConVar g_cvDiscordStaffChannel;
-char g_DiscordStaffChannelId[SNOWFLAKE_SIZE];
+ConVar g_cvStaffWebhookUrl;
+char g_StaffWebhookUrl[256];
 
 ConVar g_cvDiscordRCONChannel;
 char g_DiscordRCONChannelId[SNOWFLAKE_SIZE];
@@ -94,6 +89,7 @@ public void OnPluginStart()
     g_cvRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
+    g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff messages.", FCVAR_NONE);
     g_cvUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
     g_cvAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -106,9 +102,8 @@ public void OnPluginStart()
     HookConVarChange(g_cvWordBlacklist, OnWordBlacklistChanged);
 
     g_cvHideCommandPrefix = CreateConVar("discord_hide_command_prefix", "!,/", "Hide specified command prefixes on Discord (separated by commas).", FCVAR_NONE);
-    g_cvMapThumbnail = CreateConVar("discord_map_thumbnail", "1", "Show map thumbnail in embeds.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvMapThumbnailProvider = CreateConVar("discord_map_thumbnail_provider", "http://image.gametracker.com/images/maps/160x120/tf2/", "Map thumbnail provider url.", FCVAR_NONE);
-    g_cvDiscordStaffChannel = CreateConVar("discord_staff_channel_id", "", "Discord channel ID for staff messages.", FCVAR_NONE);
+
+    g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff alerts.", FCVAR_NONE);
     g_cvDiscordRCONChannel = CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
 
     g_cvEmbedCurrentMapColor = CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
@@ -165,11 +160,10 @@ public void OnPluginStart()
     WordFilter_Compile();
 
     g_cvHideCommandPrefix.GetString(g_HideCommandPrefix, sizeof(g_HideCommandPrefix));
-    g_cvMapThumbnailProvider.GetString(g_MapThumbnailProvider, sizeof(g_MapThumbnailProvider));
-
-    g_cvDiscordStaffChannel.GetString(g_DiscordStaffChannelId, sizeof(g_DiscordStaffChannelId));
 
     g_cvDiscordRCONChannel.GetString(g_DiscordRCONChannelId, sizeof(g_DiscordRCONChannelId));
+
+    g_cvStaffWebhookUrl.GetString(g_StaffWebhookUrl, sizeof(g_StaffWebhookUrl));
 }
 
 public void OnConfigsExecuted()
@@ -219,11 +213,10 @@ public void OnConfigsExecuted()
     WordFilter_Compile();
 
     g_cvHideCommandPrefix.GetString(g_HideCommandPrefix, sizeof(g_HideCommandPrefix));
-    g_cvMapThumbnailProvider.GetString(g_MapThumbnailProvider, sizeof(g_MapThumbnailProvider));
-
-    g_cvDiscordStaffChannel.GetString(g_DiscordStaffChannelId, sizeof(g_DiscordStaffChannelId));
 
     g_cvDiscordRCONChannel.GetString(g_DiscordRCONChannelId, sizeof(g_DiscordRCONChannelId));
+
+    g_cvStaffWebhookUrl.GetString(g_StaffWebhookUrl, sizeof(g_StaffWebhookUrl));
 }
 
 public void OnMapEnd()
@@ -303,34 +296,6 @@ public void OnMapEnd()
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(title);
     embed.SetDescription(description);
-
-    // Map thumbnail support
-    if (g_cvMapThumbnail.BoolValue)
-    {
-        char mapThumbUrl[512];
-        // Remove workshop/ prefix if present
-        char mapName[PLATFORM_MAX_PATH];
-        strcopy(mapName, sizeof(mapName), g_mapName);
-        if (StrContains(mapName, "workshop/") == 0)
-        {
-            int slash = -1;
-            int len = strlen(mapName);
-            for (int i = len - 1; i >= 0; --i)
-            {
-                if (mapName[i] == '/')
-                {
-                    slash = i;
-                    break;
-                }
-            }
-            if (slash != -1)
-                strcopy(mapName, sizeof(mapName), mapName[slash + 1]);
-        }
-
-        // Set thumbnail URL
-        Format(mapThumbUrl, sizeof(mapThumbUrl), "%s%s.jpg", g_MapThumbnailProvider, mapName);
-        embed.SetThumbnail(mapThumbUrl);
-    }
 
     g_cvEmbedPreviousMapColor.GetString(g_EmbedPreviousMapColor, sizeof(g_EmbedPreviousMapColor));
     embed.SetColor(HexColorStringToInt(g_EmbedPreviousMapColor));
@@ -473,34 +438,6 @@ public void Discord_OnReady()
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(title);
     embed.SetDescription(description);
-
-    // Map thumbnail support
-    if (g_cvMapThumbnail.BoolValue)
-    {
-        char mapThumbUrl[512];
-        // Remove workshop/ prefix if present
-        char mapName[PLATFORM_MAX_PATH];
-        strcopy(mapName, sizeof(mapName), g_mapName);
-        if (StrContains(mapName, "workshop/") == 0)
-        {
-            int slash = -1;
-            int len = strlen(mapName);
-            for (int i = len - 1; i >= 0; --i)
-            {
-                if (mapName[i] == '/')
-                {
-                    slash = i;
-                    break;
-                }
-            }
-            if (slash != -1)
-                strcopy(mapName, sizeof(mapName), mapName[slash + 1]);
-        }
-
-        // Set thumbnail URL
-        Format(mapThumbUrl, sizeof(mapThumbUrl), "%s%s.jpg", g_MapThumbnailProvider, mapName);
-        embed.SetThumbnail(mapThumbUrl);
-    }
 
     g_cvEmbedCurrentMapColor.GetString(g_EmbedCurrentMapColor, sizeof(g_EmbedCurrentMapColor));
     embed.SetColor(HexColorStringToInt(g_EmbedCurrentMapColor));
@@ -712,6 +649,24 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     if (WordFilter_IsBlocked(sArgs, detectedWord))
     {
         PrintToServer("%t", "Blocked Word", LANG_SERVER, client, detectedWord);
+
+        if (g_StaffWebhookUrl[0] != '\0' && g_Discord != null)
+        {
+            char playerName[MAX_NAME_LENGTH];
+            GetClientName(client, playerName, sizeof(playerName));
+
+            DiscordWebhook webhook = new DiscordWebhook(g_StaffWebhookUrl);
+            webhook.SetName(playerName);
+
+            if (g_ClientAvatar[client][0] != '\0')
+            {
+                webhook.SetAvatarUrl(g_ClientAvatar[client]);
+            }
+
+            g_Discord.ExecuteWebhook(webhook, sArgs);
+            delete webhook;
+        }
+
         return Plugin_Handled;
     }
 
