@@ -14,6 +14,10 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 - Chat is relayed between Server and Discord in both ways.
   - Steam avatars are also displayed.
 - Server commands can be executed from a Discord channel (RCON).
+- Map Status.
+  - Can be called through `!map` or `!status`.
+  - Previous/Current map.
+  - Player Count (+ Bots).
 - **[Toggle]** Show usernames or display names in **Discord→Server** messages.
 - **[Toggle]** Parse color tags (or not, in case you want to prevent griefing).
   - Mostly useful for those who use [Chat Processor](https://github.com/KeithGDR/chat-processor) like me.

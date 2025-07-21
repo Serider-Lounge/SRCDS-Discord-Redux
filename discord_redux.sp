@@ -3,10 +3,10 @@
 #include <multicolors>
 #include <ripext>
 
-#define PLUGIN_NAME        "[ANY] Discord Redux | x64 Support"
+#define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.0.0-alpha"
+#define PLUGIN_VERSION     "1.0.1-alpha"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -565,7 +565,6 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
             {
                 if (line[i] == '{')
                 {
-                    // Skip until closing }
                     while (line[i] != '\0' && line[i] != '}')
                         i++;
                     if (line[i] == '}')
@@ -576,7 +575,7 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
             cleanContent[j] = '\0';
 
             CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
-            PrintToServer("*DISCORD* %s: %s", author, cleanContent);
+            PrintToServer("*DISCORD* %s: %s", author, g_cvAllowColorTags.BoolValue ? line : cleanContent);
 
             while (end < len && (content[end] == '\n' || content[end] == '\r'))
                 end++;
@@ -597,20 +596,15 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
         if (content[0] == '\0')
             return;
 
-        // Optionally: Add command restrictions here (e.g., whitelist, admin check)
-
-        // Execute the command on the server
+        // Save Console output in buffer before executing it
         char response[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
         ServerCommandEx(response, sizeof(response), "%s", content);
 
-        // Prepare feedback embed
+        // Command feedback
         if (g_DiscordRCONChannelId[0] != '\0')
         {
-            // Check for "Unknown Command" in the response
             if (StrContains(response, "Unknown Command", false) != -1)
-            {
                 return;
-            }
 
             char username[MAX_DISCORD_NAME_LENGTH];
             user.GetUsername(username, sizeof(username));
@@ -623,13 +617,10 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
 
             // If output is empty, use "RCON Print Error" translation
             if (response[0] == '\0')
-            {
                 Format(outputMsg, sizeof(outputMsg), "%T", "RCON Print Error", LANG_SERVER);
-            }
             else
-            {
                 Format(outputMsg, sizeof(outputMsg), "%T", "RCON Output", LANG_SERVER, response);
-            }
+                
             Format(inputMsg, sizeof(inputMsg), "%T", "RCON Input", LANG_SERVER, content);
 
             DiscordEmbed embed = new DiscordEmbed();
@@ -648,8 +639,9 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     char detectedWord[MAX_MESSAGE_LENGTH];
     if (WordFilter_IsBlocked(sArgs, detectedWord))
     {
-        PrintToServer("%t", "Blocked Word", LANG_SERVER, client, detectedWord);
+        PrintToServer("%t", "Blocked Word", LANG_SERVER, GetClientName(client), detectedWord);
 
+        // Report it to staff channel
         if (g_StaffWebhookUrl[0] != '\0' && g_Discord != null)
         {
             char playerName[MAX_NAME_LENGTH];
@@ -659,9 +651,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             webhook.SetName(playerName);
 
             if (g_ClientAvatar[client][0] != '\0')
-            {
                 webhook.SetAvatarUrl(g_ClientAvatar[client]);
-            }
 
             g_Discord.ExecuteWebhook(webhook, sArgs);
             delete webhook;
@@ -675,11 +665,10 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-    if (!g_cvRelayServerToDiscord.BoolValue)
-        return;
-
-    if (ShouldHideCommandPrefix(sArgs) || WordFilter_IsBlocked(sArgs) || (StrEqual(command, "say_team", false) && !g_cvShowTeamChat.BoolValue))
-        return;
+    if (!g_cvRelayServerToDiscord.BoolValue ||
+        ShouldHideCommandPrefix(sArgs) ||
+        WordFilter_IsBlocked(sArgs) ||
+        (StrEqual(command, "say_team", false) && !g_cvShowTeamChat.BoolValue)) return;
 
     if (IsConsole(client))
     {
