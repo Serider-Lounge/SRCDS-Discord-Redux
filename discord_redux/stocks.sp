@@ -68,16 +68,6 @@ void SendDiscordMessageWithAvatar(int client, const char[] message)
     }
 }
 
-void HostIpStringToDotted(const char[] ipStrRaw, char[] buffer, int maxlen)
-{
-    if (StrContains(ipStrRaw, ".") != -1)
-    {
-        strcopy(buffer, maxlen, ipStrRaw);
-        return;
-    }
-    strcopy(buffer, maxlen, "('hostip' unset)");
-}
-
 void GenerateColorHexFromName(const char[] name, char[] hex, int hexLen)
 {
     int hash = 5381;

@@ -35,11 +35,6 @@
 		"#format"	"{1:s},{2:s}"
         "en" 		"Banned [{1}](http://www.steamcommunity.com/profiles/{2})"
     }
-    "Map Reloading"
-    {
-        "#format"	"{1:s},{2:s}" // {1} = Map Name | {2} = Map URL
-        "en"		"[{1}]({2}) is reloading..."
-    }
     "Player Count"
     {
         "en"        "Player Count:"

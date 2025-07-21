@@ -1,4 +1,5 @@
-/** RIP Ext **/
+#include <SteamWorks>
+
 public void OnSteamAvatarResponse(HTTPResponse response, any userid)
 {
     if (response.Status != HTTPStatus_OK)

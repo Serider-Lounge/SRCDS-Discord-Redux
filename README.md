@@ -8,6 +8,8 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord)
 - [ripext](https://github.com/ErikMinekus/sm-ripext)
+- [SteamWorks](https://github.com/KyleSanderson/SteamWorks)
+  - If you're on **64-bits**, get it from [this fork](https://github.com/irql-notlessorequal/SteamWorks/actions) instead.
 - [multicolors](https://github.com/JoinedSenses/SourceMod-IncludeLibrary/blob/master/include/multicolors.inc) (Compile-only)
 
 ## Features (so far)
