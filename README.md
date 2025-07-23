@@ -6,9 +6,9 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 ### [See the TO-DO list here‼](https://github.com/orgs/Serider-Lounge/projects/3)
 
 ## Dependencies
-- [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord)
-- [ripext](https://github.com/ErikMinekus/sm-ripext)
-- [SteamWorks](https://github.com/KyleSanderson/SteamWorks)
+- [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord/actions)
+- [ripext](https://github.com/ErikMinekus/sm-ripext/releases)
+- [SteamWorks](https://github.com/KyleSanderson/SteamWorks/releases)
   - If you're on **64-bits**, get it from [this fork](https://github.com/irql-notlessorequal/SteamWorks/actions) instead.
 - [multicolors](https://github.com/JoinedSenses/SourceMod-IncludeLibrary/blob/master/include/multicolors.inc) (Compile-only)
 

@@ -2,12 +2,11 @@
 #include <discord>
 #include <multicolors>
 #include <ripext>
-#include <autoexecconfig>
 
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.0.1-alpha"
+#define PLUGIN_VERSION     "1.0.2-alpha"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -84,44 +83,44 @@ public void OnPluginStart()
 {
     LoadTranslations("discord_redux.phrases");
 
-    AutoExecConfig_SetCreateFile(true);
-    AutoExecConfig_SetFile("discord_redux");
-
     /* ConVars */
-    g_cvBotToken = AutoExecConfig_CreateConVar("discord_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
-    g_cvDiscordChannel = AutoExecConfig_CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages.");
-    g_cvRelayServerToDiscord = AutoExecConfig_CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvRelayDiscordToServer = AutoExecConfig_CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvWebhookUrl = AutoExecConfig_CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
-    g_cvStaffWebhookUrl = AutoExecConfig_CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff messages.", FCVAR_NONE);
-    g_cvUsernameMode = AutoExecConfig_CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvSteamAPIKey = AutoExecConfig_CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
-    g_cvAllowColorTags = AutoExecConfig_CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvFooterServerIP = AutoExecConfig_CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvFooterIcon = AutoExecConfig_CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
-    g_cvRandomizeNameColors = AutoExecConfig_CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
-    g_cvShowTeamChat = AutoExecConfig_CreateConVar("discord_show_team_chat", "0", "Relay team chat to Discord (requires discord_relay_server_to_discord).", FCVAR_NONE, true, 0.0, true, 1.0);
-
-    g_cvWordBlacklist = AutoExecConfig_CreateConVar("discord_word_blacklist", "", "Blacklist words using a regex pattern.", FCVAR_NONE);
+    g_cvBotToken = CreateConVar("discord_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
+    g_cvDiscordChannel = CreateConVar("discord_channel_id", "", "Discord channel ID to relay messages.");
+    g_cvRelayServerToDiscord = CreateConVar("discord_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvRelayDiscordToServer = CreateConVar("discord_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvWebhookUrl = CreateConVar("discord_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
+    g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff messages.", FCVAR_NONE);
+    g_cvUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
+    g_cvAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvFooterServerIP = CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvFooterIcon = CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
+    g_cvRandomizeNameColors = CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvShowTeamChat = CreateConVar("discord_show_team_chat", "0", "Relay team chat to Discord (requires discord_relay_server_to_discord).", FCVAR_NONE, true, 0.0, true, 1.0);
+    
+    g_cvWordBlacklist = CreateConVar("discord_word_blacklist", "", "Blacklist words using a regex pattern.", FCVAR_NONE);
     HookConVarChange(g_cvWordBlacklist, OnWordBlacklistChanged);
 
-    g_cvHideCommandPrefix = AutoExecConfig_CreateConVar("discord_hide_command_prefix", "!,/", "Hide specified command prefixes on Discord (separated by commas).", FCVAR_NONE);
+    g_cvHideCommandPrefix = CreateConVar("discord_hide_command_prefix", "!,/", "Hide specified command prefixes on Discord (separated by commas).", FCVAR_NONE);
 
-    g_cvStaffWebhookUrl = AutoExecConfig_CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff alerts.", FCVAR_NONE);
-    g_cvDiscordRCONChannel = AutoExecConfig_CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
+    g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff alerts.", FCVAR_NONE);
+    g_cvDiscordRCONChannel = CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
 
-    g_cvEmbedCurrentMapColor = AutoExecConfig_CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
-    g_cvEmbedPreviousMapColor = AutoExecConfig_CreateConVar("discord_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
-    g_cvEmbedJoinColor = AutoExecConfig_CreateConVar("discord_embed_join_color", "77b255", "Embed color for join embeds.");
-    g_cvEmbedLeaveColor = AutoExecConfig_CreateConVar("discord_embed_leave_color", "be1831", "Embed color for leave embeds.");
-    g_cvEmbedKickColor = AutoExecConfig_CreateConVar("discord_embed_kick_color", "dd2e44", "Embed color for kick embeds.");
-    g_cvEmbedBanColor = AutoExecConfig_CreateConVar("discord_embed_ban_color", "dd2e44", "Embed color for ban embeds.");
-    g_cvEmbedConsoleColor = AutoExecConfig_CreateConVar("discord_embed_console_color", "e3e8ec", "Embed color for console messages.");
-    g_cvEmbedScoreboardColor = AutoExecConfig_CreateConVar("discord_embed_scoreboard_color", "c1694f", "Embed color for the scoreboard.");
+    g_cvEmbedCurrentMapColor = CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
+    g_cvEmbedPreviousMapColor = CreateConVar("discord_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
+    g_cvEmbedJoinColor = CreateConVar("discord_embed_join_color", "77b255", "Embed color for join embeds.");
+    g_cvEmbedLeaveColor = CreateConVar("discord_embed_leave_color", "be1831", "Embed color for leave embeds.");
+    g_cvEmbedKickColor = CreateConVar("discord_embed_kick_color", "dd2e44", "Embed color for kick embeds.");
+    g_cvEmbedBanColor = CreateConVar("discord_embed_ban_color", "dd2e44", "Embed color for ban embeds.");
+    g_cvEmbedConsoleColor = CreateConVar("discord_embed_console_color", "e3e8ec", "Embed color for console messages.");
+    g_cvEmbedScoreboardColor = CreateConVar("discord_embed_scoreboard_color", "c1694f", "Embed color for the scoreboard.");
 
-    AutoExecConfig_ExecuteFile();
+    AutoExecConfig(true, "discord_redux");
 
     CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
+
+    /* Commands */
+    //RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Summon the server staff.");
 
     /* Strings */
     g_cvDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));

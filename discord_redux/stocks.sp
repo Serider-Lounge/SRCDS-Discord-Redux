@@ -72,7 +72,7 @@ void GenerateColorHexFromName(const char[] name, char[] hex, int hexLen)
 {
     int hash = 5381;
     for (int i = 0; name[i] != '\0'; i++)
-        hash = ((hash << 5) + hash) + name[i]; // djb2
+        hash = ((hash << 5) + hash) + name[i];
 
     int r = ((hash >> 16) & 0x7F) + 64;
     int g = ((hash >> 8) & 0x7F) + 64;
