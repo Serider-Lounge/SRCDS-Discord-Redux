@@ -7,6 +7,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord/actions)
+  - ⚠ If you're on Linux, it's recommended to download the **Debian 12** package to prevent errors. 
 - [ripext](https://github.com/ErikMinekus/sm-ripext/releases)
 - [SteamWorks](https://github.com/KyleSanderson/SteamWorks/releases)
   - If you're on **64-bits**, get it from [this fork](https://github.com/irql-notlessorequal/SteamWorks/actions) instead.
