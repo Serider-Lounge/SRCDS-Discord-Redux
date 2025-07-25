@@ -1,3 +1,4 @@
+#undef REQUIRE_EXTENSIONS
 #include <tf2>
 #include <tf2_stocks>
 
