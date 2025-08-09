@@ -123,7 +123,7 @@ public void TF2_SendScoreboardEmbed()
     char title[DISCORD_TITLE_LENGTH];
     Format(title, sizeof(title), "%T", "Scoreboard", LANG_SERVER);
     embed.SetTitle(title);
-    embed.SetColor(HexColorStringToInt(g_EmbedScoreboardColor));
+    embed.Color = HexColorStringToInt(g_EmbedScoreboardColor);
 
     embed.AddField("BLU:", (bluList[0] != '\0') ? bluList : "`N/A`", true);
     embed.AddField("RED:", (redList[0] != '\0') ? redList : "`N/A`", true);

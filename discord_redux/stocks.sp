@@ -44,7 +44,7 @@ void SendDiscordMessageWithAvatar(int client, const char[] message)
     if (g_ClientAvatar[client][0] != '\0')
     {
         g_Webhook.SetAvatarUrl(g_ClientAvatar[client]);
-        g_Discord.ExecuteWebhook(g_Webhook, message);
+        g_Webhook.Execute(message);
     }
     else
     {
