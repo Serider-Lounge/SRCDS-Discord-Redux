@@ -32,3 +32,9 @@ jobs:
           ls
           echo version = ${{ steps.setup_sp.outputs.plugin-version }}
         working-directory: ${{ env.SCRIPTS_PATH }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: discord_redux-compiled
+          path: discord_redux.smx
