@@ -33,8 +33,16 @@ jobs:
           echo version = ${{ steps.setup_sp.outputs.plugin-version }}
         working-directory: ${{ env.SCRIPTS_PATH }}
 
+      - name: Extract plugin version
+        id: get_version
+        run: |
+          version=$(grep 'PLUGIN_VERSION' discord_redux.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: discord_redux-compiled
-          path: discord_redux.smx
+          name: "Discord Redux - ${{ env.PLUGIN_VERSION }}"
+          path: |
+            plugins/discord_redux.smx
+            translations/discord_redux.txt
