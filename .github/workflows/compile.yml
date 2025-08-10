@@ -33,6 +33,11 @@ jobs:
           echo version = ${{ steps.setup_sp.outputs.plugin-version }}
         working-directory: ${{ env.SCRIPTS_PATH }}
 
+      - name: Move smx to plugins folder
+        run: |
+          mkdir -p plugins
+          mv discord_redux.smx plugins/
+
       - name: Extract plugin version
         id: get_version
         run: |
@@ -45,4 +50,4 @@ jobs:
           name: "Discord Redux - ${{ env.PLUGIN_VERSION }}"
           path: |
             plugins/discord_redux.smx
-            translations/discord_redux.txt
+            translations/discord_redux.phrases.txt
