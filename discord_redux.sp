@@ -528,7 +528,7 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
 
         char author[MAX_DISCORD_NAME_LENGTH];
         if (g_cvUsernameMode.BoolValue)
-            user.GetGlobalName(author, sizeof(author));
+            user.GetNickName(author, sizeof(author));
         else
             user.GetUserName(author, sizeof(author));
 
@@ -574,7 +574,17 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
             }
             cleanContent[j] = '\0';
 
-            CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+            switch (message.Type)
+            {
+                case MessageType_Reply:
+                {
+                    CPrintToChatAll("%t", "Chat Format (Reply)", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                }
+                default:
+                {
+                    CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                }
+            }
             PrintToServer("*DISCORD* %s: %s", author, g_cvAllowColorTags.BoolValue ? line : cleanContent);
 
             while (end < len && (content[end] == '\n' || content[end] == '\r'))

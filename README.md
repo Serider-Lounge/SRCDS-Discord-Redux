@@ -5,6 +5,17 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 
 ### [See the TO-DO list here‼](https://github.com/orgs/Serider-Lounge/projects/3)
 
+## How to install?
+### Stable
+- Go to [Releases](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/releases).
+  - `discord_redux.smx` goes in `addons/sourcemod/plugins/`.
+  - ` discord_redux.phrases.txt` goes in `addons/sourcemod/translations/`.
+### Developmental
+- Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions).
+- Click on the latest ✅.
+- Download the package under **Artifacts**.
+  - Extract it in `addons/sourcemod/`.
+
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord/actions)
   - ⚠ If you're on Linux, it's recommended to download the **Debian 12** package to prevent errors. 
@@ -21,15 +32,15 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
   - Can be called through `!map` or `!status`.
   - Previous/Current map.
   - Player Count (+ Bots).
-- **[Toggle]** Show usernames or display names in **Discord→Server** messages.
-- **[Toggle]** Parse color tags (or not, in case you want to prevent griefing).
+- **[TOGGLE]** Show usernames or display names in **Discord→Server** messages.
+- **[TOGGLE]** Parse color tags (or not, in case you want to prevent griefing).
   - Mostly useful for those who use [Chat Processor](https://github.com/KeithGDR/chat-processor) like me.
-- **[Toggle]** Randomize name colors in **Discord→Server** messages.
+- **[TOGGLE]** Randomize name colors in **Discord→Server** messages.
   - Implemented it for readability as per requested.
 - Hide things:
-  - **[Toggle]** Team chat.
-  - **[Toggle]** Command prefixes.
-  - **[Regex]** Filter keywords/-phrases.
+  - **[TOGGLE]** Team chat.
+  - **[TOGGLE]** Command prefixes.
+  - **[REGEX]** Filter keywords/-phrases.
 
 ## Discord Commands (prefixed with `!`)
 ### General
