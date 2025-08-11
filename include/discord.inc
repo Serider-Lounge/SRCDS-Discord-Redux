@@ -23,6 +23,26 @@
 #define PARSE_ROLES    (1 << 2)
 #define REPLIED_USER   (1 << 3)
 
+/**
+ * HTTP request methods
+ */
+enum HttpMethod {
+  HTTP_GET = 0,
+  HTTP_POST = 1,  
+  HTTP_PUT = 2,
+  HTTP_PATCH = 3,
+  HTTP_DELETE = 4
+};
+
+enum Loglevel {
+  Loglevel_Trace = 0,
+  Loglevel_Debug = 1,
+  Loglevel_Info = 2,
+  Loglevel_Warning = 3,
+  Loglevel_Error = 4,
+  Loglevel_Critical = 5
+};
+
 // Discord permissions enum
 enum DiscordPermission
 {
@@ -584,9 +604,9 @@ typeset DiscordMessageCallback
   function void (Discord discord, DiscordMessage message, any data);
 };
 
-typeset DiscordErrorCallback
+typeset DiscordLogCallback
 {
-  function void (Discord discord, const char[] error, any data);
+  function void (Discord discord, Loglevel level, const char[] log, any data);
 };
 
 typeset DiscordSlashCommandCallback
@@ -598,6 +618,130 @@ typeset DiscordAutocompleteCallback
 {
   function void (Discord discord, DiscordAutocompleteInteraction interaction, bool focused, DiscordCommandOptionType type, const char[] name, any data);
 };
+
+/**
+ * HTTP completion callback function with full response data
+ * @param completion  HttpCompletion object containing full response data
+ * @param data        User data passed to the request
+ * @note              The HttpCompletion handle is automatically freed after the callback executes.
+ *                    Do not manually delete or store the handle beyond the callback scope.
+ */
+typedef HttpCompletionCallback = function void (HttpCompletion completion, any data);
+
+/**
+ * HTTP headers collection handle
+ */
+methodmap HttpHeaders < Handle {
+  /**
+   * Creates a new HTTP headers collection
+   *
+   * @return          New HttpHeaders handle, or INVALID_HANDLE on failure
+   */
+  public native HttpHeaders();
+
+  /**
+   * Sets a header value
+   *
+   * @param name      Header name
+   * @param value     Header value
+   */
+  public native void SetHeader(const char[] name, const char[] value);
+
+  /**
+   * Gets a header value
+   *
+   * @param name      Header name (case-sensitive)
+   * @param buffer    Buffer to store the value
+   * @param maxlen    Maximum length of the buffer
+   * @return          true if header exists, false otherwise
+   * @note            HTTP headers are stored in lowercase like "content-type", "user-agent", etc.
+   */
+  public native bool GetHeader(const char[] name, char[] buffer, int maxlen);
+
+  /**
+   * Removes a header
+   *
+   * @param name      Header name to remove
+   * @return          true if header was removed, false if it didn't exist
+   */
+  public native bool RemoveHeader(const char[] name);
+
+  /**
+   * Clears all headers
+   */
+  public native void ClearHeaders();
+
+  /**
+   * Gets the number of headers
+   */
+  property int Count {
+    public native get();
+  }
+
+  /**
+   * Gets a header by index
+   *
+   * @param index     Header index (0-based)
+   * @param name      Buffer to store header name
+   * @param namelen   Maximum length of name buffer
+   * @param value     Buffer to store header value
+   * @param valuelen  Maximum length of value buffer
+   * @return          true if header exists at index, false otherwise
+   */
+  public native bool GetHeaderByIndex(int index, char[] name, int namelen, char[] value, int valuelen);
+}
+
+/**
+ * HTTP completion object containing full response data
+ */
+methodmap HttpCompletion < Handle {
+  /**
+   * Gets the HTTP status code
+   */
+  property int Status {
+    public native get();
+  }
+
+  /**
+   * Gets the response body
+   *
+   * @param buffer    Buffer to store the body
+   * @param maxlen    Maximum length of the buffer
+   */
+  public native void GetBody(char[] buffer, int maxlen);
+
+  /**
+   * Gets the response body length
+   * @note not including any null-termination
+   */
+  property int BodyLength {
+    public native get();
+  }
+
+  /**
+   * Gets response headers as HttpHeaders object
+   * @note The returned HttpHeaders handle is automatically cleaned up when the HttpCompletion object is freed.
+   *       Do not manually delete the returned handle.
+   */
+  property HttpHeaders ResponseHeaders {
+    public native get();
+  }
+
+  /**
+   * Gets the HTTP protocol version used
+   *
+   * @param buffer    Buffer to store the protocol version
+   * @param maxlen    Maximum length of the buffer
+   */
+  public native void GetProtocol(char[] buffer, int maxlen);
+
+  /**
+   * Checks if the request was successful (status 200-299)
+   */
+  property bool IsSuccess {
+    public native get();
+  }
+}
 
 /**
  * Discord bot client handle
@@ -651,7 +795,7 @@ methodmap Discord < Handle {
    *
    * @param buffer    Buffer to store the ID
    * @param maxlen    Maximum length of the buffer
-   * @return         True if successful, false otherwise
+   * @return          True if successful, false otherwise
    */
   public native bool GetBotId(char[] buffer, int maxlen);
 
@@ -660,7 +804,7 @@ methodmap Discord < Handle {
    *
    * @param buffer    Buffer to store the username
    * @param maxlen    Maximum length of the buffer
-   * @return         True if successful, false otherwise
+   * @return          True if successful, false otherwise
    */
   public native bool GetBotName(char[] buffer, int maxlen);
 
@@ -680,7 +824,7 @@ methodmap Discord < Handle {
    *
    * @param buffer    Buffer to store the URL
    * @param maxlen    Maximum length of the buffer
-   * @return         True if successful, false otherwise
+   * @return          True if successful, false otherwise
    */
   public native bool GetBotAvatarUrl(char[] buffer, int maxlen);
 
@@ -812,12 +956,12 @@ methodmap Discord < Handle {
   public native void SetMessageCallback(DiscordMessageCallback callback, any data = 0);
 
   /**
-   * Sets the Error callback for this bot instance
+   * Sets the log callback for this bot instance
    *
-   * @param callback   Callback function to call when error occurs
+   * @param callback   Callback function to call when log occurs
    * @param data       Optional data to pass to callback
    */
-  public native void SetErrorCallback(DiscordErrorCallback callback, any data = 0);
+  public native void SetLogCallback(DiscordLogCallback callback, any data = 0);
 
   /**
    * Sets the Slash Command callback for this bot instance
@@ -834,6 +978,22 @@ methodmap Discord < Handle {
    * @param data       Optional data to pass to callback
    */
   public native void SetAutocompleteCallback(DiscordAutocompleteCallback callback, any data = 0);
+
+  /**
+   * Makes an HTTP request with full header support and complete response data
+   *
+   * @param url           Target URL
+   * @param method        HTTP method to use
+   * @param callback      Callback function to call when complete
+   * @param body          Request body (for POST/PUT/PATCH)
+   * @param content_type  Content-Type header (default: application/json)
+   * @param headers       Custom headers to send (optional)
+   * @param protocol      HTTP protocol version (default: "1.1")
+   * @param data          User data to pass to callback
+   * @return              true if request was queued successfully
+   * @note                This method provides full access to response headers and uses HttpCompletion object
+   */
+  public native bool HttpRequest(const char[] url, HttpMethod method, HttpCompletionCallback callback, const char[] body = "", const char[] content_type = "application/json", HttpHeaders headers = INVALID_HANDLE, const char[] protocol = "1.1", any data = 0);
 }
 
 /**
@@ -850,7 +1010,7 @@ methodmap DiscordUser < Handle
    * @return            DiscordUser handle or INVALID_HANDLE on failure
    * @note              This creates a minimal user object. Use FetchUser for complete info.
    */
-  public native DiscordUser(Discord discord, const char[] userId, const char[] guildId = "");
+  public native DiscordUser(Discord discord, const char[] userId, const char[] guildId = NULL_STRING);
   
   /**
    * Fetches full user information from Discord API asynchronously
@@ -868,7 +1028,7 @@ methodmap DiscordUser < Handle
    * @note              This method first checks the cache for user data. If found in cache,
    *                    the callback is called immediately. If not cached, an API request is made.
    */
-  public static native bool FetchUser(Discord discord, const char[] userId, const char[] guildId = "", GetUserCallback callback, any data = 0);
+  public static native bool FetchUser(Discord discord, const char[] userId, const char[] guildId = NULL_STRING, GetUserCallback callback, any data = 0);
 
   /**
    * Gets the ID of the user
@@ -1202,7 +1362,7 @@ methodmap DiscordUser < Handle
    *
    * @param channelId   Channel ID to check permissions in
    * @param permission  Permission to check as string
-   * @return           true if user has permission in channel, false otherwise
+   * @return            true if user has permission in channel, false otherwise
    */
   public native bool HasPermissionInChannel(const char[] channelId, const char[] permission);
 
@@ -1211,7 +1371,7 @@ methodmap DiscordUser < Handle
    *
    * @param channelId   Channel ID to check permissions in
    * @param permission  Permission to check from DiscordPermission enum
-   * @return           true if user has permission in channel, false otherwise
+   * @return            true if user has permission in channel, false otherwise
    */
   public bool HasPermissionInChannelEnum(const char[] channelId, DiscordPermission permission)
   {
@@ -1224,8 +1384,8 @@ methodmap DiscordUser < Handle
    * Gets all permissions for the user in a specific channel
    *
    * @param channelId  Channel ID to check permissions in
-   * @param buffer    Buffer to store the permissions as string
-   * @param maxlength Maximum length of the buffer
+   * @param buffer     Buffer to store the permissions as string
+   * @param maxlength  Maximum length of the buffer
    */
   public native void GetPermissionsInChannel(const char[] channelId, char[] buffer, int maxlength);
 
@@ -1234,7 +1394,7 @@ methodmap DiscordUser < Handle
    *
    * @param roles     Array to store role IDs
    * @param maxSize   Maximum number of roles to retrieve
-   * @return         Number of roles retrieved
+   * @return          Number of roles retrieved
    */
   public native int GetRoles(char[][] roles, int maxSize);
 
@@ -1242,7 +1402,7 @@ methodmap DiscordUser < Handle
    * Checks if the user has a specific role
    *
    * @param roleId    Role ID to check
-   * @return         true if user has role, false otherwise
+   * @return          true if user has role, false otherwise
    */
   public native bool HasRole(const char[] roleId);
 
@@ -1260,7 +1420,7 @@ methodmap DiscordUser < Handle
    * @param roleId    Role ID to get name for
    * @param buffer    Buffer to store the role name
    * @param maxlength Maximum length of the buffer
-   * @return         true if role found, false otherwise
+   * @return          true if role found, false otherwise
    */
   public native bool GetRoleName(const char[] roleId, char[] buffer, int maxlength);
 
@@ -1269,7 +1429,7 @@ methodmap DiscordUser < Handle
    *
    * @param roleNames Array to store role names
    * @param maxSize   Maximum number of role names to retrieve
-   * @return         Number of role names retrieved
+   * @return          Number of role names retrieved
    */
   public native int GetRoleNames(char[][] roleNames, int maxSize);
 
@@ -1277,7 +1437,7 @@ methodmap DiscordUser < Handle
    * Sets the nickname of the user in the guild
    *
    * @param nickname  New nickname to set (empty string to remove)
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool SetNickName(const char[] nickname);
 
@@ -1285,7 +1445,7 @@ methodmap DiscordUser < Handle
    * Adds a role to the user
    *
    * @param roleId    Role ID to add
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool AddRole(const char[] roleId);
 
@@ -1293,14 +1453,14 @@ methodmap DiscordUser < Handle
    * Removes a role from the user
    *
    * @param roleId    Role ID to remove
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool RemoveRole(const char[] roleId);
 
   /**
    * Kicks the user from the guild
    *
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool KickFromGuild();
 
@@ -1309,9 +1469,9 @@ methodmap DiscordUser < Handle
    *
    * @param reason        Ban reason (optional)
    * @param delete_days   Days of messages to delete (0-7)
-   * @return             true on success, false on failure
+   * @return              true on success, false on failure
    */
-  public native bool BanFromGuild(const char[] reason = "", int delete_days = 0);
+  public native bool BanFromGuild(const char[] reason = NULL_STRING, int delete_days = 0);
 
   /**
    * Unbans the user from the guild
@@ -1324,7 +1484,7 @@ methodmap DiscordUser < Handle
    * Sets a timeout for the user
    *
    * @param timeout_until Unix timestamp when timeout expires
-   * @return             true on success, false on failure
+   * @return              true on success, false on failure
    */
   public native bool SetTimeout(int timeout_until);
 
@@ -1827,8 +1987,6 @@ methodmap DiscordGuild < Handle
     public native get();
   }
 
-  // Notification settings (these check for DISABLED notifications)
-
   /**
    * Checks if join notifications are disabled
    */
@@ -1870,8 +2028,6 @@ methodmap DiscordGuild < Handle
   property bool NoRoleSubscriptionNotificationReplies {
     public native get();
   }
-  
-  // Collection counts
   
   /**
    * Gets the number of roles in the guild
@@ -2057,7 +2213,7 @@ methodmap DiscordSlashCommand < Handle
    * Registers the slash command to a specific guild
    *
    * @param guild_id  Guild ID to register the command to
-   * @return         true on success, false otherwise
+   * @return          true on success, false otherwise
    */
   public native bool RegisterToGuild(const char[] guild_id);
 
@@ -2072,25 +2228,25 @@ methodmap DiscordSlashCommand < Handle
    * Updates an existing slash command
    *
    * @param guild_id  Guild ID (empty string for global command)
-   * @return         true on success, false otherwise
+   * @return          true on success, false otherwise
    */
-  public native bool Update(const char[] guild_id = "");
+  public native bool Update(const char[] guild_id = NULL_STRING);
 
   /**
    * Deletes a slash command
    *
    * @param guild_id  Guild ID (empty string for global command)
-   * @return         true on success, false otherwise
+   * @return          true on success, false otherwise
    */
-  public native bool Delete(const char[] guild_id = "");
+  public native bool Delete(const char[] guild_id = NULL_STRING);
 
   /**
    * Adds a permission override for the slash command
    * This overrides the default permissions for specific roles/users/channels
    *
    * @param target_id    ID of the role/user/channel
-   * @param type        Permission type (role, user, or channel)
-   * @param permission  Whether to allow (true) or deny (false) access
+   * @param type         Permission type (role, user, or channel)
+   * @param permission   Whether to allow (true) or deny (false) access
    */
   public native void AddPermissionOverride(const char[] target_id, DiscordCommandPermissionType type, bool permission);
 
@@ -2098,7 +2254,7 @@ methodmap DiscordSlashCommand < Handle
    * Removes a permission override for the slash command
    *
    * @param target_id    ID of the role/user/channel
-   * @param type        Permission type (role, user, or channel)
+   * @param type         Permission type (role, user, or channel)
    */
   public native void RemovePermissionOverride(const char[] target_id, DiscordCommandPermissionType type);
 
@@ -2123,7 +2279,7 @@ methodmap DiscordSlashCommand < Handle
    * @param maxlen      Maximum length of target_id buffer
    * @param type        Variable to store permission type
    * @param permission  Variable to store permission value
-   * @return           true if entry exists, false otherwise
+   * @return            true if entry exists, false otherwise
    */
   public native bool GetPermissionOverride(int index, char[] target_id, int maxlen, DiscordCommandPermissionType &type, bool &permission);
 
@@ -2131,7 +2287,7 @@ methodmap DiscordSlashCommand < Handle
    * Applies permission overrides to the slash command
    *
    * @param guild_id  Guild ID where the command exists
-   * @return         true on success, false otherwise
+   * @return          true on success, false otherwise
    */
   public native bool ApplyPermissionOverrides(const char[] guild_id);
 
@@ -2166,7 +2322,7 @@ methodmap DiscordSlashCommand < Handle
    * @param name         Localized command name
    * @param description  Localized command description (optional)
    */
-  public native void AddLocalization(const char[] language, const char[] name, const char[] description = "");
+  public native void AddLocalization(const char[] language, const char[] name, const char[] description = NULL_STRING);
 
   /**
    * Sets interaction contexts where the command can be used
@@ -2430,7 +2586,7 @@ methodmap DiscordMessage < Handle
    * Edits this message content
    *
    * @param content   New message content
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool Edit(const char[] content);
 
@@ -2439,7 +2595,7 @@ methodmap DiscordMessage < Handle
    *
    * @param content   New message content
    * @param embed     Embed object
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool EditEmbed(const char[] content, DiscordEmbed embed);
 
@@ -2468,7 +2624,7 @@ methodmap DiscordMessage < Handle
    * Adds a reaction to this message
    *
    * @param emoji     Emoji to add (e.g., "👍" or "custom:123456789")
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool AddReaction(const char[] emoji);
 
@@ -2476,7 +2632,7 @@ methodmap DiscordMessage < Handle
    * Removes a reaction from this message
    *
    * @param emoji     Emoji to remove
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool RemoveReaction(const char[] emoji);
 
@@ -2486,8 +2642,7 @@ methodmap DiscordMessage < Handle
    * @return         true on success, false on failure
    */
   public native bool RemoveAllReactions();
-  
-  // Message flag properties
+
   /**
    * Gets or set the message flags
    */
@@ -2967,11 +3122,10 @@ methodmap DiscordChannel < Handle
    * Sets the name of the channel
    *
    * @param name      New channel name
-   * @return         true on success, false on failure
+   * @return          true on success, false on failure
    */
   public native bool SetName(const char[] name);
-  
-  // Additional channel properties and flags
+
   /**
    * Gets the channel flags
    */
@@ -3091,8 +3245,7 @@ methodmap DiscordChannel < Handle
   property bool IsLockedPermissions {
     public native get();
   }
-  
-  // Channel modification methods
+
   /**
    * Sets the topic of the channel
    */
@@ -3112,8 +3265,7 @@ methodmap DiscordChannel < Handle
    * Sets the RTC region for voice channels
    */
   public native bool SetRTCRegion(const char[] region);
-  
-  // Permission management
+
   /**
    * Adds permission overwrite for a user or role
    */
@@ -3133,8 +3285,7 @@ methodmap DiscordChannel < Handle
    * Gets user permissions in this channel
    */
   public native void GetUserPermissions(const char[] user_id, char[] buffer, int maxlength);
-  
-  // Channel actions
+
   /**
    * Deletes the channel
    */
@@ -3224,9 +3375,9 @@ methodmap DiscordChannel < Handle
    * @param name         Tag name (max 20 characters)
    * @param emoji        Tag emoji (custom emoji ID or unicode character, optional)
    * @param moderated    Whether tag requires MANAGE_THREADS permission to add/remove
-   * @return            true on success, false on failure
+   * @return             true on success, false on failure
    */
-  public native bool CreateForumTag(const char[] name, const char[] emoji = "", bool moderated = false);
+  public native bool CreateForumTag(const char[] name, const char[] emoji = NULL_STRING, bool moderated = false);
 
   /**
    * Edits an existing forum tag
@@ -3235,15 +3386,15 @@ methodmap DiscordChannel < Handle
    * @param name         New tag name (max 20 characters)
    * @param emoji        New tag emoji (custom emoji ID or unicode character, optional)  
    * @param moderated    Whether tag requires MANAGE_THREADS permission to add/remove
-   * @return            true on success, false on failure
+   * @return             true on success, false on failure
    */
-  public native bool EditForumTag(const char[] tag_id, const char[] name, const char[] emoji = "", bool moderated = false);
+  public native bool EditForumTag(const char[] tag_id, const char[] name, const char[] emoji = NULL_STRING, bool moderated = false);
 
   /**
    * Deletes a forum tag
    *
    * @param tag_id       Tag ID to delete
-   * @return            true on success, false on failure
+   * @return             true on success, false on failure
    */
   public native bool DeleteForumTag(const char[] tag_id);
 
@@ -3256,7 +3407,7 @@ methodmap DiscordChannel < Handle
    * @param tag_count         Number of tags in the array
    * @param auto_archive      Auto archive duration in minutes (60, 1440, 4320, 10080)
    * @param rate_limit        Rate limit per user in seconds (0-21600)
-   * @return                 true on success, false on failure
+   * @return                  true on success, false on failure
    */
   public native bool CreateForumThread(const char[] name, const char[] message, const char[][] tag_ids = {}, int tag_count = 0, int auto_archive = 1440, int rate_limit = 0);
 
@@ -3270,7 +3421,7 @@ methodmap DiscordChannel < Handle
    * @param tag_count         Number of tags in the array
    * @param auto_archive      Auto archive duration in minutes (60, 1440, 4320, 10080)
    * @param rate_limit        Rate limit per user in seconds (0-21600)
-   * @return                 true on success, false on failure
+   * @return                  true on success, false on failure
    */
   public native bool CreateForumThreadEmbed(const char[] name, const char[] message, DiscordEmbed embed, const char[][] tag_ids = {}, int tag_count = 0, int auto_archive = 1440, int rate_limit = 0);
 
@@ -3294,9 +3445,9 @@ methodmap DiscordForumTag < Handle
    * @param name         Tag name (max 20 characters)
    * @param emoji        Tag emoji (custom emoji ID or unicode character, optional)
    * @param moderated    Whether tag requires MANAGE_THREADS permission to add/remove
-   * @return            New DiscordForumTag handle, or INVALID_HANDLE on failure
+   * @return             New DiscordForumTag handle, or INVALID_HANDLE on failure
    */
-  public native DiscordForumTag(const char[] name, const char[] emoji = "", bool moderated = false);
+  public native DiscordForumTag(const char[] name, const char[] emoji = NULL_STRING, bool moderated = false);
 
   /**
    * Gets the ID of the forum tag
@@ -3355,7 +3506,7 @@ methodmap DiscordForumTag < Handle
    * Applies this tag to a channel (used when creating/editing forum channels)
    *
    * @param channel     Forum channel to apply the tag to
-   * @return           true on success, false on failure
+   * @return            true on success, false on failure
    */
   public native bool ApplyToChannel(DiscordChannel channel);
 }
@@ -3368,20 +3519,22 @@ methodmap DiscordWebhook < Handle
   /**
    * Creates a new Discord Webhook
    *
+   * @param discord     Discord client handle
    * @param webhookUrl  Webhook Url
    * @return            New Discord webhook handle, or INVALID_HANDLE on failure
    */
-  public native DiscordWebhook(const char[] webhookUrl);
+  public native DiscordWebhook(Discord discord, const char[] webhookUrl);
 
   /**
    * Creates a new Discord Webhook from ID and Token (Static method)
    *
-   * @param webhookId   Webhook ID
+   * @param discord      Discord client handle
+   * @param webhookId    Webhook ID
    * @param webhookToken Webhook Token
-   * @return            New Discord webhook handle, or INVALID_HANDLE on failure
-   * @note              This creates a minimal webhook object. Use GetWebhook for complete info.
+   * @return             New Discord webhook handle, or INVALID_HANDLE on failure
+   * @note               This creates a minimal webhook object. Use GetWebhook for complete info.
    */
-  public static native DiscordWebhook CreateFromIdToken(const char[] webhookId, const char[] webhookToken);
+  public static native DiscordWebhook CreateFromIdToken(Discord discord, const char[] webhookId, const char[] webhookToken);
 
   /**
    * Fetches full webhook information from Discord API asynchronously
@@ -3545,27 +3698,27 @@ methodmap DiscordWebhook < Handle
   /**
    * Executes this webhook with a message
    *
-   * @param message   Message content to send
+   * @param message                Message content to send
    * @param allowed_mentions_mask  Allowed mentions mask
    * @param allowed_users_mentions Array of allowed user mentions
    * @param allowed_user_size      Size of allowed users array
    * @param allowed_roles_mentions Array of allowed role mentions
    * @param allowed_roles_size     Size of allowed roles array
-   * @return         true on success, false on failure
+   * @return                       true on success, false on failure
    */
   public native bool Execute(const char[] message, int allowed_mentions_mask = 0, const char[][] allowed_users_mentions = {}, int allowed_user_size = 0, const char[][] allowed_roles_mentions = {}, int allowed_roles_size = 0);
 
   /**
    * Executes this webhook with a message and embed
    *
-   * @param message   Message content to send
-   * @param embed     Embed object to include
+   * @param message                Message content to send
+   * @param embed                  Embed object to include
    * @param allowed_mentions_mask  Allowed mentions mask
    * @param allowed_users_mentions Array of allowed user mentions
    * @param allowed_user_size      Size of allowed users array
    * @param allowed_roles_mentions Array of allowed role mentions
    * @param allowed_roles_size     Size of allowed roles array
-   * @return         true on success, false on failure
+   * @return                       true on success, false on failure
    */
   public native bool ExecuteEmbed(const char[] message, DiscordEmbed embed, int allowed_mentions_mask = 0, const char[][] allowed_users_mentions = {}, int allowed_user_size = 0, const char[][] allowed_roles_mentions = {}, int allowed_roles_size = 0);
 
@@ -3631,7 +3784,7 @@ methodmap DiscordEmbed < Handle
    * @param url       Author URL (optional)
    * @param icon_url  Author icon URL (optional)
    */
-  public native void SetAuthor(const char[] name, const char[] url = "", const char[] icon_url = "");
+  public native void SetAuthor(const char[] name, const char[] url = NULL_STRING, const char[] icon_url = NULL_STRING);
   
   /**
    * Sets the embed footer
@@ -3639,7 +3792,7 @@ methodmap DiscordEmbed < Handle
    * @param text      Footer text
    * @param icon_url  Footer icon URL (optional)
    */
-  public native void SetFooter(const char[] text, const char[] icon_url = "");
+  public native void SetFooter(const char[] text, const char[] icon_url = NULL_STRING);
   
   /**
    * Adds a field to the embed
@@ -3677,7 +3830,7 @@ methodmap DiscordEmbed < Handle
    * @param name      Provider name
    * @param url       Provider URL (optional)
    */
-  public native void SetProvider(const char[] name, const char[] url = "");
+  public native void SetProvider(const char[] name, const char[] url = NULL_STRING);
 
   /**
    * Gets the embed title
@@ -3902,7 +4055,7 @@ methodmap DiscordEmbed < Handle
    * @param index     Field index (0-based)
    * @param buffer    Buffer to store the field name
    * @param maxlength Maximum length of the buffer
-   * @return         true if field exists, false otherwise
+   * @return          true if field exists, false otherwise
    */
   public native bool GetFieldName(int index, char[] buffer, int maxlength);
 
@@ -3912,7 +4065,7 @@ methodmap DiscordEmbed < Handle
    * @param index     Field index (0-based)
    * @param buffer    Buffer to store the field value
    * @param maxlength Maximum length of the buffer
-   * @return         true if field exists, false otherwise
+   * @return          true if field exists, false otherwise
    */
   public native bool GetFieldValue(int index, char[] buffer, int maxlength);
 
@@ -3920,7 +4073,7 @@ methodmap DiscordEmbed < Handle
    * Gets whether a field is inline by index
    *
    * @param index     Field index (0-based)
-   * @return         true if field is inline, false otherwise
+   * @return          true if field is inline, false otherwise
    */
   public native bool GetFieldInline(int index);
 
@@ -3928,7 +4081,7 @@ methodmap DiscordEmbed < Handle
    * Removes a field by index
    *
    * @param index     Field index (0-based)
-   * @return         true if field was removed, false otherwise
+   * @return          true if field was removed, false otherwise
    */
   public native bool RemoveField(int index);
 

@@ -143,7 +143,7 @@ public void OnPluginStart()
         {
             delete g_Webhook;
         }
-        g_Webhook = new DiscordWebhook(g_WebhookUrl);
+        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
     }
 
     g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
@@ -177,7 +177,7 @@ public void OnConfigsExecuted()
         {
             delete g_Webhook;
         }
-        g_Webhook = new DiscordWebhook(g_WebhookUrl);
+        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
     }
     else
     {
@@ -336,6 +336,15 @@ public void OnPluginEnd()
     {
         delete g_Webhook;
         g_Webhook = null;
+    }
+
+    for (int i = 0; i <= MAXPLAYERS; i++)
+    {
+        if (g_PendingMessages[i] != null)
+        {
+            delete g_PendingMessages[i];
+            g_PendingMessages[i] = null;
+        }
     }
 }
 
@@ -655,7 +664,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             char playerNameWebhook[MAX_NAME_LENGTH];
             GetClientName(client, playerNameWebhook, sizeof(playerNameWebhook));
 
-            DiscordWebhook webhook = new DiscordWebhook(g_StaffWebhookUrl);
+            DiscordWebhook webhook = new DiscordWebhook(g_Discord, g_StaffWebhookUrl);
             webhook.SetName(playerNameWebhook);
 
             if (g_ClientAvatar[client][0] != '\0')
