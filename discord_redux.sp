@@ -131,11 +131,6 @@ public void OnPluginStart()
     g_Discord.SetReadyCallback(Discord_OnReady);
     g_Discord.SetMessageCallback(Discord_OnMessage);
 
-    if (!g_Discord.Start())
-    {
-        PrintToServer("%T", "Bot Failure", LANG_SERVER);
-    }
-
     g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
     if (g_WebhookUrl[0] != '\0')
     {
