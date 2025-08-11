@@ -1,1 +1,4 @@
 *.smx
+*.exe
+*.bat
+*.sh
