@@ -130,6 +130,12 @@ public void OnPluginStart()
     g_Discord = new Discord(token);
     g_Discord.SetReadyCallback(Discord_OnReady);
     g_Discord.SetMessageCallback(Discord_OnMessage);
+    g_Discord.Start();
+
+    if (!g_Discord.Start())
+        PrintToServer("%T", "Bot Failure", LANG_SERVER);
+    else
+        PrintToServer("%T", "Bot Success", LANG_SERVER);
 
     g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
     if (g_WebhookUrl[0] != '\0')
@@ -333,20 +339,11 @@ public void OnPluginEnd()
         g_Webhook = null;
     }
 
-    for (int i = 0; i <= MAXPLAYERS; i++)
-    {
-        if (g_PendingMessages[i] != null)
-        {
-            delete g_PendingMessages[i];
-            g_PendingMessages[i] = null;
-        }
-    }
+    g_Discord.Stop();
 }
 
 public void Discord_OnReady(Discord discord, any data)
 {
-    PrintToServer("%T", "Bot Success", LANG_SERVER);
-
     if (g_Discord == null || !g_cvRelayServerToDiscord.BoolValue)
         return;
 
