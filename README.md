@@ -11,10 +11,12 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
   - `discord_redux.smx` goes in `addons/sourcemod/plugins/`.
   - ` discord_redux.phrases.txt` goes in `addons/sourcemod/translations/`.
 ### Developmental
-- Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions).
+- Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions/workflows/compile.yml).
 - Click on the latest ✅.
 - Download the package under **Artifacts**.
   - Extract it in `addons/sourcemod/`.
+> [!NOTE]
+> If the packages have been expired, run the workflow again.
 
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord/actions)
