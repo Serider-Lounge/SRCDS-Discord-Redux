@@ -22,7 +22,6 @@ jobs:
           version-file: ./discord_redux.sp
 
       - name: Compile plugins
-        continue-on-error: true
         run: |
           for file in discord_redux.sp
           do
@@ -34,10 +33,16 @@ jobs:
           echo version = ${{ steps.setup_sp.outputs.plugin-version }}
         working-directory: ${{ env.SCRIPTS_PATH }}
 
-      - name: Move smx to plugins folder
+      - name: Move smx to plugins directory
         run: |
           mkdir -p plugins
           mv discord_redux.smx plugins/
+
+      - name: Create scripting directory and move source code
+        run: |
+          mkdir -p scripting/discord_redux
+          mv discord_redux.sp scripting/
+          mv discord_redux/* scripting/discord_redux/
 
       - name: Extract plugin version
         id: get_version
@@ -48,7 +53,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "Discord Redux - ${{ env.PLUGIN_VERSION }}"
+          name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
           path: |
             plugins/discord_redux.smx
             translations/discord_redux.phrases.txt
+            scripting/discord_redux.sp
+            scripting/discord_redux/**
