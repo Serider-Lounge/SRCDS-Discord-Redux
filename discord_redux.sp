@@ -6,7 +6,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.0.2-alpha"
+#define PLUGIN_VERSION     "1.1.0-alpha"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -119,21 +119,6 @@ public void OnPluginStart()
 
     CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
 
-    /* Commands */
-    //RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Summon the server staff.");
-
-    /* Strings */
-    g_cvDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
-    g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
-    if (g_WebhookUrl[0] != '\0')
-    {
-        if (g_Webhook != null)
-        {
-            delete g_Webhook;
-        }
-        g_Webhook = new DiscordWebhook(g_WebhookUrl);
-    }
-
     char token[256];
     g_cvBotToken.GetString(token, sizeof(token));
     if (token[0] == '\0')
@@ -143,9 +128,23 @@ public void OnPluginStart()
     }
 
     g_Discord = new Discord(token);
+    g_Discord.SetReadyCallback(Discord_OnReady);
+    g_Discord.SetMessageCallback(Discord_OnMessage);
+    g_Discord.Start();
+
     if (!g_Discord.Start())
-    {
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
+    else
+        PrintToServer("%T", "Bot Success", LANG_SERVER);
+
+    g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
+    if (g_WebhookUrl[0] != '\0')
+    {
+        if (g_Webhook != null)
+        {
+            delete g_Webhook;
+        }
+        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
     }
 
     g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
@@ -179,7 +178,7 @@ public void OnConfigsExecuted()
         {
             delete g_Webhook;
         }
-        g_Webhook = new DiscordWebhook(g_WebhookUrl);
+        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
     }
     else
     {
@@ -205,6 +204,9 @@ public void OnConfigsExecuted()
     }
 
     g_Discord = new Discord(token);
+    g_Discord.SetReadyCallback(Discord_OnReady);
+    g_Discord.SetMessageCallback(Discord_OnMessage);
+
     if (!g_Discord.Start())
     {
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
@@ -301,7 +303,7 @@ public void OnMapEnd()
     embed.SetDescription(description);
 
     g_cvEmbedPreviousMapColor.GetString(g_EmbedPreviousMapColor, sizeof(g_EmbedPreviousMapColor));
-    embed.SetColor(HexColorStringToInt(g_EmbedPreviousMapColor));
+    embed.Color = HexColorStringToInt(g_EmbedPreviousMapColor);
 
     char footerIcon[256];
     g_cvFooterIcon.GetString(footerIcon, sizeof(footerIcon));
@@ -336,12 +338,12 @@ public void OnPluginEnd()
         delete g_Webhook;
         g_Webhook = null;
     }
+
+    g_Discord.Stop();
 }
 
-public void Discord_OnReady()
+public void Discord_OnReady(Discord discord, any data)
 {
-    PrintToServer("%T", "Bot Success", LANG_SERVER);
-
     if (g_Discord == null || !g_cvRelayServerToDiscord.BoolValue)
         return;
 
@@ -441,7 +443,7 @@ public void Discord_OnReady()
     embed.SetDescription(description);
 
     g_cvEmbedCurrentMapColor.GetString(g_EmbedCurrentMapColor, sizeof(g_EmbedCurrentMapColor));
-    embed.SetColor(HexColorStringToInt(g_EmbedCurrentMapColor));
+    embed.Color = HexColorStringToInt(g_EmbedCurrentMapColor);
 
     char playerCountStr[64];
     if (botCount > 0)
@@ -483,7 +485,7 @@ public void Discord_OnReady()
     }*/
 }
 
-public void Discord_OnMessage(Discord discord, DiscordMessage message)
+public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
 {
     if (!g_cvRelayDiscordToServer.BoolValue)
         return;
@@ -491,13 +493,13 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     char channelId[SNOWFLAKE_SIZE];
     message.GetChannelId(channelId, sizeof(channelId));
 
-    DiscordUser user = message.GetAuthor();
+    DiscordUser user = message.Author;
     char content[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
     if (StrEqual(channelId, g_DiscordChannelId))
     {
-        if (user.IsBot())
+        if (user.IsBot)
             return;
 
         // Commands
@@ -518,7 +520,7 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
             else if (StrContains(content, "status", false) != -1 ||
                      StrContains(content, "map", false) != -1)
             {
-                Discord_OnReady();
+                Discord_OnReady(g_Discord, 0);
             }
         }
 
@@ -527,9 +529,9 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
 
         char author[MAX_DISCORD_NAME_LENGTH];
         if (g_cvUsernameMode.BoolValue)
-            user.GetGlobalName(author, sizeof(author));
+            user.GetNickName(author, sizeof(author));
         else
-            user.GetUsername(author, sizeof(author));
+            user.GetUserName(author, sizeof(author));
 
         static char colorHex[7];
         GenerateColorHexFromName(author, colorHex, sizeof(colorHex));
@@ -573,7 +575,17 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
             }
             cleanContent[j] = '\0';
 
-            CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+            switch (message.Type)
+            {
+                case MessageType_Reply:
+                {
+                    CPrintToChatAll("%t", "Chat Format (Reply)", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                }
+                default:
+                {
+                    CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                }
+            }
             PrintToServer("*DISCORD* %s: %s", author, g_cvAllowColorTags.BoolValue ? line : cleanContent);
 
             while (end < len && (content[end] == '\n' || content[end] == '\r'))
@@ -589,37 +601,33 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message)
     message.GetChannelId(msgChannelId, sizeof(msgChannelId));
     if (StrEqual(msgChannelId, rconChannelId))
     {
-        if (user.IsBot())
+        if (user.IsBot)
             return;
 
         if (content[0] == '\0')
             return;
 
-        // Save Console output in buffer before executing it
         char response[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
         ServerCommandEx(response, sizeof(response), "%s", content);
 
-        // Command feedback
         if (g_DiscordRCONChannelId[0] != '\0')
         {
             if (StrContains(response, "Unknown Command", false) != -1)
                 return;
 
             char username[MAX_DISCORD_NAME_LENGTH];
-            user.GetUsername(username, sizeof(username));
+            user.GetUserName(username, sizeof(username));
             char avatar[256];
             user.GetAvatarUrl(false, avatar, sizeof(avatar));
 
-            // Use phrases file for RCON input/output formatting
             char inputMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
             char outputMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
 
-            // If output is empty, use "RCON Print Error" translation
             if (response[0] == '\0')
                 Format(outputMsg, sizeof(outputMsg), "%T", "RCON Print Error", LANG_SERVER);
             else
                 Format(outputMsg, sizeof(outputMsg), "%T", "RCON Output", LANG_SERVER, response);
-                
+
             Format(inputMsg, sizeof(inputMsg), "%T", "RCON Input", LANG_SERVER, content);
 
             DiscordEmbed embed = new DiscordEmbed();
@@ -648,13 +656,13 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             char playerNameWebhook[MAX_NAME_LENGTH];
             GetClientName(client, playerNameWebhook, sizeof(playerNameWebhook));
 
-            DiscordWebhook webhook = new DiscordWebhook(g_StaffWebhookUrl);
+            DiscordWebhook webhook = new DiscordWebhook(g_Discord, g_StaffWebhookUrl);
             webhook.SetName(playerNameWebhook);
 
             if (g_ClientAvatar[client][0] != '\0')
                 webhook.SetAvatarUrl(g_ClientAvatar[client]);
 
-            g_Discord.ExecuteWebhook(webhook, sArgs);
+            webhook.Execute(sArgs);
             delete webhook;
         }
 
@@ -677,7 +685,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         embed.SetDescription(sArgs);
 
         g_cvEmbedConsoleColor.GetString(g_EmbedConsoleColor, sizeof(g_EmbedConsoleColor));
-        embed.SetColor(HexColorStringToInt(g_EmbedConsoleColor));
+        embed.Color = HexColorStringToInt(g_EmbedConsoleColor);
 
         g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
         delete embed;
@@ -755,11 +763,11 @@ public void OnClientDisconnect(int client)
     embed.SetDescription(description);
 
     if (banned)
-        embed.SetColor(HexColorStringToInt(g_EmbedBanColor));
+        embed.Color = HexColorStringToInt(g_EmbedBanColor);
     else if (kicked)
-        embed.SetColor(HexColorStringToInt(g_EmbedKickColor));
+        embed.Color = HexColorStringToInt(g_EmbedKickColor);
     else
-        embed.SetColor(HexColorStringToInt(g_EmbedLeaveColor));
+        embed.Color = HexColorStringToInt(g_EmbedLeaveColor);
 
     if (g_ClientAvatar[client][0] != '\0')
     {
