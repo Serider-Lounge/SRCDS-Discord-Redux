@@ -34,7 +34,6 @@ ConVar g_cvUsernameMode;
 ConVar g_cvSteamAPIKey;
 char g_SteamAPIKey[64];
 
-ConVar g_cvAllowColorTags;
 ConVar g_cvFooterServerIP;
 ConVar g_cvFooterIcon;
 ConVar g_cvRandomizeNameColors;
@@ -68,6 +67,10 @@ char g_EmbedConsoleColor[8];
 ConVar g_cvEmbedScoreboardColor;
 char g_EmbedScoreboardColor[8];
 
+ConVar g_cvarMapThumbnail;
+ConVar g_cvMapThumbnailURL;
+char g_MapThumbnailURL[256];
+
 Discord g_Discord;
 DiscordWebhook g_Webhook;
 
@@ -92,7 +95,6 @@ public void OnPluginStart()
     g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff messages.", FCVAR_NONE);
     g_cvUsernameMode = CreateConVar("discord_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = display name).", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvSteamAPIKey = CreateConVar("discord_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
-    g_cvAllowColorTags = CreateConVar("discord_allow_color_tags", "0", "Allow {color} tags to be parsed (requires discord_relay_discord_to_server).", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvFooterServerIP = CreateConVar("discord_footer_server_ip", "1", "Show server public IP in embed footer.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvFooterIcon = CreateConVar("discord_footer_icon", "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png", "Footer icon URL for Discord embeds.", FCVAR_NONE);
     g_cvRandomizeNameColors = CreateConVar("discord_randomize_name_colors", "0", "Randomize Discord user name colors.", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -105,6 +107,9 @@ public void OnPluginStart()
 
     g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff alerts.", FCVAR_NONE);
     g_cvDiscordRCONChannel = CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
+
+    g_cvarMapThumbnail = CreateConVar("discord_map_thumbnail", "1", "Show map thumbnail in map change embeds.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvMapThumbnailURL = CreateConVar("discord_map_thumbnail_url", "https://image.gametracker.com/images/maps/160x120/tf2/", "Discord map thumbnail URL.", FCVAR_NONE);
 
     g_cvEmbedCurrentMapColor = CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
     g_cvEmbedPreviousMapColor = CreateConVar("discord_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
@@ -189,6 +194,7 @@ public void OnConfigsExecuted()
 
     if (g_Discord != null)
     {
+        g_Discord.Stop();
         delete g_Discord;
         g_Discord = null;
     }
@@ -279,6 +285,17 @@ public void OnMapEnd()
     Format(previousMapTitle, sizeof(previousMapTitle), "%T", "Previous Map", LANG_SERVER);
     embed.AddField(previousMapTitle, mapName, true);
 
+    if (g_cvarMapThumbnail.BoolValue)
+    {
+        g_cvMapThumbnailURL.GetString(g_MapThumbnailURL, sizeof(g_MapThumbnailURL));
+        if (g_MapThumbnailURL[0] != '\0')
+        {
+            char thumbUrl[512];
+            Format(thumbUrl, sizeof(thumbUrl), "%s%s.jpg", g_MapThumbnailURL, g_mapName);
+            embed.SetThumbnail(thumbUrl);
+        }
+    }
+
     g_cvEmbedPreviousMapColor.GetString(g_EmbedPreviousMapColor, sizeof(g_EmbedPreviousMapColor));
     embed.Color = HexColorStringToInt(g_EmbedPreviousMapColor);
 
@@ -305,7 +322,27 @@ public void OnMapEnd()
 
 public void OnPluginEnd()
 {
-    g_Discord.Stop();
+    if (g_Discord != null)
+    {
+        g_Discord.Stop();
+        delete g_Discord;
+        g_Discord = null;
+    }
+
+    if (g_Webhook != null)
+    {
+        delete g_Webhook;
+        g_Webhook = null;
+    }
+
+    for (int i = 0; i <= MAXPLAYERS; i++)
+    {
+        if (g_PendingMessages[i] != null)
+        {
+            delete g_PendingMessages[i];
+            g_PendingMessages[i] = null;
+        }
+    }
 }
 
 public void Discord_OnReady(Discord discord, any data)
@@ -389,6 +426,17 @@ public void Discord_OnReady(Discord discord, any data)
     char currentMapTitle[64];
     Format(currentMapTitle, sizeof(currentMapTitle), "%T", "Current Map", LANG_SERVER);
     embed.AddField(currentMapTitle, mapName, true);
+
+    if (g_cvarMapThumbnail.BoolValue)
+    {
+        g_cvMapThumbnailURL.GetString(g_MapThumbnailURL, sizeof(g_MapThumbnailURL));
+        if (g_MapThumbnailURL[0] != '\0')
+        {
+            char thumbUrl[512];
+            Format(thumbUrl, sizeof(thumbUrl), "%s%s.jpg", g_MapThumbnailURL, g_mapName);
+            embed.SetThumbnail(thumbUrl);
+        }
+    }
 
     g_cvEmbedCurrentMapColor.GetString(g_EmbedCurrentMapColor, sizeof(g_EmbedCurrentMapColor));
     embed.Color = HexColorStringToInt(g_EmbedCurrentMapColor);
@@ -515,34 +563,18 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
                 strcopy(line, sizeof(line), content[start]);
             line[lineLen] = '\0';
 
-            // Strip {color} tags from the message before printing
-            char cleanContent[MAX_DISCORD_NITRO_MESSAGE_LENGTH];
-            int j = 0;
-            for (int i = 0; line[i] != '\0' && j < sizeof(cleanContent) - 1; i++)
-            {
-                if (line[i] == '{')
-                {
-                    while (line[i] != '\0' && line[i] != '}')
-                        i++;
-                    if (line[i] == '}')
-                        continue;
-                }
-                cleanContent[j++] = line[i];
-            }
-            cleanContent[j] = '\0';
-
             switch (message.Type)
             {
                 case MessageType_Reply:
                 {
-                    CPrintToChatAll("%t", "Chat Format (Reply)", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                    CPrintToChatAll("%t", "Chat Format (Reply)", coloredAuthor, line);
                 }
                 default:
                 {
-                    CPrintToChatAll("%t", "Chat Format", coloredAuthor, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+                    CPrintToChatAll("%t", "Chat Format", coloredAuthor, line);
                 }
             }
-            PrintToServer("*DISCORD* %s: %s", author, g_cvAllowColorTags.BoolValue ? line : cleanContent);
+            PrintToServer("*DISCORD* %s: %s", author, line);
 
             while (end < len && (content[end] == '\n' || content[end] == '\r'))
                 end++;
@@ -674,6 +706,11 @@ public void OnClientPutInServer(int client)
 
     if (g_PendingMessages[client] == null)
         g_PendingMessages[client] = new ArrayList(256);
+    else
+    {
+        delete g_PendingMessages[client];
+        g_PendingMessages[client] = new ArrayList(256);
+    }
 
     g_PendingMessages[client].PushString("[JOIN]");
 }
@@ -739,6 +776,12 @@ public void OnClientDisconnect(int client)
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
+
+    if (g_PendingMessages[client] != null)
+    {
+        delete g_PendingMessages[client];
+        g_PendingMessages[client] = null;
+    }
 
     g_ClientBanned[client] = false;
     g_ClientAvatar[client][0] = '\0';
