@@ -68,8 +68,8 @@ char g_EmbedConsoleColor[8];
 ConVar g_cvEmbedScoreboardColor;
 char g_EmbedScoreboardColor[8];
 
-Discord g_Discord = null;
-DiscordWebhook g_Webhook = null;
+Discord g_Discord;
+DiscordWebhook g_Webhook;
 
 ArrayList g_PendingMessages[MAXPLAYERS+1];
 
@@ -172,22 +172,6 @@ public void OnConfigsExecuted()
 {
     g_cvDiscordChannel.GetString(g_DiscordChannelId, sizeof(g_DiscordChannelId));
     g_cvWebhookUrl.GetString(g_WebhookUrl, sizeof(g_WebhookUrl));
-    if (g_WebhookUrl[0] != '\0')
-    {
-        if (g_Webhook != null)
-        {
-            delete g_Webhook;
-        }
-        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
-    }
-    else
-    {
-        if (g_Webhook != null)
-        {
-            delete g_Webhook;
-            g_Webhook = null;
-        }
-    }
 
     char token[256];
     g_cvBotToken.GetString(token, sizeof(token));
@@ -195,6 +179,12 @@ public void OnConfigsExecuted()
     {
         PrintToServer("%T", "Bot Unset", LANG_SERVER);
         return;
+    }
+
+    if (g_Webhook != null)
+    {
+        delete g_Webhook;
+        g_Webhook = null;
     }
 
     if (g_Discord != null)
@@ -212,15 +202,20 @@ public void OnConfigsExecuted()
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
     }
 
-    g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
+    if (g_WebhookUrl[0] != '\0' && g_Discord != null)
+    {
+        g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
+    }
+    else
+    {
+        g_Webhook = null;
+    }
 
+    g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
     g_cvWordBlacklist.GetString(g_WordBlacklist, sizeof(g_WordBlacklist));
     WordFilter_Compile();
-
     g_cvHideCommandPrefix.GetString(g_HideCommandPrefix, sizeof(g_HideCommandPrefix));
-
     g_cvDiscordRCONChannel.GetString(g_DiscordRCONChannelId, sizeof(g_DiscordRCONChannelId));
-
     g_cvStaffWebhookUrl.GetString(g_StaffWebhookUrl, sizeof(g_StaffWebhookUrl));
 }
 
@@ -231,76 +226,58 @@ public void OnMapEnd()
 
     GetCurrentMap(g_mapName, sizeof(g_mapName));
 
-    char description[DISCORD_DESC_LENGTH];
-    char displayName[PLATFORM_MAX_PATH];
-    displayName[0] = '\0';
-
-    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
-
+    char mapName[PLATFORM_MAX_PATH];
     if (StrContains(g_mapName, "workshop/") == 0)
     {
         int ugcPos = StrContains(g_mapName, ".ugc");
-        if (ugcPos != -1)
+        int slash = -1;
+        int mapLen = strlen(g_mapName);
+
+        for (int i = mapLen - 1; i >= 0; --i)
         {
-            int slash = -1;
-            int mapLen = strlen(g_mapName);
-            for (int i = mapLen - 1; i >= 0; --i)
+            if (g_mapName[i] == '/')
             {
-                if (g_mapName[i] == '/')
-                {
-                    slash = i;
-                    break;
-                }
+                slash = i;
+                break;
             }
+        }
+
+        if (ugcPos != -1 && slash != -1 && ugcPos > slash)
+        {
+            int nameLen = ugcPos - (slash + 1);
             char mapDisplay[PLATFORM_MAX_PATH];
             char workshopId[32];
-            if (slash != -1 && ugcPos > slash)
-            {
-                int nameLen = ugcPos - (slash + 1);
-                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
-                mapDisplay[nameLen] = '\0';
-                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
-                int idEnd = FindCharInString(workshopId, '/', false);
-                if (idEnd != -1)
-                    workshopId[idEnd] = '\0';
-                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
-            }
-            else
-            {
-                char shown[PLATFORM_MAX_PATH];
-                if (hasDisplay && displayName[0] != '\0')
-                    strcopy(shown, sizeof(shown), displayName);
-                else
-                    strcopy(shown, sizeof(shown), g_mapName);
-                Format(description, sizeof(description), "%s", shown);
-            }
+
+            strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
+            mapDisplay[nameLen] = '\0';
+
+            strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
+            int idEnd = FindCharInString(workshopId, '/', false);
+            if (idEnd != -1)
+                workshopId[idEnd] = '\0';
+
+            Format(mapName, sizeof(mapName), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
         }
         else
         {
-            char shown[PLATFORM_MAX_PATH];
-            if (hasDisplay && displayName[0] != '\0')
-                strcopy(shown, sizeof(shown), displayName);
-            else
-                strcopy(shown, sizeof(shown), g_mapName);
-            Format(description, sizeof(description), "%s", shown);
+            strcopy(mapName, sizeof(mapName), g_mapName);
         }
     }
     else
     {
-        char shown[PLATFORM_MAX_PATH];
-        if (hasDisplay && displayName[0] != '\0')
-            strcopy(shown, sizeof(shown), displayName);
-        else
-            strcopy(shown, sizeof(shown), g_mapName);
-        Format(description, sizeof(description), "%s", shown);
+        strcopy(mapName, sizeof(mapName), g_mapName);
     }
 
-    char title[64];
-    Format(title, sizeof(title), "%T", "Previous Map", LANG_SERVER);
+    char servername[256];
+    GetConVarString(FindConVar("hostname"), servername, sizeof(servername));
 
     DiscordEmbed embed = new DiscordEmbed();
-    embed.SetTitle(title);
-    embed.SetDescription(description);
+    embed.SetTitle(servername);
+    //embed.SetDescription("");
+
+    char previousMapTitle[64];
+    Format(previousMapTitle, sizeof(previousMapTitle), "%T", "Previous Map", LANG_SERVER);
+    embed.AddField(previousMapTitle, mapName, true);
 
     g_cvEmbedPreviousMapColor.GetString(g_EmbedPreviousMapColor, sizeof(g_EmbedPreviousMapColor));
     embed.Color = HexColorStringToInt(g_EmbedPreviousMapColor);
@@ -328,17 +305,6 @@ public void OnMapEnd()
 
 public void OnPluginEnd()
 {
-    if (g_Discord != null)
-    {
-        delete g_Discord;
-        g_Discord = null;
-    }
-    if (g_Webhook != null)
-    {
-        delete g_Webhook;
-        g_Webhook = null;
-    }
-
     g_Discord.Stop();
 }
 
@@ -371,89 +337,71 @@ public void Discord_OnReady(Discord discord, any data)
     }
     int maxPlayers = MaxClients;
 
-    char description[DISCORD_DESC_LENGTH];
-    char displayName[PLATFORM_MAX_PATH];
-    displayName[0] = '\0';
-
-    bool hasDisplay = GetMapDisplayName(g_mapName, displayName, sizeof(displayName));
-
+    char mapName[PLATFORM_MAX_PATH];
     if (StrContains(g_mapName, "workshop/") == 0)
     {
         int ugcPos = StrContains(g_mapName, ".ugc");
-        if (ugcPos != -1)
+        int slash = -1;
+        int mapLen = strlen(g_mapName);
+
+        for (int i = mapLen - 1; i >= 0; --i)
         {
-            int slash = -1;
-            int mapLen = strlen(g_mapName);
-            for (int i = mapLen - 1; i >= 0; --i)
+            if (g_mapName[i] == '/')
             {
-                if (g_mapName[i] == '/')
-                {
-                    slash = i;
-                    break;
-                }
+                slash = i;
+                break;
             }
+        }
+
+        if (ugcPos != -1 && slash != -1 && ugcPos > slash)
+        {
+            int nameLen = ugcPos - (slash + 1);
             char mapDisplay[PLATFORM_MAX_PATH];
             char workshopId[32];
-            if (slash != -1 && ugcPos > slash)
-            {
-                int nameLen = ugcPos - (slash + 1);
-                strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
-                mapDisplay[nameLen] = '\0';
-                strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
-                int idEnd = FindCharInString(workshopId, '/', false);
-                if (idEnd != -1)
-                    workshopId[idEnd] = '\0';
-                Format(description, sizeof(description), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
-            }
-            else
-            {
-                char shown[PLATFORM_MAX_PATH];
-                if (hasDisplay && displayName[0] != '\0')
-                    strcopy(shown, sizeof(shown), displayName);
-                else
-                    strcopy(shown, sizeof(shown), g_mapName);
-                Format(description, sizeof(description), "%s", shown);
-            }
+
+            strcopy(mapDisplay, sizeof(mapDisplay), g_mapName[slash + 1]);
+            mapDisplay[nameLen] = '\0';
+
+            strcopy(workshopId, sizeof(workshopId), g_mapName[ugcPos + 4]);
+            int idEnd = FindCharInString(workshopId, '/', false);
+            if (idEnd != -1)
+                workshopId[idEnd] = '\0';
+
+            Format(mapName, sizeof(mapName), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", mapDisplay, workshopId);
         }
         else
         {
-            char shown[PLATFORM_MAX_PATH];
-            if (hasDisplay && displayName[0] != '\0')
-                strcopy(shown, sizeof(shown), displayName);
-            else
-                strcopy(shown, sizeof(shown), g_mapName);
-            Format(description, sizeof(description), "%s", shown);
+            strcopy(mapName, sizeof(mapName), g_mapName);
         }
     }
     else
     {
-        char shown[PLATFORM_MAX_PATH];
-        if (hasDisplay && displayName[0] != '\0')
-            strcopy(shown, sizeof(shown), displayName);
-        else
-            strcopy(shown, sizeof(shown), g_mapName);
-        Format(description, sizeof(description), "%s", shown);
+        strcopy(mapName, sizeof(mapName), g_mapName);
     }
 
-    char title[64];
-    Format(title, sizeof(title), "%T", "Current Map", LANG_SERVER);
+    char servername[256];
+    GetConVarString(FindConVar("hostname"), servername, sizeof(servername));
 
     DiscordEmbed embed = new DiscordEmbed();
-    embed.SetTitle(title);
-    embed.SetDescription(description);
+    embed.SetTitle(servername);
+    //embed.SetDescription("");
+
+    char currentMapTitle[64];
+    Format(currentMapTitle, sizeof(currentMapTitle), "%T", "Current Map", LANG_SERVER);
+    embed.AddField(currentMapTitle, mapName, true);
 
     g_cvEmbedCurrentMapColor.GetString(g_EmbedCurrentMapColor, sizeof(g_EmbedCurrentMapColor));
     embed.Color = HexColorStringToInt(g_EmbedCurrentMapColor);
 
-    char playerCountStr[64];
+    char playerCountBuffer[64];
     if (botCount > 0)
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
+        Format(playerCountBuffer, sizeof(playerCountBuffer), "%d/%d (+ %d)", playerCount, maxPlayers, botCount);
     else
-        Format(playerCountStr, sizeof(playerCountStr), "%d/%d", playerCount, maxPlayers);
+        Format(playerCountBuffer, sizeof(playerCountBuffer), "%d/%d", playerCount, maxPlayers);
 
-    char playerCountLabel[32];
-    Format(playerCountLabel, sizeof(playerCountLabel), "%T", "Player Count", LANG_SERVER);
-    embed.AddField(playerCountLabel, playerCountStr, true);
+    char playerCountTitle[32];
+    Format(playerCountTitle, sizeof(playerCountTitle), "%T", "Player Count", LANG_SERVER);
+    embed.AddField(playerCountTitle, playerCountBuffer, true);
 
     char footerIcon[256];
     g_cvFooterIcon.GetString(footerIcon, sizeof(footerIcon));

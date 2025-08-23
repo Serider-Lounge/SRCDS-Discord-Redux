@@ -993,7 +993,7 @@ methodmap Discord < Handle {
    * @return              true if request was queued successfully
    * @note                This method provides full access to response headers and uses HttpCompletion object
    */
-  public native bool HttpRequest(const char[] url, HttpMethod method, HttpCompletionCallback callback, const char[] body = "", const char[] content_type = "application/json", HttpHeaders headers = INVALID_HANDLE, const char[] protocol = "1.1", any data = 0);
+  //public native bool HttpRequest(const char[] url, HttpMethod method, HttpCompletionCallback callback, const char[] body = "", const char[] content_type = "application/json", HttpHeaders headers = INVALID_HANDLE, const char[] protocol = "1.1", any data = 0);
 }
 
 /**
