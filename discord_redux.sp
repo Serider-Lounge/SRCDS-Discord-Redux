@@ -477,16 +477,24 @@ public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
 
         char author[MAX_DISCORD_NAME_LENGTH];
         if (g_cvUsernameMode.BoolValue)
+        {
             user.GetNickName(author, sizeof(author));
+            if (author[0] == '\0')
+            {
+                user.GetGlobalName(author, sizeof(author));
+            }
+        }
         else
+        {
             user.GetUserName(author, sizeof(author));
+        }
 
         static char colorHex[7];
         GenerateColorHexFromName(author, colorHex, sizeof(colorHex));
 
         static char coloredAuthor[MAX_DISCORD_NAME_LENGTH + 16];
         if (g_cvRandomizeNameColors.BoolValue)
-            Format(coloredAuthor, sizeof(coloredAuthor), "{#%s}%s{default}", colorHex, author);
+            Format(coloredAuthor, sizeof(coloredAuthor), "%s%s", colorHex, author);
         else
             strcopy(coloredAuthor, sizeof(coloredAuthor), author);
 

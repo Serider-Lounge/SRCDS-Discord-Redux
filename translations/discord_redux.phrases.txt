@@ -3,12 +3,12 @@
     "Chat Format"
     {
         "#format" "{1:s},{2:s}"
-        "en"        "*DISCORD* {gray}{1}{default} :  {2}"
+        "en"        "*DISCORD* {1} :  {2}"
     }
     "Chat Format (Reply)"
     {
         "#format" "{1:s},{2:s}"
-        "en"        "*DISCORD* {gray}(Reply) {1}{default} :  {2}"
+        "en"        "*DISCORD* (Reply) {1} :  {2}"
     }
     "Discord Message"
     {
