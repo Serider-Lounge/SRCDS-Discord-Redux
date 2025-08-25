@@ -1,5 +1,3 @@
-#include <SteamWorks>
-
 public void OnSteamAvatarResponse(HTTPResponse response, any userid)
 {
     if (response.Status != HTTPStatus_OK)
@@ -51,7 +49,7 @@ public void OnSteamAvatarResponse(HTTPResponse response, any userid)
             embed.SetDescription(description);
 
             g_cvEmbedJoinColor.GetString(g_EmbedJoinColor, sizeof(g_EmbedJoinColor));
-            embed.SetColor(HexColorStringToInt(g_EmbedJoinColor));
+            embed.Color = HexColorStringToInt(g_EmbedJoinColor);
 
             if (g_ClientAvatar[client][0] != '\0')
             {
