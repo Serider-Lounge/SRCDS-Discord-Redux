@@ -291,6 +291,7 @@ public void OnMapEnd()
     if (g_cvarMapThumbnail.BoolValue)
     {
         g_cvMapThumbnailURL.GetString(g_MapThumbnailURL, sizeof(g_MapThumbnailURL));
+        g_cvMapThumbnailFormat.GetString(g_MapThumbnailFormat, sizeof(g_MapThumbnailFormat));
         if (g_MapThumbnailURL[0] != '\0')
         {
             char thumbUrl[512];
@@ -432,10 +433,11 @@ public void Discord_OnReady(Discord discord, any data)
     if (g_cvarMapThumbnail.BoolValue)
     {
         g_cvMapThumbnailURL.GetString(g_MapThumbnailURL, sizeof(g_MapThumbnailURL));
+        g_cvMapThumbnailFormat.GetString(g_MapThumbnailFormat, sizeof(g_MapThumbnailFormat));
         if (g_MapThumbnailURL[0] != '\0')
         {
             char thumbUrl[512];
-            Format(thumbUrl, sizeof(thumbUrl), "%s%s.jpg", g_MapThumbnailURL, g_mapName);
+            Format(thumbUrl, sizeof(thumbUrl), "%s%s.%s", g_MapThumbnailURL, g_mapName, g_MapThumbnailFormat);
             embed.SetThumbnail(thumbUrl);
         }
     }
