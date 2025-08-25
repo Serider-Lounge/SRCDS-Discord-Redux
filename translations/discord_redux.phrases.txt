@@ -2,50 +2,55 @@
 {
     "Chat Format"
     {
-        "#format" "{1:s},{2:s}"
+        "#format"   "{1:s},{2:s}"
         "en"        "*DISCORD* {1} :  {2}"
     }
     "Chat Format (Reply)"
     {
-        "#format" "{1:s},{2:s}"
+        "#format"   "{1:s},{2:s}"
         "en"        "*DISCORD* (Reply) {1} :  {2}"
     }
     "Discord Message"
     {
-        "#format"	"{1:s},{2:s},{3:i},{4:s},{5:s}" // {1} = Message | {2} = Player Name | {3} = SteamID64 | {4} = SteamID2 | {5} = Server Name
+        // {1} = Message
+        // {2} = Player Name
+        // {3} = SteamID64
+        // {4} = SteamID2
+        // {5} = Server Name
+        "#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
         "en"		"{1}"
     }
     "Player Join"
     {
-        "#format"	"{1:s},{2:s}" // {1} = Player Name | {2} = SteamID
+        // {1} = Player Name
+        // {2} = SteamID
+        "#format"	"{1:s},{2:s}"
         "en"		"[{1}](http://www.steamcommunity.com/profiles/{2}) joined the game"
     }
     "Player Leave"
     {
+        // {1} = Player Name
+        // {2} = SteamID
 		"#format"	"{1:s},{2:s}"
         "en" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) left the game"
     }
     "Player Kicked"
     {
+        // {1} = Player Name
+        // {2} = SteamID
 		"#format"	"{1:s},{2:s}"
         "en" 		"Kicked [{1}](http://www.steamcommunity.com/profiles/{2})"
     }
     "Player Banned"
     {
+        // {1} = Player Name
+        // {2} = SteamID
 		"#format"	"{1:s},{2:s}"
         "en" 		"Banned [{1}](http://www.steamcommunity.com/profiles/{2})"
     }
     "Player Count"
     {
         "en"        "Player Count:"
-    }
-    "Server Tags"
-    {
-        "en"        "Server Tags:"
-    }
-    "Server Name"
-    {
-        "en"        "Server Name:"
     }
     "Previous Map"
     {
@@ -59,26 +64,22 @@
     {
         "en"        "Scoreboard"
     }
-    "Round Win"
-    {
-        "en"        "%s Wins!"
-    }
-    "Stalemate"
-    {
-        "en"        "Stalemate!"
-    }
     "Blocked Word"
     {
-        "#format"   "{1:s},{2:s}" // {1} = Player | {2} = Detected Word
+        // {1} = Player Name
+        // {2} = Flagged Word
+        "#format"   "{1:s},{2:s}"
         "en"        "[Discord Redux] {1} said a bad word! '{2}'"
     }
-    "Crash Report Title"
+    "Crash Report Title" // UNUSED
     {
         "en"        "Server Crashed!"
     }
-    "Crash Report Description"
+    "Crash Report Description" // UNUSED
     {
-        "#format"   "{1:s},{2:s}" // {1} = Crash Report Link | {2} = Crash Report ID
+        // {1} = Crash Report ID (ABCD-EFGH-IJKL)
+        // {2} = Crash Report ID (abcdefghijkl)
+        "#format"   "{1:s},{2:s}"
         "en"        "Crash Report Link: [{1}](https://crash.limetech.org/{2})"
     }
     "RCON Print Error"

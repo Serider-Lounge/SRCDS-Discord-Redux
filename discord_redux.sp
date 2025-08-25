@@ -2,11 +2,12 @@
 #include <discord>
 #include <multicolors>
 #include <ripext>
+#include <SteamWorks>
 
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.1.0-alpha"
+#define PLUGIN_VERSION     "1.1.0-alpha_25aug2025"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -70,6 +71,8 @@ char g_EmbedScoreboardColor[8];
 ConVar g_cvarMapThumbnail;
 ConVar g_cvMapThumbnailURL;
 char g_MapThumbnailURL[256];
+ConVar g_cvMapThumbnailFormat;
+char g_MapThumbnailFormat[8];
 
 Discord g_Discord;
 DiscordWebhook g_Webhook;
@@ -108,8 +111,9 @@ public void OnPluginStart()
     g_cvStaffWebhookUrl = CreateConVar("discord_staff_webhook_url", "", "Discord webhook URL for staff alerts.", FCVAR_NONE);
     g_cvDiscordRCONChannel = CreateConVar("discord_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_NONE);
 
-    g_cvarMapThumbnail = CreateConVar("discord_map_thumbnail", "1", "Show map thumbnail in map change embeds.", FCVAR_NONE, true, 0.0, true, 1.0);
+    g_cvarMapThumbnail = CreateConVar("discord_map_thumbnail", "1", "Show map thumbnail in map embeds.", FCVAR_NONE, true, 0.0, true, 1.0);
     g_cvMapThumbnailURL = CreateConVar("discord_map_thumbnail_url", "https://image.gametracker.com/images/maps/160x120/tf2/", "Discord map thumbnail URL.", FCVAR_NONE);
+    g_cvMapThumbnailFormat = CreateConVar("discord_map_thumbnail_format", "jpg", "Discord map thumbnail format.", FCVAR_NONE);
 
     g_cvEmbedCurrentMapColor = CreateConVar("discord_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
     g_cvEmbedPreviousMapColor = CreateConVar("discord_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
@@ -122,7 +126,7 @@ public void OnPluginStart()
 
     AutoExecConfig(true, "discord_redux");
 
-    CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY | FCVAR_SPONLY);
+    CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_NOTIFY);
 
     char token[256];
     g_cvBotToken.GetString(token, sizeof(token));
@@ -279,7 +283,6 @@ public void OnMapEnd()
 
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(servername);
-    //embed.SetDescription("");
 
     char previousMapTitle[64];
     Format(previousMapTitle, sizeof(previousMapTitle), "%T", "Previous Map", LANG_SERVER);
@@ -291,7 +294,7 @@ public void OnMapEnd()
         if (g_MapThumbnailURL[0] != '\0')
         {
             char thumbUrl[512];
-            Format(thumbUrl, sizeof(thumbUrl), "%s%s.jpg", g_MapThumbnailURL, g_mapName);
+            Format(thumbUrl, sizeof(thumbUrl), "%s%s.%s", g_MapThumbnailURL, g_mapName, g_MapThumbnailFormat);
             embed.SetThumbnail(thumbUrl);
         }
     }
@@ -421,7 +424,6 @@ public void Discord_OnReady(Discord discord, any data)
 
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(servername);
-    //embed.SetDescription("");
 
     char currentMapTitle[64];
     Format(currentMapTitle, sizeof(currentMapTitle), "%T", "Current Map", LANG_SERVER);
