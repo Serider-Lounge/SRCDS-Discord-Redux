@@ -76,7 +76,10 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 - You need to configure these in `cfg/sourcemod/discord_redux.cfg`: 
     - Set up a [Discord bot](https://discord.com/developers/applications/) and copy its token.
     - Enable [Developer Mode](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID#h_01HRSTXPS5CRSRTWYCGPHZQ37H) and copy the [channel id](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID#h_01HRSTXPS5FMK2A5SMVSX4JW4E).
-
+> [!WARNING]
+> If you plan to send messages/requests to the server from discord ensure you have Message Intents enabled in the app dashboard:
+> 
+> ![Message Intents](https://user-images.githubusercontent.com/42725021/191847732-36a08338-ca11-4ae3-8584-ddc9a308400a.png)
 ### Why does **Server → Discord** not work❓
 You need to set up a [Discord Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) in the channel that will be used as a relay.
 
