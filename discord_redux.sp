@@ -208,18 +208,14 @@ public void OnConfigsExecuted()
     g_Discord.SetMessageCallback(Discord_OnMessage);
 
     if (!g_Discord.Start())
-    {
         PrintToServer("%T", "Bot Failure", LANG_SERVER);
-    }
+    else
+        PrintToServer("%T", "Bot Success", LANG_SERVER);
 
     if (g_WebhookUrl[0] != '\0' && g_Discord != null)
-    {
         g_Webhook = new DiscordWebhook(g_Discord, g_WebhookUrl);
-    }
     else
-    {
         g_Webhook = null;
-    }
 
     g_cvSteamAPIKey.GetString(g_SteamAPIKey, sizeof(g_SteamAPIKey));
     g_cvWordBlacklist.GetString(g_WordBlacklist, sizeof(g_WordBlacklist));
@@ -349,11 +345,8 @@ public void OnPluginEnd()
     }
 }
 
-public void Discord_OnReady(Discord discord, any data)
+public void OnMapChange()
 {
-    if (g_Discord == null || !g_cvRelayServerToDiscord.BoolValue)
-        return;
-
     /* Games */
     //switch (GetEngineVersion())
     //{
@@ -483,6 +476,14 @@ public void Discord_OnReady(Discord discord, any data)
             HookEvent("teamplay_round_start", TF2_OnRoundStart, EventHookMode_PostNoCopy);
         }
     }*/
+}
+
+public void Discord_OnReady(Discord discord, any data)
+{
+    if (!g_cvRelayServerToDiscord.BoolValue)
+        return;
+        
+    OnMapChange();
 }
 
 public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
