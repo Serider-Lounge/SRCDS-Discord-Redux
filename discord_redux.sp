@@ -7,7 +7,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "1.1.0-alpha_29aug2025"
+#define PLUGIN_VERSION     "1.1.0-alpha_30aug2025"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 public Plugin myinfo = 
@@ -324,17 +324,14 @@ public void OnPluginEnd()
 {
     if (g_Discord != null)
     {
-        g_Discord.Stop();
         delete g_Discord;
         g_Discord = null;
     }
-
     if (g_Webhook != null)
     {
         delete g_Webhook;
         g_Webhook = null;
     }
-
     for (int i = 0; i <= MAXPLAYERS; i++)
     {
         if (g_PendingMessages[i] != null)
@@ -345,8 +342,11 @@ public void OnPluginEnd()
     }
 }
 
-public void OnMapChange()
+public void Discord_OnReady(Discord discord, any data)
 {
+    if (!g_cvRelayServerToDiscord.BoolValue)
+        return;
+        
     /* Games */
     //switch (GetEngineVersion())
     //{
@@ -467,23 +467,6 @@ public void OnMapChange()
 
     g_Discord.SendMessageEmbed(g_DiscordChannelId, "", embed);
     delete embed;
-
-    /* Games */
-    /*switch (GetEngineVersion())
-    {
-        case Engine_TF2:
-        {
-            HookEvent("teamplay_round_start", TF2_OnRoundStart, EventHookMode_PostNoCopy);
-        }
-    }*/
-}
-
-public void Discord_OnReady(Discord discord, any data)
-{
-    if (!g_cvRelayServerToDiscord.BoolValue)
-        return;
-        
-    OnMapChange();
 }
 
 public void Discord_OnMessage(Discord discord, DiscordMessage message, any data)
