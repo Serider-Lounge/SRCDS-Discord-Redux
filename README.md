@@ -3,8 +3,6 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 > [!NOTE]
 > This plugin has only been developed in <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> [**Team Fortress 2**](https://store.steampowered.com/app/440) and <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/550/1a8d50f6078b5d023582ea1793b0e53813d57b7f.ico" width="16" height="16" style="vertical-align: text-bottom;"> [**Left 4 Dead 2**](https://store.steampowered.com/app/550); but pull requests to extend support for other games are VERY MUCH welcome!
 
-### [See the TO-DO list here‼](https://github.com/orgs/Serider-Lounge/projects/3)
-
 ## How to install?
 - Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions/workflows/compile.yml).
 - Click on the latest ✅.
@@ -102,8 +100,6 @@ You need to set up a [Discord Webhook](https://support.discord.com/hc/en-us/arti
 
 ### Why don't Player Avatars not show up❓
 You need to register your [Steam Web API Key](https://steamcommunity.com/dev/apikey).
-> [!NOTE]
-> A player's avatar is cached once they join the server.
 
 ### Why using `!` commands instead of Discord slash commands❓
-Because I haven't figured them out yet.
+Eventually™

@@ -1,11 +1,6 @@
 name: Compile with SourceMod
 
-on:
-  push:
-    branches: [sm-ext-discord_v2.0]
-  pull_request:
-    branches: [sm-ext-discord_v2.0]
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -65,4 +60,3 @@ jobs:
             translations/**
             scripting/discord_redux.sp
             scripting/include/discord_redux/**
-
