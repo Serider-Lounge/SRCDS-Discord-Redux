@@ -1,11 +1,6 @@
 name: Compile with SourceMod
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -46,8 +41,9 @@ jobs:
       - name: Create scripting directory and move source code
         run: |
           mkdir -p scripting/discord_redux
+          mkdir -p scripting/include/discord_redux
           mv discord_redux.sp scripting/
-          mv discord_redux/* scripting/discord_redux/
+          mv include/discord_redux/* scripting/include/discord_redux/
 
       - name: Extract plugin version
         id: get_version
@@ -61,6 +57,6 @@ jobs:
           name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
           path: |
             plugins/discord_redux.smx
-            translations/discord_redux.phrases.txt
+            translations/**
             scripting/discord_redux.sp
-            scripting/discord_redux/**
+            scripting/include/discord_redux/**
