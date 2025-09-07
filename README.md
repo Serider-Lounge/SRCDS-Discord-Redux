@@ -36,12 +36,12 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
     - [x] **[TF2]** Also accounts for [`sig_etc_workshop_map_fix`](https://github.com/rafradek/sigsegv-mvm/blob/master/cfg/sigsegv_convars.cfg#L123). Rejoice, [Rafmod](https://github.com/rafradek/sigsegv-mvm) hosts!
   - [x] Translatable map names.
   - [x] **[L4D(2)]** `Campaign` field instead of `Map`.
-- [x] **[TOGGLE]** Show usernames, global names or nicknames in **Discord→Server** messages.
-- [x] **[TOGGLE]** Randomize name colors in **Discord→Server** messages.
+- [x] Show usernames, global names or nicknames in **Discord→Server** messages.
+- [x] Randomize name colors in **Discord→Server** messages.
   - Implemented it for readability as per requested.
 - [ ] Hide things:
-  - [x] **[TOGGLE]** Team chat.
-  - [x] **[TOGGLE]** Command prefixes.
+  - [x] Team chat.
+  - [x] Command prefixes.
   - [ ] **[REGEX]** Word Filter.
 - [x] Discord invite command!
   - `sm_discord`/`!discord`.
