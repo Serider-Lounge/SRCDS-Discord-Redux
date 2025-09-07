@@ -163,7 +163,10 @@ public void UpdateConVars()
             {
                 case bot_token:
                 {
-                    if (g_Discord != null) return;
+                    if (g_Discord != null)
+                    {
+                        delete g_Discord;
+                    }
 
                     char botToken[256];
                     g_ConVars[bot_token].GetString(botToken, sizeof(botToken));
