@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w36a"
+#define PLUGIN_VERSION     "25w36b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -55,6 +55,7 @@ public void OnMapEnd()
 {
     g_bMapEnded = true;
     Embed_CurrentMapStatus();
+    g_Discord = null;
 }
 
 /* ========[Discord]======== */
@@ -272,14 +273,14 @@ public void OnClientAvatarRetrieved(int client)
     if (g_PendingJoinEmbed[client] == null)
         return;
 
-    char steamID2[32];
-    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
+        char steamID2[32];
+        GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
 
-    g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
+        g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
     
-    g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
+        g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
     
-    delete g_PendingJoinEmbed[client]; g_PendingJoinEmbed[client] = null;
+        delete g_PendingJoinEmbed[client]; g_PendingJoinEmbed[client] = null;
 }
 
 public void OnClientDisconnect(int client)
@@ -295,12 +296,31 @@ public void OnClientDisconnect(int client)
     DiscordEmbed embed = new DiscordEmbed();
 
     char desc[DISCORD_DESC_LENGTH];
-    Format(desc, sizeof(desc), "%T", "discord_redux_player_leave", LANG_SERVER, playerName, steamID64);
-    embed.SetDescription(desc);
+    bool banned = false;
+    bool kicked = false;
 
+    banned = g_bIsClientBanned[client];
+    kicked = IsClientInKickQueue(client);
+
+    if (banned)
+    {
+        Format(desc, sizeof(desc), "%T", "discord_redux_player_banned", LANG_SERVER, playerName, steamID64);
+    }
+    else if (kicked)
+    {
+        Format(desc, sizeof(desc), "%T", "discord_redux_player_kicked", LANG_SERVER, playerName, steamID64);
+    }
+    else
+    {
+        Format(desc, sizeof(desc), "%T", "discord_redux_player_leave", LANG_SERVER, playerName, steamID64);
+    }
+
+    // Always use leave color for kick/ban/leave
     char hexColor[8];
     g_ConVars[embed_leave_color].GetString(hexColor, sizeof(hexColor));
     embed.Color = StringToInt(hexColor, 16);
+
+    embed.SetDescription(desc);
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
@@ -312,4 +332,10 @@ public void OnClientDisconnect(int client)
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
     g_Discord.SendMessageEmbed(channelID, "", embed);
     delete embed;
+}
+
+public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
+{
+    g_bIsClientBanned[client] = true;
+    return Plugin_Continue;
 }

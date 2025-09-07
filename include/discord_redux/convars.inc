@@ -78,10 +78,11 @@ enum UsernameMode
 
 ConVar g_ConVars[MAX_CONVARS];
 
-Discord g_Discord;
-DiscordWebhook g_ChatWebhook;
+Discord g_Discord = null;
+DiscordWebhook g_ChatWebhook = null;
 
-bool g_bMapEnded;
+bool g_bMapEnded,
+     g_bIsClientBanned[MAXPLAYERS+1];
 
 public void InitConVars()
 {
@@ -163,15 +164,12 @@ public void UpdateConVars()
                     char botToken[256];
                     g_ConVars[bot_token].GetString(botToken, sizeof(botToken));
 
-                    if (g_Discord == null || !g_Discord.IsRunning)
+                    if (g_Discord == null)
                         g_Discord = new Discord(botToken);
-                    
                     g_Discord.SetReadyCallback(OnDiscordReady);
 
                     if (!g_Discord.IsRunning)
                         g_Discord.Start();
-                    else if (!g_ConVars[plugin_enabled].BoolValue)
-                        g_Discord.Stop();
                 }
                 case chat_channel_id:
                 {
