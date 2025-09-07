@@ -71,219 +71,219 @@
     }
     "cp_5gorge"
     {
-        "en" "5Gorge (Control Point)"
+        "en" "5Gorge (Control Points) [Symmetrical]"
     }
     "cp_badlands"
     {
-        "en" "Badlands (Control Point)"
+        "en" "Badlands (Control Points) [Symmetrical]"
     }
     "cp_canaveral_5cp"
     {
-        "en" "Canaveral (Control Point)"
+        "en" "Canaveral (Control Points) [Symmetrical]"
     }
     "cp_coldfront"
     {
-        "en" "Coldfront (Control Point)"
+        "en" "Coldfront (Control Points) [Symmetrical]"
     }
     "cp_fastlane"
     {
-        "en" "Fastlane (Control Point)"
+        "en" "Fastlane (Control Points) [Symmetrical]"
     }
     "cp_foundry"
     {
-        "en" "Foundry (Control Point)"
+        "en" "Foundry (Control Points) [Symmetrical]"
     }
     "cp_freaky_fair"
     {
-        "en" "Freaky Fair (Control Point)"
+        "en" "Freaky Fair (Control Points) [Symmetrical]"
     }
     "cp_freight_final1"
     {
-        "en" "Freight (Control Point)"
+        "en" "Freight (Control Points) [Symmetrical]"
     }
     "cp_granary"
     {
-        "en" "Granary (Control Point)"
+        "en" "Granary (Control Points) [Symmetrical]"
     }
     "cp_gullywash_final1"
     {
-        "en" "Gullywash (Control Point)"
+        "en" "Gullywash (Control Points) [Symmetrical]"
     }
     "cp_metalworks"
     {
-        "en" "Metalworks (Control Point)"
+        "en" "Metalworks (Control Points) [Symmetrical]"
     }
     "cp_powerhouse"
     {
-        "en" "Powerhouse (Control Point)"
+        "en" "Powerhouse (Control Points) [Symmetrical]"
     }
     "cp_process_final"
     {
-        "en" "Process (Control Point)"
+        "en" "Process (Control Points) [Symmetrical]"
     }
     "cp_reckoner"
     {
-        "en" "Reckoner (Control Point)"
+        "en" "Reckoner (Control Points) [Symmetrical]"
     }
     "cp_sunshine_event"
     {
-        "en" "Sinshine (Control Point)"
+        "en" "Sinshine (Control Points) [Symmetrical]"
     }
     "cp_snakewater_final1"
     {
-        "en" "Snakewater (Control Point)"
+        "en" "Snakewater (Control Points) [Symmetrical]"
     }
     "cp_sunshine"
     {
-        "en" "Sunshine (Control Point)"
+        "en" "Sunshine (Control Points) [Symmetrical]"
     }
     "cp_vanguard"
     {
-        "en" "Vanguard (Control Point)"
+        "en" "Vanguard (Control Points) [Symmetrical]"
     }
     "cp_well"
     {
-        "en" "Well (Control Point)"
+        "en" "Well (Control Points) [Symmetrical]"
     }
     "cp_yukon_final"
     {
-        "en" "Yukon (Control Point)"
+        "en" "Yukon (Control Points) [Symmetrical]"
     }
     "cp_altitude"
     {
-        "en" "Altitude (Attack/Defend)"
+        "en" "Altitude (Control Points) [Attack/Defend]"
     }
     "cp_brew"
     {
-        "en" "Brew (Attack/Defend)"
+        "en" "Brew (Control Points) [Attack/Defend]"
     }
     "cp_cargo"
     {
-        "en" "Cargo (Attack/Defend)"
+        "en" "Cargo (Control Points) [Attack/Defend]"
     }
     "cp_carrier"
     {
-        "en" "Carrier (Attack/Defend)"
+        "en" "Carrier (Control Points) [Attack/Defend]"
     }
     "cp_conifer"
     {
-        "en" "Conifer (Attack/Defend)"
+        "en" "Conifer (Control Points) [Attack/Defend]"
     }
     "cp_fortezza"
     {
-        "en" "Fortezza (Attack/Defend)"
+        "en" "Fortezza (Control Points) [Attack/Defend]"
     }
     "cp_gravelpit_snowy"
     {
-        "en" "Coal Pit (Attack/Defend)"
+        "en" "Coal Pit (Control Points) [Attack/Defend]"
     }
     "cp_darkmarsh"
     {
-        "en" "Darkmarsh (Attack/Defend)"
+        "en" "Darkmarsh (Control Points) [Attack/Defend]"
     }
     "cp_dustbowl"
     {
-        "en" "Dustbowl (Attack/Defend)"
+        "en" "Dustbowl (Control Points) [Attack/Defend]"
     }
     "cp_ambush_event"
     {
-        "en" "Erebus (Attack/Defend)"
+        "en" "Erebus (Control Points) [Attack/Defend]"
     }
     "cp_egypt_final"
     {
-        "en" "Egypt (Attack/Defend)"
+        "en" "Egypt (Control Points) [Attack/Defend]"
     }
     "cp_frostwatch"
     {
-        "en" "Frostwatch (Attack/Defend)"
+        "en" "Frostwatch (Control Points) [Attack/Defend]"
     }
     "cp_fulgur"
     {
-        "en" "Fulgur (Attack/Defend)"
+        "en" "Fulgur (Control Points) [Attack/Defend]"
     }
     "cp_gorge"
     {
-        "en" "Gorge (Attack/Defend)"
+        "en" "Gorge (Control Points) [Attack/Defend]"
     }
     "cp_gorge_event"
     {
-        "en" "Gorge Event (Attack/Defend)"
+        "en" "Gorge Event (Control Points) [Attack/Defend]"
     }
     "cp_gravelpit"
     {
-        "en" "Gravel Pit (Attack/Defend)"
+        "en" "Gravel Pit (Control Points) [Attack/Defend]"
     }
     "ctf_haarp"
     {
-        "en" "Haarp (Attack/Defend)"
+        "en" "Haarp (Capture The Flag) [Attack/Defend]"
     }
     "cp_hadal"
     {
-        "en" "Hadal (Attack/Defend)"
+        "en" "Hadal (Control Points) [Attack/Defend]"
     }
     "cp_hardwood_final"
     {
-        "en" "Hardwood (Attack/Defend)"
+        "en" "Hardwood (Control Points) [Attack/Defend]"
     }
     "cp_junction_final"
     {
-        "en" "Junction (Attack/Defend)"
+        "en" "Junction (Control Points) [Attack/Defend]"
     }
     "cp_lavapit_final"
     {
-        "en" "Lava Pit (Attack/Defend)"
+        "en" "Lava Pit (Control Points) [Attack/Defend]"
     }
     "cp_manor_event"
     {
-        "en" "Mann Manor (Attack/Defend)"
+        "en" "Mann Manor (Control Points) [Attack/Defend]"
     }
     "cp_mercenarypark"
     {
-        "en" "Mercenary Park (Attack/Defend)"
+        "en" "Mercenary Park (Control Points) [Attack/Defend]"
     }
     "cp_mossrock"
     {
-        "en" "Mossrock (Attack/Defend)"
+        "en" "Mossrock (Control Points) [Attack/Defend]"
     }
     "cp_mountainlab"
     {
-        "en" "Mountain Lab (Attack/Defend)"
+        "en" "Mountain Lab (Control Points) [Attack/Defend]"
     }
     "cp_snowplow"
     {
-        "en" "Snowplow (Attack/Defend)"
+        "en" "Snowplow (Control Points) [Attack/Defend]"
     }
     "cp_spookeyridge"
     {
-        "en" "Spookeyridge (Attack/Defend)"
+        "en" "Spookeyridge (Control Points) [Attack/Defend]"
     }
     "cp_steel"
     {
-        "en" "Steel (Attack/Defend)"
+        "en" "Steel (Control Points) [Attack/Defend]"
     }
     "cp_sulfur"
     {
-        "en" "Sulfur (Attack/Defend)"
+        "en" "Sulfur (Control Points) [Attack/Defend]"
     }
     "cp_overgrown"
     {
-        "en" "Overgrown (Attack/Defend)"
+        "en" "Overgrown (Control Points) [Attack/Defend]"
     }
     "cp_burghausen"
     {
-        "en" "Burghausen (Medieval Mode)"
+        "en" "Burghausen (Control Points) [Attack/Defend] [Medieval Mode]"
     }
     "cp_degrootkeep"
     {
-        "en" "DeGroot Keep (Medieval Mode)"
+        "en" "DeGroot Keep (Control Points) [Attack/Defend] [Medieval Mode]"
     }
     "cp_degrootkeep_rats"
     {
-        "en" "Sandcastle (Medieval Mode)"
+        "en" "Sandcastle (Control Points) [Attack/Defend] [Medieval Mode]"
     }
     "cp_standin_final"
     {
-        "en" "Standin (Domination)"
+        "en" "Standin (Control Points) [Domination]"
     }
     "tc_hydro"
     {
@@ -703,7 +703,7 @@
     }
     "cp_cloak"
     {
-        "en" "Cloak (Control Point)"
+        "en" "Cloak (Control Points)"
     }
     "mvm_bigrock"
     {
@@ -743,19 +743,19 @@
     }
     "ctf_foundry"
     {
-        "en" "Foundry (Capture The Flag, Mannpower)"
+        "en" "Foundry (Capture The Flag) [Mannpower]"
     }
     "ctf_gorge"
     {
-        "en" "Gorge (Capture The Flag, Mannpower)"
+        "en" "Gorge (Capture The Flag) [Mannpower]"
     }
     "ctf_hellfire"
     {
-        "en" "Hellfire (Mannpower)"
+        "en" "Hellfire (Capture The Flag) [Mannpower]"
     }
     "ctf_thundermountain"
     {
-        "en" "Thunder Mountain (Capture The Flag, Mannpower)"
+        "en" "Thunder Mountain (Capture The Flag) [Mannpower]"
     }
     "pass_brickyard"
     {
