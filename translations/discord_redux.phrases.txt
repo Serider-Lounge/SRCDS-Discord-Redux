@@ -81,6 +81,11 @@
         "en"        "Map:"
         "fr"        "Carte:"
     }
+    "discord_redux_gamemode" // Gamemode
+    {
+        "en"        "Gamemode:"
+        "fr"        "Mode de Jeu:"
+    }
     "discord_redux_campaign" // Campaign
     {
         "en"        "Campaign:"

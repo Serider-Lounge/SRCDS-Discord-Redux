@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w36b"
+#define PLUGIN_VERSION     "25w36c"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -200,6 +200,44 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
     if (StrEqual(command, "say_team", false) && !g_ConVars[show_team_chat].BoolValue)
         return Plugin_Continue;
 
+    // Hide Command Prefixes
+    char hidePrefixes[32];
+    g_ConVars[hide_command_prefix].GetString(hidePrefixes, sizeof(hidePrefixes));
+
+    char silentTriggers[32];
+    GetSilentChatTriggers(silentTriggers, sizeof(silentTriggers));
+
+    char filteredArgs[MAX_DISCORD_MESSAGE_LENGTH];
+    strcopy(filteredArgs, sizeof(filteredArgs), sArgs);
+
+    if (silentTriggers[0] != '\0')
+    {
+        int triggersLen = strlen(silentTriggers);
+        for (int i = 0; i < triggersLen; i++)
+        {
+            if (filteredArgs[0] == silentTriggers[i])
+            {
+                strcopy(filteredArgs, sizeof(filteredArgs), filteredArgs[1]);
+                break;
+            }
+        }
+    }
+    
+    if (hidePrefixes[0] != '\0')
+    {
+        char prefixList[10][8];
+        int count = ExplodeString(hidePrefixes, ",", prefixList, sizeof(prefixList), sizeof(prefixList[]));
+        for (int i = 0; i < count; i++)
+        {
+            int prefixLen = strlen(prefixList[i]);
+            if (strncmp(filteredArgs, prefixList[i], prefixLen, false) == 0)
+            {
+                strcopy(filteredArgs, sizeof(filteredArgs), filteredArgs[prefixLen]);
+                break;
+            }
+        }
+    }
+
     if (client == 0)
     {
         DiscordEmbed embed = new DiscordEmbed();
@@ -296,17 +334,13 @@ public void OnClientDisconnect(int client)
     DiscordEmbed embed = new DiscordEmbed();
 
     char desc[DISCORD_DESC_LENGTH];
-    bool banned = false;
-    bool kicked = false;
 
-    banned = g_bIsClientBanned[client];
-    kicked = IsClientInKickQueue(client);
-
-    if (banned)
+    if (g_bIsClientBanned[client])
     {
         Format(desc, sizeof(desc), "%T", "discord_redux_player_banned", LANG_SERVER, playerName, steamID64);
+        g_bIsClientBanned[client] = false;
     }
-    else if (kicked)
+    else if (IsClientInKickQueue(client))
     {
         Format(desc, sizeof(desc), "%T", "discord_redux_player_kicked", LANG_SERVER, playerName, steamID64);
     }

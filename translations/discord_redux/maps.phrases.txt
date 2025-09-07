@@ -3,1092 +3,1092 @@
     // Team Fortress 2
     "ctf_2fort"
     {
-        "en" "2Fort (Capture The Flag)"
+        "en" "2Fort"
     }
     "ctf_2fort_invasion"
     {
-        "en" "2Fort Invasion (Capture The Flag)"
+        "en" "2Fort Invasion"
     }
     "ctf_applejack"
     {
-        "en" "Applejack (Capture The Flag)"
+        "en" "Applejack"
     }
     "ctf_crasher"
     {
-        "en" "Crasher (Capture The Flag)"
+        "en" "Crasher"
     }
     "ctf_doublecross"
     {
-        "en" "Double Cross (Capture The Flag)"
+        "en" "Double Cross"
     }
     "ctf_doublecross_snowy"
     {
-        "en" "Doublefrost (Capture The Flag)"
+        "en" "Doublefrost"
     }
     "ctf_frosty"
     {
-        "en" "Frosty (Capture The Flag)"
+        "en" "Frosty"
     }
     "ctf_helltrain_event"
     {
-        "en" "Helltrain (Capture The Flag)"
+        "en" "Helltrain"
     }
     "ctf_landfall"
     {
-        "en" "Landfall (Capture The Flag)"
+        "en" "Landfall"
     }
     "ctf_pelican_peak"
     {
-        "en" "Pelican Peak (Capture The Flag)"
+        "en" "Pelican Peak"
     }
     "ctf_penguin_peak"
     {
-        "en" "Penguin Peak (Capture The Flag)"
+        "en" "Penguin Peak"
     }
     "ctf_pressure"
     {
-        "en" "Pressure (Capture The Flag)"
+        "en" "Pressure"
     }
     "ctf_sawmill"
     {
-        "en" "Sawmill (Capture The Flag)"
+        "en" "Sawmill"
     }
     "ctf_snowfall_final"
     {
-        "en" "Snowfall (Capture The Flag)"
+        "en" "Snowfall"
     }
     "ctf_turbine"
     {
-        "en" "Turbine (Capture The Flag)"
+        "en" "Turbine"
     }
     "ctf_turbine_winter"
     {
-        "en" "Turbine Center (Capture The Flag)"
+        "en" "Turbine Center"
     }
     "ctf_well"
     {
-        "en" "Well (Capture The Flag)"
+        "en" "Well"
     }
     "cp_5gorge"
     {
-        "en" "5Gorge (Control Point)"
+        "en" "5Gorge"
     }
     "cp_badlands"
     {
-        "en" "Badlands (Control Point)"
+        "en" "Badlands"
     }
     "cp_canaveral_5cp"
     {
-        "en" "Canaveral (Control Point)"
+        "en" "Canaveral"
     }
     "cp_coldfront"
     {
-        "en" "Coldfront (Control Point)"
+        "en" "Coldfront"
     }
     "cp_fastlane"
     {
-        "en" "Fastlane (Control Point)"
+        "en" "Fastlane"
     }
     "cp_foundry"
     {
-        "en" "Foundry (Control Point)"
+        "en" "Foundry"
     }
     "cp_freaky_fair"
     {
-        "en" "Freaky Fair (Control Point)"
+        "en" "Freaky Fair"
     }
     "cp_freight_final1"
     {
-        "en" "Freight (Control Point)"
+        "en" "Freight"
     }
     "cp_granary"
     {
-        "en" "Granary (Control Point)"
+        "en" "Granary"
     }
     "cp_gullywash_final1"
     {
-        "en" "Gullywash (Control Point)"
+        "en" "Gullywash"
     }
     "cp_metalworks"
     {
-        "en" "Metalworks (Control Point)"
+        "en" "Metalworks"
     }
     "cp_powerhouse"
     {
-        "en" "Powerhouse (Control Point)"
+        "en" "Powerhouse"
     }
     "cp_process_final"
     {
-        "en" "Process (Control Point)"
+        "en" "Process"
     }
     "cp_reckoner"
     {
-        "en" "Reckoner (Control Point)"
+        "en" "Reckoner"
     }
     "cp_sunshine_event"
     {
-        "en" "Sinshine (Control Point)"
+        "en" "Sinshine"
     }
     "cp_snakewater_final1"
     {
-        "en" "Snakewater (Control Point)"
+        "en" "Snakewater"
     }
     "cp_sunshine"
     {
-        "en" "Sunshine (Control Point)"
+        "en" "Sunshine"
     }
     "cp_vanguard"
     {
-        "en" "Vanguard (Control Point)"
+        "en" "Vanguard"
     }
     "cp_well"
     {
-        "en" "Well (Control Point)"
+        "en" "Well"
     }
     "cp_yukon_final"
     {
-        "en" "Yukon (Control Point)"
+        "en" "Yukon"
     }
     "cp_altitude"
     {
-        "en" "Altitude (Attack/Defend)"
+        "en" "Altitude"
     }
     "cp_brew"
     {
-        "en" "Brew (Attack/Defend)"
+        "en" "Brew"
     }
     "cp_cargo"
     {
-        "en" "Cargo (Attack/Defend)"
+        "en" "Cargo"
     }
     "cp_carrier"
     {
-        "en" "Carrier (Attack/Defend)"
+        "en" "Carrier"
     }
     "cp_conifer"
     {
-        "en" "Conifer (Attack/Defend)"
+        "en" "Conifer"
     }
     "cp_fortezza"
     {
-        "en" "Fortezza (Attack/Defend)"
+        "en" "Fortezza"
     }
     "cp_gravelpit_snowy"
     {
-        "en" "Coal Pit (Attack/Defend)"
+        "en" "Coal Pit"
     }
     "cp_darkmarsh"
     {
-        "en" "Darkmarsh (Attack/Defend)"
+        "en" "Darkmarsh"
     }
     "cp_dustbowl"
     {
-        "en" "Dustbowl (Attack/Defend)"
+        "en" "Dustbowl"
     }
     "cp_ambush_event"
     {
-        "en" "Erebus (Attack/Defend)"
+        "en" "Erebus"
     }
     "cp_egypt_final"
     {
-        "en" "Egypt (Attack/Defend)"
+        "en" "Egypt"
     }
     "cp_frostwatch"
     {
-        "en" "Frostwatch (Attack/Defend)"
+        "en" "Frostwatch"
     }
     "cp_fulgur"
     {
-        "en" "Fulgur (Attack/Defend)"
+        "en" "Fulgur"
     }
     "cp_gorge"
     {
-        "en" "Gorge (Attack/Defend)"
+        "en" "Gorge"
     }
     "cp_gorge_event"
     {
-        "en" "Gorge Event (Attack/Defend)"
+        "en" "Gorge Event"
     }
     "cp_gravelpit"
     {
-        "en" "Gravel Pit (Attack/Defend)"
+        "en" "Gravel Pit"
     }
     "ctf_haarp"
     {
-        "en" "Haarp (Attack/Defend)"
+        "en" "Haarp"
     }
     "cp_hadal"
     {
-        "en" "Hadal (Attack/Defend)"
+        "en" "Hadal"
     }
     "cp_hardwood_final"
     {
-        "en" "Hardwood (Attack/Defend)"
+        "en" "Hardwood"
     }
     "cp_junction_final"
     {
-        "en" "Junction (Attack/Defend)"
+        "en" "Junction"
     }
     "cp_lavapit_final"
     {
-        "en" "Lava Pit (Attack/Defend)"
+        "en" "Lava Pit"
     }
     "cp_manor_event"
     {
-        "en" "Mann Manor (Attack/Defend)"
+        "en" "Mann Manor"
     }
     "cp_mercenarypark"
     {
-        "en" "Mercenary Park (Attack/Defend)"
+        "en" "Mercenary Park"
     }
     "cp_mossrock"
     {
-        "en" "Mossrock (Attack/Defend)"
+        "en" "Mossrock"
     }
     "cp_mountainlab"
     {
-        "en" "Mountain Lab (Attack/Defend)"
+        "en" "Mountain Lab"
     }
     "cp_snowplow"
     {
-        "en" "Snowplow (Attack/Defend)"
+        "en" "Snowplow"
     }
     "cp_spookeyridge"
     {
-        "en" "Spookeyridge (Attack/Defend)"
+        "en" "Spookeyridge"
     }
     "cp_steel"
     {
-        "en" "Steel (Attack/Defend)"
+        "en" "Steel"
     }
     "cp_sulfur"
     {
-        "en" "Sulfur (Attack/Defend)"
+        "en" "Sulfur"
     }
     "cp_overgrown"
     {
-        "en" "Overgrown (Attack/Defend)"
+        "en" "Overgrown"
     }
     "cp_burghausen"
     {
-        "en" "Burghausen (Medieval Mode)"
+        "en" "Burghausen"
     }
     "cp_degrootkeep"
     {
-        "en" "DeGroot Keep (Medieval Mode)"
+        "en" "DeGroot Keep"
     }
     "cp_degrootkeep_rats"
     {
-        "en" "Sandcastle (Medieval Mode)"
+        "en" "Sandcastle"
     }
     "cp_standin_final"
     {
-        "en" "Standin (Domination)"
+        "en" "Standin"
     }
     "tc_hydro"
     {
-        "en" "Hydro (Territorial Control)"
+        "en" "Hydro"
     }
     "pl_aquarius"
     {
-        "en" "Aquarius (Payload)"
+        "en" "Aquarius"
     }
     "pl_badwater"
     {
-        "en" "Badwater Basin (Payload)"
+        "en" "Badwater Basin"
     }
     "pl_barnblitz"
     {
-        "en" "Barnblitz (Payload)"
+        "en" "Barnblitz"
     }
     "pl_bloodwater"
     {
-        "en" "Bloodwater (Payload)"
+        "en" "Bloodwater"
     }
     "pl_borneo"
     {
-        "en" "Borneo (Payload)"
+        "en" "Borneo"
     }
     "pl_breadspace"
     {
-        "en" "Bread Space (Payload)"
+        "en" "Bread Space"
     }
     "pl_cactuscanyon"
     {
-        "en" "Cactus Canyon (Payload)"
+        "en" "Cactus Canyon"
     }
     "pl_fifthcurve_event"
     {
-        "en" "Brimstone (Payload)"
+        "en" "Brimstone"
     }
     "pl_camber"
     {
-        "en" "Camber (Payload)"
+        "en" "Camber"
     }
     "pl_cashworks"
     {
-        "en" "Cashworks (Payload)"
+        "en" "Cashworks"
     }
     "pl_chilly"
     {
-        "en" "Chilly (Payload)"
+        "en" "Chilly"
     }
     "pl_citadel"
     {
-        "en" "Citadel (Payload)"
+        "en" "Citadel"
     }
     "pl_corruption"
     {
-        "en" "Corruption (Payload)"
+        "en" "Corruption"
     }
     "pl_embargo"
     {
-        "en" "Embargo (Payload)"
+        "en" "Embargo"
     }
     "pl_emerge"
     {
-        "en" "Emerge (Payload)"
+        "en" "Emerge"
     }
     "pl_enclosure_final"
     {
-        "en" "Enclosure (Payload)"
+        "en" "Enclosure"
     }
     "pl_frontier_final"
     {
-        "en" "Frontier (Payload)"
+        "en" "Frontier"
     }
     "pl_frostcliff"
     {
-        "en" "Frostcliff (Payload)"
+        "en" "Frostcliff"
     }
     "pl_goldrush"
     {
-        "en" "Gold Rush (Payload)"
+        "en" "Gold Rush"
     }
     "pl_rumble_event"
     {
-        "en" "Gravestone (Payload)"
+        "en" "Gravestone"
     }
     "pl_sludgepit_event"
     {
-        "en" "Ghoulpit (Payload)"
+        "en" "Ghoulpit"
     }
     "pl_hasslecastle"
     {
-        "en" "Hassle Castle (Payload)"
+        "en" "Hassle Castle"
     }
     "pl_millstone_event"
     {
-        "en" "Hellstone (Payload)"
+        "en" "Hellstone"
     }
     "pl_hoodoo_final"
     {
-        "en" "Hoodoo (Payload)"
+        "en" "Hoodoo"
     }
     "pl_odyssey"
     {
-        "en" "Odyssey (Payload)"
+        "en" "Odyssey"
     }
     "pl_patagonia"
     {
-        "en" "Patagonia (Payload)"
+        "en" "Patagonia"
     }
     "pl_phoenix"
     {
-        "en" "Phoenix (Payload)"
+        "en" "Phoenix"
     }
     "pl_pier"
     {
-        "en" "Pier (Payload)"
+        "en" "Pier"
     }
     "pl_coal_event"
     {
-        "en" "Polar (Payload)"
+        "en" "Polar"
     }
     "pl_precipice_event_final"
     {
-        "en" "Precipice (Payload)"
+        "en" "Precipice"
     }
     "pl_rumford_event"
     {
-        "en" "Rumford (Payload)"
+        "en" "Rumford"
     }
     "pl_snowycoast"
     {
-        "en" "Snowycoast (Payload)"
+        "en" "Snowycoast"
     }
     "pl_spineyard"
     {
-        "en" "Spineyard (Payload)"
+        "en" "Spineyard"
     }
     "pl_swiftwater_final1"
     {
-        "en" "Swiftwater (Payload)"
+        "en" "Swiftwater"
     }
     "pl_terror_event"
     {
-        "en" "Terror (Payload)"
+        "en" "Terror"
     }
     "pl_thundermountain"
     {
-        "en" "Thunder Mountain (Payload)"
+        "en" "Thunder Mountain"
     }
     "pl_upward"
     {
-        "en" "Upward (Payload)"
+        "en" "Upward"
     }
     "pl_venice"
     {
-        "en" "Venice (Payload)"
+        "en" "Venice"
     }
     "pl_wutville_event"
     {
-        "en" "Wutville (Payload)"
+        "en" "Wutville"
     }
     "plr_bananabay"
     {
-        "en" "Banana Bay (Payload Race)"
+        "en" "Banana Bay"
     }
     "plr_hacksaw_event"
     {
-        "en" "Bonesaw (Payload Race)"
+        "en" "Bonesaw"
     }
     "plr_cutter"
     {
-        "en" "Cutter (Payload Race)"
+        "en" "Cutter"
     }
     "plr_hacksaw"
     {
-        "en" "Hacksaw (Payload Race)"
+        "en" "Hacksaw"
     }
     "plr_hightower_event"
     {
-        "en" "Helltower (Payload Race)"
+        "en" "Helltower"
     }
     "plr_hightower"
     {
-        "en" "Hightower (Payload Race)"
+        "en" "Hightower"
     }
     "plr_nightfall_final"
     {
-        "en" "Nightfall (Payload Race)"
+        "en" "Nightfall"
     }
     "plr_pipeline"
     {
-        "en" "Pipeline (Payload Race)"
+        "en" "Pipeline"
     }
     "arena_badlands"
     {
-        "en" "Badlands (Arena)"
+        "en" "Badlands"
     }
     "arena_byre"
     {
-        "en" "Byre (Arena)"
+        "en" "Byre"
     }
     "arena_granary"
     {
-        "en" "Granary (Arena)"
+        "en" "Granary"
     }
     "arena_lumberyard_event"
     {
-        "en" "Graveyard (Arena)"
+        "en" "Graveyard"
     }
     "arena_lumberyard"
     {
-        "en" "Lumberyard (Arena)"
+        "en" "Lumberyard"
     }
     "arena_nucleus"
     {
-        "en" "Nucleus (Arena)"
+        "en" "Nucleus"
     }
     "arena_offblast_final"
     {
-        "en" "Offblast (Arena)"
+        "en" "Offblast"
     }
     "arena_perks"
     {
-        "en" "Perks (Arena)"
+        "en" "Perks"
     }
     "arena_ravine"
     {
-        "en" "Ravine (Arena)"
+        "en" "Ravine"
     }
     "arena_sawmill"
     {
-        "en" "Sawmill (Arena)"
+        "en" "Sawmill"
     }
     "arena_watchtower"
     {
-        "en" "Watchtower (Arena)"
+        "en" "Watchtower"
     }
     "arena_well"
     {
-        "en" "Well (Arena)"
+        "en" "Well"
     }
     "koth_badlands"
     {
-        "en" "Badlands (King of the Hill)"
+        "en" "Badlands"
     }
     "koth_blowout"
     {
-        "en" "Blowout (King of the Hill)"
+        "en" "Blowout"
     }
     "koth_boardwalk"
     {
-        "en" "Boardwalk (King of the Hill)"
+        "en" "Boardwalk"
     }
     "koth_brazil"
     {
-        "en" "Brazil (King of the Hill)"
+        "en" "Brazil"
     }
     "koth_cachoeira"
     {
-        "en" "Cachoeira (King of the Hill)"
+        "en" "Cachoeira"
     }
     "koth_cascade"
     {
-        "en" "Cascade (King of the Hill)"
+        "en" "Cascade"
     }
     "koth_bagel_event"
     {
-        "en" "Cauldron (King of the Hill)"
+        "en" "Cauldron"
     }
     "koth_demolition"
     {
-        "en" "Demolition (King of the Hill)"
+        "en" "Demolition"
     }
     "koth_viaduct_event"
     {
-        "en" "Eyeaduct (King of the Hill)"
+        "en" "Eyeaduct"
     }
     "koth_lakeside_event"
     {
-        "en" "Ghost Fort (King of the Hill)"
+        "en" "Ghost Fort"
     }
     "koth_harvest_final"
     {
-        "en" "Harvest (King of the Hill)"
+        "en" "Harvest"
     }
     "koth_harvest_event"
     {
-        "en" "Harvest Event (King of the Hill)"
+        "en" "Harvest Event"
     }
     "koth_highpass"
     {
-        "en" "Highpass (King of the Hill)"
+        "en" "Highpass"
     }
     "koth_king"
     {
-        "en" "Kong King (King of the Hill)"
+        "en" "Kong King"
     }
     "koth_krampus"
     {
-        "en" "Krampus (King of the Hill)"
+        "en" "Krampus"
     }
     "koth_lakeside_final"
     {
-        "en" "Lakeside (King of the Hill)"
+        "en" "Lakeside"
     }
     "koth_slaughter_event"
     {
-        "en" "Laughter (King of the Hill)"
+        "en" "Laughter"
     }
     "koth_lazarus"
     {
-        "en" "Lazarus (King of the Hill)"
+        "en" "Lazarus"
     }
     "koth_los_muertos"
     {
-        "en" "Los Muertos (King of the Hill)"
+        "en" "Los Muertos"
     }
     "koth_mannhole"
     {
-        "en" "Mannhole (King of the Hill)"
+        "en" "Mannhole"
     }
     "koth_maple_ridge_event"
     {
-        "en" "Maple Ridge Event (King of the Hill)"
+        "en" "Maple Ridge Event"
     }
     "koth_megalo"
     {
-        "en" "Megalo (King of the Hill)"
+        "en" "Megalo"
     }
     "koth_megaton"
     {
-        "en" "Megaton (King of the Hill)"
+        "en" "Megaton"
     }
     "koth_undergrove_event"
     {
-        "en" "Moldergrove (King of the Hill)"
+        "en" "Moldergrove"
     }
     "koth_moonshine_event"
     {
-        "en" "Moonshine Event (King of the Hill)"
+        "en" "Moonshine Event"
     }
     "koth_nucleus"
     {
-        "en" "Nucleus (King of the Hill)"
+        "en" "Nucleus"
     }
     "koth_overcast_final"
     {
-        "en" "Overcast (King of the Hill)"
+        "en" "Overcast"
     }
     "koth_probed"
     {
-        "en" "Probed (King of the Hill)"
+        "en" "Probed"
     }
     "koth_rotunda"
     {
-        "en" "Rotunda (King of the Hill)"
+        "en" "Rotunda"
     }
     "koth_sawmill"
     {
-        "en" "Sawmill (King of the Hill)"
+        "en" "Sawmill"
     }
     "koth_sharkbay"
     {
-        "en" "Sharkbay (King of the Hill)"
+        "en" "Sharkbay"
     }
     "koth_synthetic_event"
     {
-        "en" "Sinthetic (King of the Hill)"
+        "en" "Sinthetic"
     }
     "koth_slasher"
     {
-        "en" "Slasher (King of the Hill)"
+        "en" "Slasher"
     }
     "koth_slime"
     {
-        "en" "Slime (King of the Hill)"
+        "en" "Slime"
     }
     "koth_snowtower"
     {
-        "en" "Snowtower (King of the Hill)"
+        "en" "Snowtower"
     }
     "koth_sawmill_event"
     {
-        "en" "Soul-Mill (King of the Hill)"
+        "en" "Soul-Mill"
     }
     "koth_suijin"
     {
-        "en" "Suijin (King of the Hill)"
+        "en" "Suijin"
     }
     "koth_toxic"
     {
-        "en" "Toxic (King of the Hill)"
+        "en" "Toxic"
     }
     "koth_viaduct"
     {
-        "en" "Viaduct (King of the Hill)"
+        "en" "Viaduct"
     }
     "sd_doomsday_event"
     {
-        "en" "Carnival of Carnage (Special Delivery)"
+        "en" "Carnival of Carnage"
     }
     "sd_doomsday"
     {
-        "en" "Doomsday (Special Delivery)"
+        "en" "Doomsday"
     }
     "tr_dustbowl"
     {
-        "en" "Dustbowl (Training)"
+        "en" "Dustbowl"
     }
     "tr_target"
     {
-        "en" "Target (Training)"
+        "en" "Target"
     }
     "itemtest"
     {
-        "en" "Itemtest (Test)"
+        "en" "Itemtest"
     }
     "cp_cloak"
     {
-        "en" "Cloak (Control Point)"
+        "en" "Cloak"
     }
     "mvm_bigrock"
     {
-        "en" "Bigrock (Mann vs. Machine)"
+        "en" "Bigrock"
     }
     "mvm_coaltown"
     {
-        "en" "Coal Town (Mann vs. Machine)"
+        "en" "Coal Town"
     }
     "mvm_decoy"
     {
-        "en" "Decoy (Mann vs. Machine)"
+        "en" "Decoy"
     }
     "mvm_example"
     {
-        "en" "Example (Mann vs. Machine)"
+        "en" "Example"
     }
     "mvm_ghost_town"
     {
-        "en" "Ghost Town (Mann vs. Machine)"
+        "en" "Ghost Town"
     }
     "mvm_mannhattan"
     {
-        "en" "Mannhattan (Mann vs. Machine)"
+        "en" "Mannhattan"
     }
     "mvm_mannworks"
     {
-        "en" "Mannworks (Mann vs. Machine)"
+        "en" "Mannworks"
     }
     "mvm_rottenburg"
     {
-        "en" "Rottenburg (Mann vs. Machine)"
+        "en" "Rottenburg"
     }
     "rd_asteroid"
     {
-        "en" "Asteroid (Robot Destruction)"
+        "en" "Asteroid"
     }
     "ctf_foundry"
     {
-        "en" "Foundry (Capture The Flag, Mannpower)"
+        "en" "Foundry"
     }
     "ctf_gorge"
     {
-        "en" "Gorge (Capture The Flag, Mannpower)"
+        "en" "Gorge"
     }
     "ctf_hellfire"
     {
-        "en" "Hellfire (Mannpower)"
+        "en" "Hellfire"
     }
     "ctf_thundermountain"
     {
-        "en" "Thunder Mountain (Capture The Flag, Mannpower)"
+        "en" "Thunder Mountain"
     }
     "pass_brickyard"
     {
-        "en" "Brickyard (PASS Time)"
+        "en" "Brickyard"
     }
     "pass_district"
     {
-        "en" "District (PASS Time)"
+        "en" "District"
     }
     "pass_timbertown"
     {
-        "en" "Timbertown (PASS Time)"
+        "en" "Timbertown"
     }
     "pd_atom_smash"
     {
-        "en" "Atom Smash (Player Destruction)"
+        "en" "Atom Smash"
     }
     "pd_circus"
     {
-        "en" "Circus (Player Destruction)"
+        "en" "Circus"
     }
     "pd_cursed_cove_event"
     {
-        "en" "Cursed Cove (Player Destruction)"
+        "en" "Cursed Cove"
     }
     "pd_farmageddon"
     {
-        "en" "Farmageddon (Player Destruction)"
+        "en" "Farmageddon"
     }
     "pd_galleria"
     {
-        "en" "Galleria (Player Destruction)"
+        "en" "Galleria"
     }
     "pd_mannsylvania"
     {
-        "en" "Mannsylvania (Player Destruction)"
+        "en" "Mannsylvania"
     }
     "pd_monster_bash"
     {
-        "en" "Monster Bash (Player Destruction)"
+        "en" "Monster Bash"
     }
     "pd_pit_of_death_event"
     {
-        "en" "Pit of Death (Player Destruction)"
+        "en" "Pit of Death"
     }
     "pd_selbyen"
     {
-        "en" "Selbyen (Player Destruction)"
+        "en" "Selbyen"
     }
     "pd_snowville_event"
     {
-        "en" "SnowVille (Player Destruction)"
+        "en" "SnowVille"
     }
     "pd_watergate"
     {
-        "en" "Watergate (Player Destruction)"
+        "en" "Watergate"
     }
     "vsh_distillery"
     {
-        "en" "Distillery (Versus Saxton Hale)"
+        "en" "Distillery"
     }
     "vsh_maul"
     {
-        "en" "Maul (Versus Saxton Hale)"
+        "en" "Maul"
     }
     "vsh_nucleus"
     {
-        "en" "Nucleus VSH (Versus Saxton Hale)"
+        "en" "Nucleus VSH"
     }
     "vsh_outburst"
     {
-        "en" "Outburst (Versus Saxton Hale)"
+        "en" "Outburst"
     }
     "vsh_skirmish"
     {
-        "en" "Skirmish (Versus Saxton Hale)"
+        "en" "Skirmish"
     }
     "vsh_tinyrock"
     {
-        "en" "Tiny Rock (Versus Saxton Hale)"
+        "en" "Tiny Rock"
     }
     "zi_atoll"
     {
-        "en" "Atoll (Zombie Infection)"
+        "en" "Atoll"
     }
     "zi_blazehattan"
     {
-        "en" "Blazehattan (Zombie Infection)"
+        "en" "Blazehattan"
     }
     "zi_devastation_final1"
     {
-        "en" "Devastation (Zombie Infection)"
+        "en" "Devastation"
     }
     "zi_murky"
     {
-        "en" "Murky (Zombie Infection)"
+        "en" "Murky"
     }
     "zi_sanitarium"
     {
-        "en" "Sanitarium (Zombie Infection)"
+        "en" "Sanitarium"
     }
     "zi_woods"
     {
-        "en" "Woods (Zombie Infection)"
+        "en" "Woods"
     }
     "tow_dynamite"
     {
-        "en" "Dynamite (Tug of War)"
+        "en" "Dynamite"
     }
     
     // Left 4 Dead 2
     "c1m1_hotel"
     {
-        "en" "Dead Center | The Hotel"
+        "en" "The Hotel (Dead Center)"
     }
     "c1m2_streets"
     {
-        "en" "Dead Center | The Streets"
+        "en" "The Streets (Dead Center)"
     }
     "c1m3_mall"
     {
-        "en" "Dead Center | The Mall"
+        "en" "The Mall (Dead Center)"
     }
     "c1m4_atrium"
     {
-        "en" "Dead Center | Atrium Finale"
+        "en" "Atrium Finale (Dead Center)"
     }
     "c2m1_highway"
     {
-        "en" "Dark Carnival | The Highway"
+        "en" "The Highway (Dark Carnival)"
     }
     "c2m2_fairgrounds"
     {
-        "en" "Dark Carnival | The Fairgrounds"
+        "en" "The Fairgrounds (Dark Carnival)"
     }
     "c2m3_coaster"
     {
-        "en" "Dark Carnival | The Coaster"
+        "en" "The Coaster (Dark Carnival)"
     }
     "c2m4_barns"
     {
-        "en" "Dark Carnival | The Barns"
+        "en" "The Barns (Dark Carnival)"
     }
     "c2m5_concert"
     {
-        "en" "Dark Carnival | The Concert"
+        "en" "The Concert (Dark Carnival)"
     }
     "c3m1_plankcountry"
     {
-        "en" "Swamp Fever | The Plank Country"
+        "en" "Plank Country (Swamp Fever)"
     }
     "c3m2_swamp"
     {
-        "en" "Swamp Fever | The Swamp"
+        "en" "The Swamp (Swamp Fever)"
     }
     "c3m3_shantytown"
     {
-        "en" "Swamp Fever | The Shantytown"
+        "en" "Shantytown (Swamp Fever)"
     }
     "c3m4_plantation"
     {
-        "en" "Swamp Fever | The Plantation"
+        "en" "The Plantation (Swamp Fever)"
     }
     "c4m1_milltown_a"
     {
-        "en" "Hard Rain | The Milltown ~ A"
+        "en" "Milltown ~ A (Hard Rain)"
     }
     "c4m2_sugarmill_a"
     {
-        "en" "Hard Rain | The Sugar Mill ~ A"
+        "en" "Sugar Mill ~ A (Hard Rain)"
     }
     "c4m3_sugarmill_b"
     {
-        "en" "Hard Rain | The Sugar Mill ~ B"
+        "en" "Sugar Mill ~ B (Hard Rain)"
     }
     "c4m4_milltown_b"
     {
-        "en" "Hard Rain | The Milltown ~ B"
+        "en" "Milltown ~ B (Hard Rain)"
     }
     "c4m5_milltown_escape"
     {
-        "en" "Hard Rain | Town Escape ~ Milltown Escape"
+        "en" "Milltown Escape (Hard Rain)"
     }
     "c5m1_waterfront_sndscape"
     {
-        "en" "The Parish | The Waterfront (Soundscape)"
+        "en" "The Waterfront ~ Soundscape (The Parish)"
     }
     "c5m1_waterfront"
     {
-        "en" "The Parish | The Waterfront"
+        "en" "The Waterfront (The Parish)"
     }
     "c5m2_park"
     {
-        "en" "The Parish | The Park"
+        "en" "The Park (The Parish)"
     }
     "c5m3_cemetery"
     {
-        "en" "The Parish | The Cemetery"
+        "en" "The Cemetery (The Parish)"
     }
     "c5m4_quarter"
     {
-        "en" "The Parish | The Quarter"
+        "en" "The Quarter (The Parish)"
     }
     "c5m5_bridge"
     {
-        "en" "The Parish | The Bridge"
+        "en" "The Bridge (The Parish)"
     }
     "c6m1_riverbank"
     {
-        "en" "The Passing | The Riverbank"
+        "en" "The Riverbank (The Passing)"
     }
     "c6m2_bedlam"
     {
-        "en" "The Passing | The Underground"
+        "en" "The Underground (The Passing)"
     }
     "c6m3_port"
     {
-        "en" "The Passing | The Port"
+        "en" "The Port (The Passing)"
     }
     "c7m1_docks"
     {
-        "en" "The Sacrifice | The Docks"
+        "en" "The Docks (The Sacrifice)"
     }
     "c7m2_barge"
     {
-        "en" "The Sacrifice | The Barge"
+        "en" "The Barge (The Sacrifice)"
     }
     "c7m3_port"
     {
-        "en" "The Sacrifice | The Port"
+        "en" "The Port (The Sacrifice)"
     }
     "c8m1_apartment"
     {
-        "en" "No Mercy | The Apartments"
+        "en" "The Apartments (No Mercy)"
     }
     "c8m2_subway"
     {
-        "en" "No Mercy | The Subway"
+        "en" "The Subway (No Mercy)"
     }
     "c8m3_sewers"
     {
-        "en" "No Mercy | The Sewer"
+        "en" "The Sewer (No Mercy)"
     }
     "c8m4_interior"
     {
-        "en" "No Mercy | The Hospital"
+        "en" "The Hospital (No Mercy)"
     }
     "c8m5_rooftop"
     {
-        "en" "No Mercy | The Rooftop"
+        "en" "The Rooftop (No Mercy)"
     }
     "c9m1_alleys"
     {
-        "en" "Crash Course | The Alleys"
+        "en" "The Alleys (Crash Course)"
     }
     "c9m2_lots"
     {
-        "en" "Crash Course | The Truck Depot Finale"
+        "en" "Truck Depot Finale (Crash Course)"
     }
     "c10m1_caves"
     {
-        "en" "Death Toll | The Turnpike"
+        "en" "The Turnpike (Death Toll)"
     }
     "c10m2_drainage"
     {
-        "en" "Death Toll | The Drains"
+        "en" "The Drains (Death Toll)"
     }
     "c10m3_ranchhouse"
     {
-        "en" "Death Toll | The Church"
+        "en" "The Church (Death Toll)"
     }
     "c10m4_mainstreet"
     {
-        "en" "Death Toll | The Town"
+        "en" "The Town (Death Toll)"
     }
     "c10m5_houseboat"
     {
-        "en" "Death Toll | The Town Boathouse Finale"
+        "en" "Town Boathouse Finale (Death Toll)"
     }
     "c11m1_greenhouse"
     {
-        "en" "Dead Air | The Greenhouse"
+        "en" "The Greenhouse (Dead Air)"
     }
     "c11m2_offices"
     {
-        "en" "Dead Air | The Crain"
+        "en" "The Crain (Dead Air)"
     }
     "c11m3_garage"
     {
-        "en" "Dead Air | The Construction Site"
+        "en" "Construction Site (Dead Air)"
     }
     "c11m4_terminal"
     {
-        "en" "Dead Air | The Terminal"
+        "en" "The Terminal (Dead Air)"
     }
     "c11m5_runway"
     {
-        "en" "Dead Air | The Runway Finale"
+        "en" "Runway Finale (Dead Air)"
     }
     "c12m1_hilltop"
     {
-        "en" "Blood Harvest | The Woods"
+        "en" "The Woods (Blood Harvest)"
     }
     "c12m2_traintunnel"
     {
-        "en" "Blood Harvest | The Tunnel"
+        "en" "The Tunnel (Blood Harvest)"
     }
     "c12m3_bridge"
     {
-        "en" "Blood Harvest | The Bridge"
+        "en" "The Bridge (Blood Harvest)"
     }
     "c12m4_barn"
     {
-        "en" "Blood Harvest | The Train Station"
+        "en" "Train Station (Blood Harvest)"
     }
     "c12m5_cornfield"
     {
-        "en" "Blood Harvest | The Farmhouse Finale"
+        "en" "Farmhouse Finale (Blood Harvest)"
     }
     "c13m1_alpinecreek"
     {
-        "en" "Cold Stream | Alpine Creek"
+        "en" "Alpine Creek (Cold Stream)"
     }
     "c13m2_southpinestream"
     {
-        "en" "Cold Stream | South Pine Stream"
+        "en" "South Pine Stream (Cold Stream)"
     }
     "c13m3_memorialbridge"
     {
-        "en" "Cold Stream | Memorial Bridge"
+        "en" "Memorial Bridge (Cold Stream)"
     }
     "c13m4_cutthroatcreek"
     {
-        "en" "Cold Stream | Cut/Throat Creek"
+        "en" "Cut-Throat Creek (Cold Stream)"
     }
 }
