@@ -3,6 +3,8 @@
 *.bat
 *.sh
 
+.archive
+
 admin*.inc
 adt*.inc
 banning.inc
@@ -47,3 +49,5 @@ topmenus.inc
 usermessages.inc
 vector.inc
 version*.inc
+
+!include/discord_redux/**

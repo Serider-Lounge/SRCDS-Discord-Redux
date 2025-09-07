@@ -1,118 +1,155 @@
 "Phrases"
 {
-    "Chat Format"
+    // Discord → Server
+    "discord_redux_chat_format"
     {
+        // {1} = Player Name
+        // {2} = Message
         "#format"   "{1:s},{2:s}"
         "en"        "*DISCORD* {1} :  {2}"
     }
-    "Chat Format (Reply)"
+    // Discord → Server (Reply)
+    "discord_redux_chat_format_reply"
     {
+        // {1} = Player Name
+        // {2} = Message
         "#format"   "{1:s},{2:s}"
         "en"        "*DISCORD* (Reply) {1} :  {2}"
+        "fr"        "*DISCORD* (Réponse) {1} :  {2}"
     }
-    "Discord Message"
+    // Discord → Server (Console)
+    "discord_redux_chat_format_console"
+    {
+        // {1} = Player Name
+        // {2} = Message
+        "#format"   "{1:s},{2:s}"
+        "en"        "(Discord) {1}: {2}"
+    }
+    // Server → Discord
+    "discord_redux_message_format"
     {
         // {1} = Message
         // {2} = Player Name
         // {3} = SteamID64
         // {4} = SteamID2
         // {5} = Server Name
+        // \n  = New Line
         "#format"	"{1:s},{2:s},{3:s},{4:s},{5:s}"
         "en"		"{1}"
     }
-    "Player Join"
+    // Player Status
+    "discord_redux_player_join" // Connecting
     {
         // {1} = Player Name
         // {2} = SteamID
         "#format"	"{1:s},{2:s}"
         "en"		"[{1}](http://www.steamcommunity.com/profiles/{2}) joined the game"
+        "fr"		"[{1}](http://www.steamcommunity.com/profiles/{2}) a rejoint la partie"
     }
-    "Player Leave"
+    "discord_redux_player_leave" // Disconnecting
     {
         // {1} = Player Name
         // {2} = SteamID
-		"#format"	"{1:s},{2:s}"
+        "#format"	"{1:s},{2:s}"
         "en" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) left the game"
+        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a quitté la partie"
     }
-    "Player Kicked"
+    "discord_redux_player_kicked" // Kicked
     {
         // {1} = Player Name
         // {2} = SteamID
-		"#format"	"{1:s},{2:s}"
+        "#format"	"{1:s},{2:s}"
         "en" 		"Kicked [{1}](http://www.steamcommunity.com/profiles/{2})"
+        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a été expulsé·e"
     }
-    "Player Banned"
+    "discord_redux_player_banned" // Banned
     {
         // {1} = Player Name
         // {2} = SteamID
-		"#format"	"{1:s},{2:s}"
+        "#format"	"{1:s},{2:s}"
         "en" 		"Banned [{1}](http://www.steamcommunity.com/profiles/{2})"
+        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a été banni·e"
     }
-    "Player Count"
+    // Map Status
+    "discord_redux_player_count" // Player Count
     {
         "en"        "Player Count:"
+        "fr"        "Nombre de Joueurs:"
     }
-    "Previous Map"
+    "discord_redux_map" // Map
     {
-        "en"        "Previous Map:"
+        "en"        "Map:"
+        "fr"        "Carte:"
     }
-    "Current Map"
+    "discord_redux_campaign" // Campaign
     {
-        "en"        "Current Map:"
+        "en"        "Campaign:"
+        "fr"        "Campagne:"
     }
-    "Scoreboard"
+    "discord_redux_chapter" // Chapter
+    {
+        "en"        "Chapter:"
+        "fr"        "Chapitre:"
+    }
+    // Scoreboard
+    "discord_redux_scoreboard"
     {
         "en"        "Scoreboard"
+        "fr"        "Tableau des Scores"
     }
-    "Blocked Word"
+    // Moderation
+    "discord_redux_blocked_word" // Flagged Word
     {
         // {1} = Player Name
         // {2} = Flagged Word
         "#format"   "{1:s},{2:s}"
         "en"        "[Discord Redux] {1} said a bad word! '{2}'"
+        "fr"        "[Discord Redux] {1} a dit un gros mot! '{2}'"
     }
-    "Crash Report Title" // UNUSED
+    // Accelerator
+    "discord_redux_crash_report_title" // Server Crash
     {
         "en"        "Server Crashed!"
+        "fr"        "Le serveur a planté!"
     }
-    "Crash Report Description" // UNUSED
+    "discord_redux_crash_report_description" // Crash Report Link
     {
         // {1} = Crash Report ID (ABCD-EFGH-IJKL)
         // {2} = Crash Report ID (abcdefghijkl)
         "#format"   "{1:s},{2:s}"
         "en"        "Crash Report Link: [{1}](https://crash.limetech.org/{2})"
+        "fr"        "Lien du rapport: [{1}](https://crash.limetech.org/{2})"
     }
-    "RCON Print Error"
+    // RCON
+    "discord_redux_rcon_print_error" // Print Error
     {
         // ```diff\n
         // -Unable to print command response-\n
         // ```
         "en"		"```diff\n-Unable to print command response-\n```" // Use '\n' for new lines
+        "fr"        "```diff\n-Impossible d'afficher une réponse-\n```" // Use '\n' for new lines
     }
-    "RCON Output"
+    "discord_redux_rcon_output" // Output
     {
         // ```<programming_language>\n
         // <output>\n
         // ```
         "en"		"```dsconfig\n%s\n```" // Use '\n' for new lines
     }
-    "RCON Input"
+    "discord_redux_rcon_input" // Input
     {
         // ```<programming_language>\n
         // <input>\n
         // ```
         "en"		"```hs\n%s\n```" // Use '\n' for new lines
     }
-    "Bot Unset"
+    // Bot Status
+    "discord_redux_bot_success" // Start Success
     {
-        "en"        "[Discord Redux] Bot token not set. Set discord_bot_token and reload plugin."
-    }
-    "Bot Failure"
-    {
-        "en"        "[Discord Redux] Failed to start Discord bot."
-    }
-    "Bot Success"
-    {
-        "en"        "[Discord Redux] Discord bot is ready."
+        // {1} = Bot Username
+        // {2} = Bot ID
+        "#format"   "{1:s},{2:s}"
+        "en"        "[Discord Redux] '{1}' is ready! ({2})"
+        "fr"        "[Discord Redux] '{1}' est prêt! ({2})"
     }
 }
