@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w36d"
+#define PLUGIN_VERSION     "25w36e"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -37,6 +37,15 @@ public void OnPluginStart()
     // Load Translations
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
+}
+
+public void OnPluginEnd()
+{
+    if (g_Discord != null)
+        g_Discord = null;
+
+    if (g_ChatWebhook != null)
+        g_ChatWebhook = null;
 }
 
 public void OnConfigsExecuted()
