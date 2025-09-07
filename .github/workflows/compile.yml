@@ -46,6 +46,7 @@ jobs:
       - name: Create scripting directory and move source code
         run: |
           mkdir -p scripting/discord_redux
+          mkdir -p scripting/include/discord_redux
           mv discord_redux.sp scripting/
           mv include/discord_redux/* scripting/include/discord_redux/
 
