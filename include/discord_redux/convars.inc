@@ -138,6 +138,8 @@ public void InitConVars()
     AutoExecConfig(true, "discord_redux");
 
     /* Commands */
+    //RegAdminCmd("sm_discord_bot", Command_DiscordBot, ADMFLAG_GENERIC);
+
     RegConsoleCmd("sm_discord", Command_Discord, "Discord Redux: Show plugin info and commands.", FCVAR_NONE);
 }
 
@@ -161,11 +163,12 @@ public void UpdateConVars()
             {
                 case bot_token:
                 {
+                    if (g_Discord != null) return;
+
                     char botToken[256];
                     g_ConVars[bot_token].GetString(botToken, sizeof(botToken));
 
-                    if (g_Discord == null)
-                        g_Discord = new Discord(botToken);
+                    g_Discord = new Discord(botToken);
                     g_Discord.SetReadyCallback(OnDiscordReady);
 
                     if (!g_Discord.IsRunning)
@@ -219,5 +222,11 @@ public Action Command_Discord(int client, int args)
     if (discordInvite[0] != '\0')
         CReplyToCommand(client, "%s", discordInvite);
     
+    return Plugin_Handled;
+}
+
+public Action Command_DiscordBot(int client, int args)
+{
+    PrintToChat(client, "g_Discord = %s", g_Discord != null ? "non-null" : "null");
     return Plugin_Handled;
 }

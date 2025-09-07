@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w36c"
+#define PLUGIN_VERSION     "25w36d"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -55,7 +55,6 @@ public void OnMapEnd()
 {
     g_bMapEnded = true;
     Embed_CurrentMapStatus();
-    g_Discord = null;
 }
 
 /* ========[Discord]======== */
@@ -74,6 +73,8 @@ void OnDiscordReady(Discord discord, any data)
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 {
+    if (g_Discord == null) return;
+
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
@@ -194,6 +195,9 @@ char g_PendingJoinChannel[MAXPLAYERS][SNOWFLAKE_SIZE];
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
+    if (g_Discord == null || g_ChatWebhook == null)
+        return Plugin_Continue;
+
     if ((client > 0 && (!IsClientInGame(client) || IsFakeClient(client))) || !g_Discord.IsRunning)
         return Plugin_Continue;
 
@@ -277,6 +281,9 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void OnClientPutInServer(int client)
 {
+    if (g_Discord == null || g_ChatWebhook == null)
+        return;
+
     if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
@@ -311,18 +318,21 @@ public void OnClientAvatarRetrieved(int client)
     if (g_PendingJoinEmbed[client] == null)
         return;
 
-        char steamID2[32];
-        GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
+    char steamID2[32];
+    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
 
         g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
     
-        g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
+    g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
     
-        delete g_PendingJoinEmbed[client]; g_PendingJoinEmbed[client] = null;
+    delete g_PendingJoinEmbed[client]; g_PendingJoinEmbed[client] = null;
 }
 
 public void OnClientDisconnect(int client)
 {
+    if (g_Discord == null || g_ChatWebhook == null)
+        return;
+
     if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
