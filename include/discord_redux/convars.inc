@@ -185,6 +185,14 @@ public void UpdateConVars()
                     if (chatChannelID[0] != '\0')
                         g_Discord.SetMessageCallback(OnDiscordMessage);
                 }
+                case rcon_channel_id:
+                {
+                    char rconChannelID[SNOWFLAKE_SIZE];
+                    g_ConVars[rcon_channel_id].GetString(rconChannelID, sizeof(rconChannelID));
+
+                    if (rconChannelID[0] != '\0')
+                        g_Discord.SetRconCallback(OnDiscordRconMessage);
+                }
                 case chat_webhook_url:
                 {
                     char webhookURL[256];

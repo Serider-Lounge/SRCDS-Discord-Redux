@@ -1,6 +1,23 @@
 name: Compile with SourceMod
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - README.md
+      - LICENSE
+      - steam.png
+      - .gitignore
+      - .github/FUNDING.yml
+      - .archive/**
+  pull_request:
+    paths-ignore:
+      - README.md
+      - LICENSE
+      - steam.png
+      - .gitignore
+      - .github/FUNDING.yml
+      - .archive/**
+  workflow_dispatch:
 
 jobs:
   build:
