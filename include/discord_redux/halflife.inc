@@ -1,4 +1,4 @@
-enum AppID // I'm not sure if I got all of these right - @Heapons
+enum AppID
 {
     App_Unknown = 0,                /**< Unknown or unsupported */
     App_Original = 2400,            /**< The Ship */
