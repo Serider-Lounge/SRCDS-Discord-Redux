@@ -23,6 +23,11 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 - [x] Chat is relayed between Server and Discord in both ways.
   - [x] Steam avatars are also displayed.
 - [x] RCON commands executable through a dedicated Discord channel.
+- [x] Player Status.
+  - [x] Joins.
+  - [x] Leaves.
+  - [x] Kicks.
+  - [x] Bans.
 - [ ] Map Status.
   - [x] Can be called through commands.
     - [ ] Make them slash commands instead.
