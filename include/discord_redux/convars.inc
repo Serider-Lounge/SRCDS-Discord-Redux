@@ -138,8 +138,6 @@ public void InitConVars()
     AutoExecConfig(true, "discord_redux");
 
     /* Commands */
-    //RegAdminCmd("sm_discord_bot", Command_DiscordBot, ADMFLAG_GENERIC);
-
     RegConsoleCmd("sm_discord", Command_Discord, "Discord Redux: Show plugin info and commands.", FCVAR_NONE);
 }
 
@@ -220,6 +218,11 @@ public void UpdateConVars()
                     if (mapStatusChannelID[0] == '\0')
                         g_ConVars[chat_channel_id].GetString(mapStatusChannelID, sizeof(mapStatusChannelID));
                 }
+                case hide_command_prefix:
+                {
+                    char commandPrefixes[64];
+                    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
+                }
             }
 		}
 	}
@@ -233,11 +236,5 @@ public Action Command_Discord(int client, int args)
     if (discordInvite[0] != '\0')
         CReplyToCommand(client, "%s", discordInvite);
     
-    return Plugin_Handled;
-}
-
-public Action Command_DiscordBot(int client, int args)
-{
-    PrintToChat(client, "g_Discord = %s", g_Discord != null ? "non-null" : "null");
     return Plugin_Handled;
 }

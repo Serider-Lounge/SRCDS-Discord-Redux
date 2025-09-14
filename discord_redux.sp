@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w37b"
+#define PLUGIN_VERSION     "25w37c"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -204,50 +204,38 @@ char g_PendingJoinChannel[MAXPLAYERS][SNOWFLAKE_SIZE];
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
-    if (g_Discord == null || g_ChatWebhook == null)
-        return Plugin_Continue;
+    if (g_Discord == null ||
+        g_ChatWebhook == null ||
+        (client > 0 &&
+        (!IsClientInGame(client) || IsFakeClient(client))) ||
+        !g_Discord.IsRunning ||
+        StrEqual(command, "say_team", false) &&
+        !g_ConVars[show_team_chat].BoolValue) return Plugin_Continue;
 
-    if ((client > 0 && (!IsClientInGame(client) || IsFakeClient(client))) || !g_Discord.IsRunning)
-        return Plugin_Continue;
+    // Hide Chat Commands
+    char commandPrefixes[64];
+    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
 
-    if (StrEqual(command, "say_team", false) && !g_ConVars[show_team_chat].BoolValue)
-        return Plugin_Continue;
-
-    // Hide Command Prefixes
-    char hidePrefixes[32];
-    g_ConVars[hide_command_prefix].GetString(hidePrefixes, sizeof(hidePrefixes));
-
-    char silentTriggers[32];
-    GetSilentChatTriggers(silentTriggers, sizeof(silentTriggers));
-
-    char filteredArgs[MAX_DISCORD_MESSAGE_LENGTH];
-    strcopy(filteredArgs, sizeof(filteredArgs), sArgs);
-
-    if (silentTriggers[0] != '\0')
+    char prefix[16];
+    int start = 0, len = strlen(commandPrefixes);
+    for (int i = 0; i <= len; i++)
     {
-        int triggersLen = strlen(silentTriggers);
-        for (int i = 0; i < triggersLen; i++)
+        if (commandPrefixes[i] == ',' || commandPrefixes[i] == '\0')
         {
-            if (filteredArgs[0] == silentTriggers[i])
+            int plen = i - start;
+            if (plen > 0 && plen < sizeof(prefix))
             {
-                strcopy(filteredArgs, sizeof(filteredArgs), filteredArgs[1]);
-                break;
+                // Copy prefix substring
+                for (int j = 0; j < plen; j++)
+                    prefix[j] = commandPrefixes[start + j];
+                prefix[plen] = '\0';
+
+                if (strncmp(sArgs, prefix, plen, false) == 0)
+                {
+                    return Plugin_Continue;
+                }
             }
-        }
-    }
-    
-    if (hidePrefixes[0] != '\0')
-    {
-        char prefixList[10][8];
-        int count = ExplodeString(hidePrefixes, ",", prefixList, sizeof(prefixList), sizeof(prefixList[]));
-        for (int i = 0; i < count; i++)
-        {
-            int prefixLen = strlen(prefixList[i]);
-            if (strncmp(filteredArgs, prefixList[i], prefixLen, false) == 0)
-            {
-                strcopy(filteredArgs, sizeof(filteredArgs), filteredArgs[prefixLen]);
-                break;
-            }
+            start = i + 1;
         }
     }
 
