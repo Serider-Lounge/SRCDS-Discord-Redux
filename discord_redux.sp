@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w37c"
+#define PLUGIN_VERSION     "25w44a"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -50,7 +50,7 @@ public void OnPluginEnd()
 
 public void OnConfigsExecuted()
 {
-    g_ConVars[version] = CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
+    g_ConVars[version] = CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     
     UpdateConVars();
 }
@@ -67,7 +67,7 @@ public void OnMapEnd()
 }
 
 /* ========[Discord]======== */
-void OnDiscordReady(Discord discord, any data)
+void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int guild_count, const char[] guild_ids, int guild_id_count, any data)
 {
     char botName[64], botID[32];
     discord.GetBotName(botName, sizeof(botName));
@@ -116,9 +116,13 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         switch (g_ConVars[username_mode].IntValue)
         {
             case USER_NAME:
+            {
                 author.GetUserName(username, sizeof(username));
+            }
             case GLOBAL_NAME:
+            {
                 author.GetGlobalName(username, sizeof(username));
+            }
             case NICKNAME:
             {
                 char nickname[64];
@@ -129,29 +133,25 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                     author.GetGlobalName(username, sizeof(username));
             }
             default:
+            {
                 author.GetUserName(username, sizeof(username));
+            }
         }
 
         // discord_redux_randomize_color_names
-        if (g_ConVars[randomize_color_names].BoolValue)
+        if (g_ConVars[randomize_color_names] != null && g_ConVars[randomize_color_names].BoolValue)
         {
             int hash = 0;
             for (int i = 0; username[i] != '\0'; i++)
             {
                 hash = (hash * 31) + username[i];
             }
-            char hexHash[16];
-            Format(hexHash, sizeof(hexHash), "%x", hash);
-            int hexLen = strlen(hexHash);
+
+            int colorInt = hash & 0xFFFFFF;
+
             char colorCode[7];
-            if (hexLen >= 6)
-            {
-                strcopy(colorCode, sizeof(colorCode), hexHash[hexLen - 6]);
-            }
-            else
-            {
-                Format(colorCode, sizeof(colorCode), "%06s", hexHash);
-            }
+            Format(colorCode, sizeof(colorCode), "%06x", colorInt);
+
             char coloredUsername[MAX_DISCORD_NAME_LENGTH + 10];
             Format(coloredUsername, sizeof(coloredUsername), "{#%s}%s", colorCode, username);
             strcopy(username, sizeof(username), coloredUsername);
@@ -169,7 +169,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         CPrintToChatAll("%s", discordMsg);
         PrintToServer("%t", "discord_redux_chat_format_console", username, content);
     }
-    else if (StrEqual(messageChannelID, rconChannelID)) // This doesn't work for some reason????
+    else if (StrEqual(messageChannelID, rconChannelID))
     {
         DiscordEmbed embed = new DiscordEmbed();
         char response[MAX_CONSOLE_LENGTH],
@@ -270,7 +270,19 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
         char apiKey[128];
         g_ConVars[steam_api_key].GetString(apiKey, sizeof(apiKey));
-        ClientSayWithAvatar(client, apiKey, g_ChatWebhook, content);
+
+        if (g_SteamAvatar[client][0] != '\0')
+        {
+            g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+            g_ChatWebhook.Execute(content);
+        }
+        else
+        {
+            g_PendingWebhooks[client] = g_ChatWebhook;
+            strcopy(g_PendingDiscordMessages[client], sizeof(g_PendingDiscordMessages[]), content);
+
+            GetClientAvatar(client, apiKey);
+        }
     }
 
     return Plugin_Continue;

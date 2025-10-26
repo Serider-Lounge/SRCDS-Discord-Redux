@@ -170,7 +170,7 @@ public void UpdateConVars()
                     g_ConVars[bot_token].GetString(botToken, sizeof(botToken));
 
                     g_Discord = new Discord(botToken);
-                    g_Discord.SetReadyCallback(OnDiscordReady);
+                    g_Discord.SetReadyCallback(OnDiscordReady, _);
 
                     if (!g_Discord.IsRunning)
                         g_Discord.Start();
