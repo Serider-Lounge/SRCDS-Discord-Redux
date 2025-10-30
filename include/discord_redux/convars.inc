@@ -32,9 +32,10 @@ enum
     chat_webhook_url,
     username_mode,
 
-    // Staff
+    // Moderation
     staff_channel_id,
     staff_role_id,
+    //calladmin_enabled,
 
     // RCON
     rcon_channel_id,
@@ -75,7 +76,15 @@ enum UsernameMode
     GLOBAL_NAME,
     NICKNAME
 }
-
+/* -- TO-DO --
+enum ModAction
+{
+    MOD_WARN,
+    MOD_MUTE,
+    MOD_KICK,
+    MOD_BAN
+}
+*/
 ConVar g_ConVars[MAX_CONVARS];
 
 Discord g_Discord = null;
@@ -138,7 +147,8 @@ public void InitConVars()
     AutoExecConfig(true, "discord_redux");
 
     /* Commands */
-    RegConsoleCmd("sm_discord", Command_Discord, "Discord Redux: Show plugin info and commands.", FCVAR_NONE);
+    RegConsoleCmd("sm_discord", Command_Discord, "Show Discord invite.");
+    //RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Notify admins. Usage: sm_calladmin [message]");
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -234,7 +244,7 @@ public Action Command_Discord(int client, int args)
     g_ConVars[discord_invite].GetString(discordInvite, sizeof(discordInvite));
     
     if (discordInvite[0] != '\0')
-        CReplyToCommand(client, "%s", discordInvite);
+        CReplyToCommand(client, "%s", discordInvite);
     
     return Plugin_Handled;
 }
