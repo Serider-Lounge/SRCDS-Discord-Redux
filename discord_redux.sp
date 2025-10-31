@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w44c"
+#define PLUGIN_VERSION     "25w44d"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -212,33 +212,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         StrEqual(command, "say_team", false) &&
         !g_ConVars[show_team_chat].BoolValue) return Plugin_Continue;
 
-    // Hide Chat Commands
-    char commandPrefixes[64];
-    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
-
-    char prefix[16];
-    int start = 0, len = strlen(commandPrefixes);
-    for (int i = 0; i <= len; i++)
-    {
-        if (commandPrefixes[i] == ',' || commandPrefixes[i] == '\0')
-        {
-            int plen = i - start;
-            if (plen > 0 && plen < sizeof(prefix))
-            {
-                // Copy prefix substring
-                for (int j = 0; j < plen; j++)
-                    prefix[j] = commandPrefixes[start + j];
-                prefix[plen] = '\0';
-
-                if (strncmp(sArgs, prefix, plen, false) == 0)
-                {
-                    return Plugin_Continue;
-                }
-            }
-            start = i + 1;
-        }
-    }
-
     if (client == 0 && !IsClientInGame(client))
     {
         DiscordEmbed embed = new DiscordEmbed();
@@ -260,6 +233,29 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
+    // Hide Chat Commands (match only first character)
+    char commandPrefixes[64];
+    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
+
+    int len = strlen(commandPrefixes);
+    int start = 0;
+    for (int i = 0; i <= len; i++)
+    {
+        if (commandPrefixes[i] == ',' || commandPrefixes[i] == '\0')
+        {
+            int prefixLen = i - start;
+            if (prefixLen > 0)
+            {
+                char prefix = commandPrefixes[start];
+                if (sArgs[0] != '\0' && sArgs[0] == prefix)
+                {
+                    return;
+                }
+            }
+            start = i + 1;
+        }
+    }
+
     char steamID[32];
     GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));
 
