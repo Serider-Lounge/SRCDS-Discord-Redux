@@ -148,11 +148,11 @@ public void Embed_CurrentMapStatus()
 // Helper function to find UGC ID for a map
 stock bool FindWorkshopUGCID(const char[] mapName, char[] ugcID, int ugcIDLen)
 {
-    char workshopPath[256];
+    char workshopPath[PLATFORM_MAX_PATH];
     g_ConVars[workshop_path].GetString(workshopPath, sizeof(workshopPath));
     int appID = GetAppID();
 
-    char searchPath[320];
+    char searchPath[PLATFORM_MAX_PATH];
     Format(searchPath, sizeof(searchPath), "%s/%d/", workshopPath, appID);
 
     DirectoryListing dir = OpenDirectory(searchPath);
@@ -165,10 +165,10 @@ stock bool FindWorkshopUGCID(const char[] mapName, char[] ugcID, int ugcIDLen)
     {
         if (fileType != FileType_Directory)
             continue;
-        // Check if map exists in this UGC directory
-        char mapFile[384];
+
+        char mapFile[PLATFORM_MAX_PATH];
         Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", searchPath, entry, mapName);
-        if (FileExists(mapFile))
+        if (FileExists(mapFile)) // Check if map exists
         {
             strcopy(ugcID, ugcIDLen, entry);
             delete dir;

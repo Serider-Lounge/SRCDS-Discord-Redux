@@ -15,7 +15,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w44b"
+#define PLUGIN_VERSION     "25w44c"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -239,7 +239,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         }
     }
 
-    if (client == 0)
+    if (client == 0 && !IsClientInGame(client))
     {
         DiscordEmbed embed = new DiscordEmbed();
         embed.SetDescription(sArgs);
@@ -255,6 +255,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         return Plugin_Continue;
     }
 
+    return Plugin_Continue;
+}
+
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
+{
     char steamID[32];
     GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));
 
@@ -284,8 +289,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
             GetClientAvatar(client, apiKey);
         }
     }
-
-    return Plugin_Continue;
 }
 
 public void OnClientPutInServer(int client)
