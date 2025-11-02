@@ -51,3 +51,8 @@ vector.inc
 version*.inc
 
 !include/discord_redux/**
+
+discord*
+multicolors*
+ripext*
+SteamWorks*

@@ -38,6 +38,20 @@ jobs:
           version: '1.13.x'
           version-file: ./discord_redux.sp
 
+      - name: Download Third-Party Includes
+        working-directory: ${{ env.SCRIPTS_PATH }}/include
+        run: |
+          mkdir -p ripext multicolors
+          wget -q -L https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/main/scripting/include/discord.inc -O discord.inc
+          wget -q -L https://raw.githubusercontent.com/irql-notlessorequal/SteamWorks/refs/heads/x64/Pawn/includes/SteamWorks.inc -O SteamWorks.inc
+          wget -q -L https://raw.githubusercontent.com/srcdslab/sm-ext-ripext/refs/heads/main/pawn/scripting/include/ripext.inc -O ripext.inc
+          wget -q -L https://raw.githubusercontent.com/srcdslab/sm-ext-ripext/refs/heads/main/pawn/scripting/include/ripext/http.inc -O ripext/http.inc
+          wget -q -L https://raw.githubusercontent.com/srcdslab/sm-ext-ripext/refs/heads/main/pawn/scripting/include/ripext/json.inc -O ripext/json.inc
+          wget -q -L https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/multicolors.inc -O multicolors.inc
+          wget -q -L https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/multicolors/colors.inc -O multicolors/colors.inc
+          wget -q -L https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/multicolors/morecolors.inc -O multicolors/morecolors.inc
+          ls -lah
+
       - name: Compile plugins
         run: |
           for file in discord_redux.sp
