@@ -5,17 +5,20 @@
 #include <ripext>
 #include <SteamWorks>
 #include <regex>
+#include <tf2_stocks>
 
+#include <discord_redux/stocks>
 #include <discord_redux/convars>
 #include <discord_redux/embeds>
 #include <discord_redux/halflife>
 #include <discord_redux/steam>
+#include <discord_redux/commands>
 
 /* Macros */
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w44d"
+#define PLUGIN_VERSION     "25w47a"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -31,12 +34,28 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
-    // Setup ConVars
+    // Setup ConVars and Commands
     InitConVars();
+    RegCommands();
 
     // Load Translations
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
+
+    // Cache Player Avatars (late load)
+    char steamAPIKey[128];
+    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
+    if (steamAPIKey[0] != '\0')
+    {
+        for (int i = 1; i <= MaxClients; i++)
+        {
+            if (!IsClientInGame(i) || IsFakeClient(i)) continue;
+            if (g_SteamAvatar[i][0] == '\0')
+            {
+                GetClientAvatar(i, steamAPIKey);
+            }
+        }
+    }
 }
 
 public void OnPluginEnd()

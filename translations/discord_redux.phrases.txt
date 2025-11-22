@@ -52,7 +52,7 @@
         // {2} = SteamID
         "#format"	"{1:s},{2:s}"
         "en" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) left the game"
-        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a quitté la partie"
+        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a quitté·e la partie"
     }
     "discord_redux_player_kicked" // Kicked
     {
@@ -101,15 +101,6 @@
     {
         "en"        "Scoreboard"
         "fr"        "Tableau des Scores"
-    }
-    // Moderation
-    "discord_redux_blocked_word" // Flagged Word
-    {
-        // {1} = Player Name
-        // {2} = Flagged Word
-        "#format"   "{1:s},{2:s}"
-        "en"        "[Discord Redux] {1} said a bad word! '{2}'"
-        "fr"        "[Discord Redux] {1} a dit un gros mot! '{2}'"
     }
     // Accelerator
     "discord_redux_crash_report_title" // Server Crash

@@ -19,25 +19,15 @@ public void Embed_CurrentMapStatus()
         strcopy(mapName, sizeof(mapName), mapName[9]);
 
         // Remove ".ugc*" suffix
-        int ugcSuffix = FindCharInString(mapName, '.', false);
-        if (ugcSuffix != -1 && StrContains(mapName[ugcSuffix], ".ugc", false) != -1)
-            mapName[ugcSuffix] = '\0';
+        int workshopID = FindCharInString(mapName, '.', false);
+        if (workshopID != -1 && StrContains(mapName[workshopID], ".ugc", false) != -1)
+            mapName[workshopID] = '\0';
     }
 
     // Player count field
     int maxPlayers = GetMaxHumanPlayers();
-    int playerCount = 0;
-    int botCount = 0;
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientConnected(i) && !IsClientSourceTV(i) && !IsClientReplay(i))
-        {
-            if (IsFakeClient(i))
-                botCount++;
-            else
-                playerCount++;
-        }
-    }
+    int playerCount = GetOnlinePlayers();
+    int botCount = GetBotCount();
 
     char playerField[DISCORD_FIELD_LENGTH];
     if (botCount > 0)
@@ -45,7 +35,7 @@ public void Embed_CurrentMapStatus()
     else
         Format(playerField, sizeof(playerField), "%d/%d", playerCount, maxPlayers);
 
-    // Footer: icon + steam://connect/<public ip>:<hostport>
+    // Footer: icon + steam://connect/<public_ip>:<hostport>
     int ip[4];
     SteamWorks_GetPublicIP(ip);
     char ipStr[32];
@@ -57,22 +47,14 @@ public void Embed_CurrentMapStatus()
     char footerText[DISCORD_FOOTER_LENGTH], footerIcon[256];
     Format(footerText, sizeof(footerText), "steam://connect/%s:%s", ipStr, port);
 
-    // Use footer_icon convar for icon URL
     g_ConVars[footer_icon].GetString(footerIcon, sizeof(footerIcon));
 
-    // Color: use different color for map start/end
+    // Map Start/End embeds
     char hexColor[8];
-    int color;
     if (g_bMapEnded)
-    {
         g_ConVars[embed_previous_map_color].GetString(hexColor, sizeof(hexColor));
-        color = StringToInt(hexColor, 16);
-    }
     else
-    {
         g_ConVars[embed_current_map_color].GetString(hexColor, sizeof(hexColor));
-        color = StringToInt(hexColor, 16);
-    }
 
     char playerCountField[32];
     Format(playerCountField, sizeof(playerCountField), "%T", "discord_redux_player_count", LANG_SERVER);
@@ -80,17 +62,13 @@ public void Embed_CurrentMapStatus()
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(hostname);
     embed.SetDescription(gameDesc);
-    embed.Color = color;
+    embed.Color = StringToInt(hexColor, 16);
 
     char translatedMapName[DISCORD_FIELD_LENGTH];
     if (TranslationPhraseExists(mapName))
-    {
         Format(translatedMapName, sizeof(translatedMapName), "%T", mapName, LANG_SERVER);
-    }
     else
-    {
         strcopy(translatedMapName, sizeof(translatedMapName), mapName);
-    }
 
     char mapField[DISCORD_FIELD_LENGTH];
     switch (GetEngineVersion())
@@ -107,7 +85,7 @@ public void Embed_CurrentMapStatus()
 
     // Workshop clickable link logic
     char ugcID[32];
-    if (FindWorkshopUGCID(mapName, ugcID, sizeof(ugcID)))
+    if (GetWorkshopMapID(mapName, ugcID, sizeof(ugcID)))
     {
         char clickableMap[DISCORD_FIELD_LENGTH];
         Format(clickableMap, sizeof(clickableMap), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", translatedMapName, ugcID);
@@ -121,7 +99,7 @@ public void Embed_CurrentMapStatus()
     if (!g_bMapEnded)
         embed.AddField(playerCountField, playerField, true);
 
-    // Map thumbnail
+    // Map Thumbnail
     if (g_ConVars[map_thumbnail_enabled].BoolValue)
     {
         char thumbUrl[256], thumbFormat[16];
@@ -145,8 +123,7 @@ public void Embed_CurrentMapStatus()
     delete embed;
 }
 
-// Helper function to find UGC ID for a map
-stock bool FindWorkshopUGCID(const char[] mapName, char[] ugcID, int ugcIDLen)
+stock bool GetWorkshopMapID(const char[] mapName, char[] buffer, int maxlen)
 {
     char workshopPath[PLATFORM_MAX_PATH];
     g_ConVars[workshop_path].GetString(workshopPath, sizeof(workshopPath));
@@ -168,9 +145,9 @@ stock bool FindWorkshopUGCID(const char[] mapName, char[] ugcID, int ugcIDLen)
 
         char mapFile[PLATFORM_MAX_PATH];
         Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", searchPath, entry, mapName);
-        if (FileExists(mapFile)) // Check if map exists
+        if (FileExists(mapFile))
         {
-            strcopy(ugcID, ugcIDLen, entry);
+            strcopy(buffer, maxlen, entry);
             delete dir;
             return true;
         }

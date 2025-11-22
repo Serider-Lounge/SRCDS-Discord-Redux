@@ -9,7 +9,6 @@ enum
     // Chat
     randomize_color_names,
     show_team_chat,
-    word_filter_enabled,
     hide_command_prefix,
 
     /* Steam */
@@ -36,6 +35,7 @@ enum
     staff_channel_id,
     staff_role_id,
     //calladmin_enabled,
+    report_webhook_url,
 
     // RCON
     rcon_channel_id,
@@ -89,6 +89,7 @@ ConVar g_ConVars[MAX_CONVARS];
 
 Discord g_Discord = null;
 DiscordWebhook g_ChatWebhook = null;
+DiscordWebhook g_ReportWebhook = null;
 
 bool g_bMapEnded,
      g_bIsClientBanned[MAXPLAYERS+1];
@@ -126,6 +127,8 @@ public void InitConVars()
     g_ConVars[username_mode] = CreateConVar("discord_redux_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = global name, 2 = nickname).", FCVAR_NOTIFY);
     g_ConVars[rcon_channel_id] = CreateConVar("discord_redux_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_PROTECTED);
 
+    g_ConVars[report_webhook_url] = CreateConVar("discord_redux_report_webhook_url", "", "Discord webhook URL for bug reports.", FCVAR_NOTIFY);
+
     g_ConVars[embed_current_map_color] = CreateConVar("discord_redux_embed_current_map_color", "f4900c", "Embed color for current map embeds.", FCVAR_NOTIFY);
     g_ConVars[embed_previous_map_color] = CreateConVar("discord_redux_embed_previous_map_color", "31373d", "Embed color for previous map embeds.", FCVAR_NOTIFY);
     g_ConVars[embed_join_color] = CreateConVar("discord_redux_embed_join_color", "77b255", "Embed color for join embeds.", FCVAR_NOTIFY);
@@ -145,10 +148,6 @@ public void InitConVars()
     g_ConVars[discord_invite] = CreateConVar("discord_redux_invite", "", "Discord invite link.", FCVAR_NOTIFY);
 
     AutoExecConfig(true, "discord_redux");
-
-    /* Commands */
-    RegConsoleCmd("sm_discord", Command_Discord, "Show Discord invite.");
-    //RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Notify admins. Usage: sm_calladmin [message]");
 }
 
 public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
@@ -214,6 +213,14 @@ public void UpdateConVars()
                     char staffChannelID[SNOWFLAKE_SIZE];
                     g_ConVars[staff_channel_id].GetString(staffChannelID, sizeof(staffChannelID));
                 }
+                case report_webhook_url:
+                {
+                    char reportWebhookURL[256];
+                    g_ConVars[report_webhook_url].GetString(reportWebhookURL, sizeof(reportWebhookURL));
+
+                    if (reportWebhookURL[0] != '\0')
+                        g_ReportWebhook = new DiscordWebhook(g_Discord, reportWebhookURL);
+                }
                 case player_status_channel_id:
                 {
                     char playerStatusChannelID[SNOWFLAKE_SIZE];
@@ -236,15 +243,4 @@ public void UpdateConVars()
             }
 		}
 	}
-}
-
-public Action Command_Discord(int client, int args)
-{
-    char discordInvite[128];
-    g_ConVars[discord_invite].GetString(discordInvite, sizeof(discordInvite));
-    
-    if (discordInvite[0] != '\0')
-        CReplyToCommand(client, "%s", discordInvite);
-    
-    return Plugin_Handled;
 }

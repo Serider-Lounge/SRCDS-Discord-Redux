@@ -19,37 +19,6 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 > [!NOTE]
 > If the packages have been expired, run the workflow again.
 
-## Features
-- [x] Chat is relayed between Server and Discord in both ways.
-  - [x] Steam avatars are also displayed.
-- [x] RCON commands executable through a dedicated Discord channel.
-- [x] Player Status.
-  - [x] Joins.
-  - [x] Leaves.
-  - [x] Kicks.
-  - [x] Bans.
-- [ ] Map Status.
-  - [x] Can be called through commands.
-    - [ ] Make them slash commands instead.
-  - [x] Previous/Current map.
-  - [x] Player Count (+ Bots).
-  - [ ] Map Thumbnails.
-    - [x] Normal maps.
-    - [ ] Workshop Maps.
-  - [x] Clickable Workshop maps.
-    - [x] **[TF2]** Also accounts for [`sig_etc_workshop_map_fix`](https://github.com/rafradek/sigsegv-mvm/blob/master/cfg/sigsegv_convars.cfg#L123). Rejoice, [Rafmod](https://github.com/rafradek/sigsegv-mvm) hosts!
-  - [x] Translatable map names.
-  - [x] **[L4D(2)]** `Campaign` field instead of `Map`.
-- [x] Show usernames, global names or nicknames in **Discord→Server** messages.
-- [x] Randomize name colors in **Discord→Server** messages.
-  - Implemented it for readability as per requested.
-- [ ] Hide things:
-  - [x] Team chat.
-  - [x] Command prefixes.
-  - [ ] **[REGEX]** Word Filter.
-- [x] Discord invite command!
-  - `sm_discord`/`!discord`.
-
 ## ConVars
 
 | Name | Description |
