@@ -26,7 +26,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_enabled` | Toggle Discord Redux altogether. |
 | `discord_redux_randomize_color_names` | Randomize Discord user name colors. |
 | `discord_redux_show_team_chat` | Relay team chat to Discord (requires relay_server_to_discord). |
-| `discord_redux_hide_command_prefix` | Hide specified command prefixes on Discord (separated by commas). |
+| `discord_redux_hide_command_prefix` | Hide specified command prefixes on Discord (separated by commas, e.g. `!,/`). |
 | `discord_redux_steam_api_key` | Steam Web API Key for fetching user avatars.<br>(See: [Steam API Key](https://steamcommunity.com/dev/apikey)) |
 | `discord_redux_workshop_path` | Path to Steam Workshop add-ons folder, relative to the game directory. |
 | `discord_redux_relay_server_to_discord` | Relay server chat to Discord. |
@@ -36,11 +36,12 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_player_status_channel_id` | Discord channel ID for player join/leave messages. |
 | `discord_redux_map_status_channel_id` | Discord channel ID for map status. |
 | `discord_redux_guild_id` | Discord server ID. |
+| `discord_redux_staff_mention` | Discord role/user mention(s) for staff alerts (leave blank to disable). |
+| `discord_redux_staff_mention_cooldown` | Cooldown time in seconds between staff mentions for sm_calladmin. |
 | `discord_redux_chat_webhook_url` | Discord webhook URL for relaying server chat to Discord. |
-| `discord_redux_username_mode` | Use Discord display name instead of username.<br>(0 = Username | 1 = Display Name) |
-| `discord_redux_staff_channel_id` | Discord channel ID for staff alerts. |
-| `discord_redux_staff_role_id` | Discord role ID for staff. |
+| `discord_redux_username_mode` | Use Discord display name instead of username.<br>(0 = Username | 1 = Global Name | 2 = Nickname) |
 | `discord_redux_rcon_channel_id` | Discord channel ID for RCON messages. |
+| `discord_redux_report_webhook_url` | Discord webhook URL for bug reports. |
 | `discord_redux_embed_current_map_color` | Embed color for current map embeds. |
 | `discord_redux_embed_previous_map_color` | Embed color for previous map embeds. |
 | `discord_redux_embed_join_color` | Embed color for join embeds. |
@@ -55,6 +56,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_map_thumbnail_url` | Discord map thumbnail URL. |
 | `discord_redux_map_thumbnail_format` | Discord map thumbnail format. |
 | `discord_redux_invite` | Discord invite link. |
+| `discord_redux_accelerator_webhook_url` | Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions)‼ |
 | `discord_redux_version` | Discord Redux version. |
 > [!WARNING]
 > Only give access to the RCON channel to ***trusted*** individuals‼

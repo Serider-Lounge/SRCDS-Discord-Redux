@@ -32,7 +32,6 @@ enum
     username_mode,
 
     // Moderation
-    staff_channel_id,
     staff_mention,
     staff_mention_cooldown,
     report_webhook_url,
@@ -123,7 +122,6 @@ public void InitConVars()
 
     g_ConVars[bot_token] = CreateConVar("discord_redux_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
     g_ConVars[chat_channel_id] = CreateConVar("discord_redux_chat_channel_id", "", "Discord channel ID to relay messages.", FCVAR_PROTECTED);
-    g_ConVars[staff_channel_id] = CreateConVar("discord_redux_staff_channel_id", "", "Discord channel ID for staff alerts.", FCVAR_PROTECTED);
     g_ConVars[player_status_channel_id] = CreateConVar("discord_redux_player_status_channel_id", "", "Discord channel ID for player join/leave messages.", FCVAR_PROTECTED);
     g_ConVars[map_status_channel_id] = CreateConVar("discord_redux_map_status_channel_id", "", "Discord channel ID for map status.", FCVAR_PROTECTED);
     g_ConVars[guild_id] = CreateConVar("discord_redux_guild_id", "", "Discord server ID.", FCVAR_NOTIFY);
@@ -219,10 +217,6 @@ public void UpdateConVars()
                     
                     if (webhookURL[0] != '\0')
                         g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
-                }
-                case staff_channel_id:
-                {
-                    g_ConVars[staff_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case report_webhook_url:
                 {
