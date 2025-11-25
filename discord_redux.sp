@@ -253,16 +253,9 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         // discord_redux_randomize_color_names
         if (g_ConVars[randomize_color_names] != null && g_ConVars[randomize_color_names].BoolValue)
         {
-            int hash = 0;
-            for (int i = 0; username[i] != '\0'; i++)
-            {
-                hash = (hash * 31) + username[i];
-            }
-
-            int colorInt = hash & 0xFFFFFF;
-
-            char colorCode[7];
-            Format(colorCode, sizeof(colorCode), "%06x", colorInt);
+            char userId[SNOWFLAKE_SIZE], colorCode[7];
+            author.GetId(userId, sizeof(userId));
+            Format(colorCode, sizeof(colorCode), "%06x", StringToInt(userId));
 
             char coloredUsername[MAX_DISCORD_NAME_LENGTH + 10];
             Format(coloredUsername, sizeof(coloredUsername), "{#%s}%s", colorCode, username);
