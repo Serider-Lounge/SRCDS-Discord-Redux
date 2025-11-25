@@ -23,7 +23,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48c"
+#define PLUGIN_VERSION     "25w48d"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -144,25 +144,27 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     delete hyperlinkRegex;
 
     // Parse mentions
+    char guildID[SNOWFLAKE_SIZE];
+    g_ConVars[guild_id].GetString(guildID, sizeof(guildID));
+    
     Regex mentionRegex = new Regex("<@([0-9]+)>", PCRE_UTF8);
     int matches = mentionRegex.MatchAll(parsedContent);
-
-    if (matches > 0)
+    if (matches > 0) // Users
     {
         for (int i = 0; i < matches; i++)
         {
-            char userId[SNOWFLAKE_SIZE];
-            if (mentionRegex.GetSubString(1, userId, sizeof(userId), i))
+            char userID[SNOWFLAKE_SIZE];
+            if (mentionRegex.GetSubString(1, userID, sizeof(userID), i))
             {
-                DiscordUser mentionedUser = DiscordUser.FindUser(discord, userId);
+                DiscordUser mentionedUser = DiscordUser.FindUser(discord, userID);
                 char mentionedName[MAX_DISCORD_NAME_LENGTH];
                 if (mentionedUser != null)
                 {
                     mentionedUser.GetUserName(mentionedName, sizeof(mentionedName));
                     char mentionPattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 2];
-                    Format(mentionPattern, sizeof(mentionPattern), "<@%s>", userId);
-                    Format(replacement, sizeof(replacement), "@%s", mentionedName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), mentionPattern, replacement, false);
+                    Format(mentionPattern, sizeof(mentionPattern), "<@%s>", userID);
+                    Format(replacement, sizeof(replacement), "{#959DF7}@%s", mentionedName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), mentionPattern, replacement);
                 }
             }
         }
@@ -171,11 +173,8 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
     Regex roleRegex = new Regex("<@&([0-9]+)>", PCRE_UTF8);
     int roleMatches = roleRegex.MatchAll(parsedContent);
-
-    if (roleMatches > 0)
+    if (roleMatches > 0) // Roles
     {
-        char guildID[SNOWFLAKE_SIZE];
-        g_ConVars[guild_id].GetString(guildID, sizeof(guildID));
         for (int i = 0; i < roleMatches; i++)
         {
             char roleId[SNOWFLAKE_SIZE];
@@ -186,10 +185,14 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 if (mentionedRole != null)
                 {
                     mentionedRole.GetName(roleName, sizeof(roleName));
-                    char rolePattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 2];
+                    int roleColor = mentionedRole.Color == 0x000000 ? 0x959DF7 : mentionedRole.Color;
+                    char colorCode[16];
+                    Format(colorCode, sizeof(colorCode), "%06x", roleColor);
+
+                    char rolePattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 10];
                     Format(rolePattern, sizeof(rolePattern), "<@&%s>", roleId);
-                    Format(replacement, sizeof(replacement), "@%s", roleName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), rolePattern, replacement, false);
+                    Format(replacement, sizeof(replacement), "{#%s}@%s", colorCode, roleName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), rolePattern, replacement);
                 }
             }
         }
@@ -198,23 +201,22 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
     Regex channelRegex = new Regex("<#([0-9]+)>", PCRE_UTF8);
     int channelMatches = channelRegex.MatchAll(parsedContent);
-
-    if (channelMatches > 0)
+    if (channelMatches > 0) // Channels
     {
         for (int i = 0; i < channelMatches; i++)
         {
-            char channelId[SNOWFLAKE_SIZE];
-            if (channelRegex.GetSubString(1, channelId, sizeof(channelId), i))
+            char channelID[SNOWFLAKE_SIZE];
+            if (channelRegex.GetSubString(1, channelID, sizeof(channelID), i))
             {
-                DiscordChannel mentionedChannel = DiscordChannel.FindChannel(discord, channelId);
+                DiscordChannel mentionedChannel = DiscordChannel.FindChannel(discord, channelID);
                 char channelName[MAX_DISCORD_CHANNEL_NAME_LENGTH];
                 if (mentionedChannel != null)
                 {
                     mentionedChannel.GetName(channelName, sizeof(channelName));
                     char channelPattern[32], replacement[MAX_DISCORD_CHANNEL_NAME_LENGTH + 2];
-                    Format(channelPattern, sizeof(channelPattern), "<#%s>", channelId);
-                    Format(replacement, sizeof(replacement), "#%s", channelName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), channelPattern, replacement, false);
+                    Format(channelPattern, sizeof(channelPattern), "<#%s>", channelID);
+                    Format(replacement, sizeof(replacement), "{#959DF7}#%s", channelName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), channelPattern, replacement);
                 }
             }
         }

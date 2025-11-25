@@ -28,14 +28,19 @@ public void GetClientAvatar_Callback(HTTPResponse response, int client)
     JSONArray players = view_as<JSONArray>(responseObj.Get("players"));
     if (players.Length == 0)
     {
-        delete root; delete responseObj; return;
+        delete root;
+        delete responseObj;
+        return;
     }
 
     JSONObject player = view_as<JSONObject>(players.Get(0));
     char avatarUrl[256];
     if (!player.GetString("avatarfull", avatarUrl, sizeof(avatarUrl)))
     {
-        delete player; delete players; delete responseObj; delete root;
+        delete player;
+        delete players;
+        delete responseObj;
+        delete root;
         return;
     }
 
@@ -51,10 +56,14 @@ public void GetClientAvatar_Callback(HTTPResponse response, int client)
         DiscordWebhook pending = g_PendingWebhooks[client];
         pending.SetAvatarUrl(avatarUrl);
 
-        pending.Execute(g_PendingDiscordMessages[client]);
+        pending.Execute(g_SteamAvatar[client]);
+
         g_PendingWebhooks[client] = null;
         g_PendingDiscordMessages[client][0] = '\0';
     }
 
-    delete player; delete players; delete responseObj; delete root;
+    delete player;
+    delete players;
+    delete responseObj;
+    delete root;
 }

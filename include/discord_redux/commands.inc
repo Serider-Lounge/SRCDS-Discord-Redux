@@ -126,6 +126,12 @@ public Action Command_BugReport(int client, int args)
     embed.AddField("Game", gameDesc, true);
     embed.AddField("Map", mapName, true);
     embed.AddField("Player Count", playerCountField, true);
+
+    float pos[3];
+    GetClientAbsOrigin(client, pos);
+    char playerPos[64];
+    Format(playerPos, sizeof(playerPos), "- **X:** `%.2f`\n- **Y:** `%.2f`\n- **Z:** `%.2f`", pos[0], pos[1], pos[2]);
+    embed.AddField("World Position", playerPos, true);
     switch (GetEngineVersion())
     {
         case Engine_TF2:
@@ -134,6 +140,7 @@ public Action Command_BugReport(int client, int args)
             char className[32];
             switch (TF2_GetPlayerClass(client))
             {
+                case TFClass_Unknown: strcopy(className, sizeof(className), "Undefined");
                 case TFClass_Scout: strcopy(className, sizeof(className), "Scout");
                 case TFClass_Soldier: strcopy(className, sizeof(className), "Soldier");
                 case TFClass_Pyro: strcopy(className, sizeof(className), "Pyro");
@@ -249,14 +256,16 @@ public Action Command_BugReport(int client, int args)
     delete playerEmbed;
 
     // Game Metadata Embed
-    RequestFrame(Command_BugReport_Post, embed);
+    CreateTimer(0.1, Command_BugReport_Post, embed);
 
     CReplyToCommand(client, "%s", message);
     return Plugin_Handled;
 }
 
-public void Command_BugReport_Post(DiscordEmbed embed)
+public Action Command_BugReport_Post(Handle timer, any data)
 {
+    DiscordEmbed embed = view_as<DiscordEmbed>(data);
     g_ReportWebhook.ExecuteEmbed("", embed);
     delete embed;
+    return Plugin_Stop;
 }
