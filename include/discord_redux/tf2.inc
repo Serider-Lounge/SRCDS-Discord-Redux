@@ -26,7 +26,7 @@ methodmap TFResource
      * @param maxlen    The maximum length of the buffer.
      * @return          The length of the popfile name, returns 0 if not found.
      */
-    public int GetPopfileName(char[] buffer, int maxlen)
+    public int GetName(char[] buffer, int maxlen)
     {
         if (this.index == -1) return 0;
 

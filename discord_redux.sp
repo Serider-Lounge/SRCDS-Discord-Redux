@@ -14,6 +14,7 @@
 #include <discord_redux/steam>
 #include <discord_redux/commands>
 #include <discord_redux/tf2>
+#include <discord_redux/navmesh>
 
 /* Sources */
 #include "discord_redux/accelerator.sp"
@@ -22,7 +23,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48a"
+#define PLUGIN_VERSION     "25w48b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -46,7 +47,7 @@ public void OnPluginStart()
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
 
-    // Cache Player Avatars (late load)
+    // Cache Player Avatars
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
     if (steamAPIKey[0] != '\0')
@@ -101,20 +102,76 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
 
-    char messageChannelID[SNOWFLAKE_SIZE];
-    message.GetChannelId(messageChannelID, sizeof(messageChannelID));
-
     if (message.IsBot)
         return;
 
-    // Chat
+    /***** Chat *****/
     DiscordUser author = message.Author;
     char username[MAX_DISCORD_NAME_LENGTH];
     
     char chatChannelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(chatChannelID, sizeof(chatChannelID));
 
-    // RCON
+    char messageChannelID[SNOWFLAKE_SIZE];
+    message.GetChannelId(messageChannelID, sizeof(messageChannelID));
+
+    // Convert Discord markdown hyperlinks '[text](link)' to 'text (link)'
+    Regex hyperlinkRegex = new Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", PCRE_UTF8);
+    RegexError hyperlinkErr;
+    int hyperlinkMatches = hyperlinkRegex.MatchAll(content, hyperlinkErr);
+
+    char parsedContent[MAX_DISCORD_MESSAGE_LENGTH];
+    strcopy(parsedContent, sizeof(parsedContent), content);
+
+    if (hyperlinkMatches > 0)
+    {
+        for (int i = 0; i < hyperlinkMatches; i++)
+        {
+            char text[MAX_DISCORD_MESSAGE_LENGTH];
+            char link[MAX_DISCORD_MESSAGE_LENGTH];
+            if (hyperlinkRegex.GetSubString(1, text, sizeof(text), i) &&
+                hyperlinkRegex.GetSubString(2, link, sizeof(link), i))
+            {
+                char match[MAX_DISCORD_MESSAGE_LENGTH];
+                hyperlinkRegex.GetSubString(0, match, sizeof(match), i);
+
+                char replacement[MAX_DISCORD_MESSAGE_LENGTH];
+                Format(replacement, sizeof(replacement), "%s (%s)", text, link);
+
+                ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
+            }
+        }
+    }
+    delete hyperlinkRegex;
+
+    // Parse user/role mentions
+    Regex mentionRegex = new Regex("<@([0-9]+)>", PCRE_UTF8);
+    RegexError err;
+    int matches = mentionRegex.MatchAll(parsedContent, err);
+
+    if (matches > 0)
+    {
+        for (int i = 0; i < matches; i++)
+        {
+            char userId[SNOWFLAKE_SIZE];
+            if (mentionRegex.GetSubString(1, userId, sizeof(userId), i))
+            {
+                DiscordUser mentionedUser = DiscordUser.FindUser(discord, userId);
+                char mentionedName[MAX_DISCORD_NAME_LENGTH];
+                if (mentionedUser != null)
+                {
+                    mentionedUser.GetUserName(mentionedName, sizeof(mentionedName));
+                    char mentionPattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 2];
+                    Format(mentionPattern, sizeof(mentionPattern), "<@%s>", userId);
+                    Format(replacement, sizeof(replacement), "@%s", mentionedName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), mentionPattern, replacement, false);
+                }
+            }
+        }
+    }
+    delete mentionRegex;
+
+    /***** RCON *****/
     char rconChannelID[SNOWFLAKE_SIZE];
     g_ConVars[rcon_channel_id].GetString(rconChannelID, sizeof(rconChannelID));
 
@@ -167,9 +224,9 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         switch (message.Type)
         {
             case MessageType_Reply:
-                Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format_reply", username, content);
+                Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format_reply", username, parsedContent);
             default:
-                Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, content);
+                Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, parsedContent);
         }
         CPrintToChatAll("%s", discordMsg);
         // Remove color codes from username before printing to console
@@ -186,7 +243,24 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             rawUsername[j++] = username[i];
         }
         rawUsername[j] = '\0';
-        PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, content);
+        PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, parsedContent);
+
+        int attachmentCount = message.AttachmentCount;
+        if (attachmentCount > 0)
+        {
+            char links[MAX_DISCORD_MESSAGE_LENGTH];
+            links[0] = '\0';
+            for (int i = 0; i < attachmentCount; i++)
+            {
+                char url[512];
+                message.GetAttachmentURL(i, url, sizeof(url));
+                if (i > 0)
+                    StrCat(links, sizeof(links), ", ");
+                StrCat(links, sizeof(links), url);
+            }
+            CPrintToChatAll("%s", links);
+            PrintToServer("%s", links);
+        }
     }
     else if (StrEqual(messageChannelID, rconChannelID))
     {
@@ -263,11 +337,21 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
             int prefixLen = i - start;
             if (prefixLen > 0)
             {
-                char prefix = commandPrefixes[start];
-                if (sArgs[0] != '\0' && sArgs[0] == prefix)
+                char prefix[16];
+                strcopy(prefix, sizeof(prefix), commandPrefixes[start]);
+                prefix[prefixLen] = '\0';
+
+                char pattern[32];
+                Format(pattern, sizeof(pattern), "^%s", prefix);
+
+                Regex regex = new Regex(pattern, PCRE_UTF8);
+                RegexError err;
+                if (regex.Match(sArgs, err) > 0)
                 {
+                    delete regex;
                     return;
                 }
+                delete regex;
             }
             start = i + 1;
         }

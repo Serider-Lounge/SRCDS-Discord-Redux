@@ -151,7 +151,7 @@ public Action Command_BugReport(int client, int args)
             {
                 case TFTeam_Red: strcopy(teamName, sizeof(teamName), "RED");
                 case TFTeam_Blue: strcopy(teamName, sizeof(teamName), "BLU");
-                case TFTeam_Spectator: strcopy(teamName, sizeof(teamName), "SPEC");
+                case TFTeam_Spectator: strcopy(teamName, sizeof(teamName), "Spectator");
                 case view_as<TFTeam>(5): strcopy(teamName, sizeof(teamName), "Halloween Boss");
                 default: strcopy(teamName, sizeof(teamName), "Unassigned");
             }
@@ -163,6 +163,12 @@ public Action Command_BugReport(int client, int args)
             char roundState[32];
             TF2_GetRoundState(roundState, sizeof(roundState));
             embed.AddField("Round State", roundState, true);
+
+            // Bot Support
+            char botSupport[32]; char navLoaded[sizeof(botSupport)]; // Valve NavMesh
+            Format(navLoaded, sizeof(navLoaded), "Available (%d Areas)", NavMesh_GetNavAreaCount());
+            Format(botSupport, sizeof(botSupport), "%s", NavMesh_IsLoaded() ? navLoaded : "Unavailable");
+            embed.AddField("Bot Support", botSupport);
 
             // VScripts
             int total = EntityLump.Length();
@@ -189,7 +195,7 @@ public Action Command_BugReport(int client, int args)
                 if (popfile.index != -1)
                 {
                     char popfileName[128];
-                    int len = popfile.GetPopfileName(popfileName, sizeof(popfileName));
+                    int len = popfile.GetName(popfileName, sizeof(popfileName));
                     if (len > 0)
                     {
                         Format(popfileName, sizeof(popfileName), "- **Mission**\n  - `%s`", popfileName);
@@ -203,8 +209,10 @@ public Action Command_BugReport(int client, int args)
             extraSettings[0] = '\0';
             if (GameRules_GetProp("m_bPlayingMedieval") == 1 || FindConVar("tf_medieval").BoolValue)
                 StrCat(extraSettings, sizeof(extraSettings), "- Medieval Mode\n");
+
             if (FindConVar("mp_friendlyfire").BoolValue)
                 StrCat(extraSettings, sizeof(extraSettings), "- Friendly-Fire\n");
+
             if (extraSettings[0] != '\0')
                 embed.AddField("Extra Settings", extraSettings, true);
         }
@@ -222,9 +230,33 @@ public Action Command_BugReport(int client, int args)
         g_ReportWebhook.SetAvatarUrl(g_SteamAvatar[client]);
     }
     g_ReportWebhook.Modify();
-    g_ReportWebhook.ExecuteEmbed(message, embed);
-    delete embed;
+
+    // Player Embed
+    DiscordEmbed playerEmbed = new DiscordEmbed();
+    char profileURL[128];
+    Format(profileURL, sizeof(profileURL), "http://www.steamcommunity.com/profiles/%s", steamID64);
+    playerEmbed.SetTitle("Steam Profile");
+    playerEmbed.SetDescription(message);
+    playerEmbed.SetUrl(profileURL);
+    playerEmbed.Color = embed.Color;
+
+    // Set footer to SteamID2
+    char steamID[MAX_AUTHID_LENGTH];
+    GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
+    playerEmbed.SetFooter(steamID, "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png");
+
+    g_ReportWebhook.ExecuteEmbed("", playerEmbed);
+    delete playerEmbed;
+
+    // Game Metadata Embed
+    RequestFrame(Command_BugReport_Post, embed);
 
     CReplyToCommand(client, "%s", message);
     return Plugin_Handled;
+}
+
+public void Command_BugReport_Post(DiscordEmbed embed)
+{
+    g_ReportWebhook.ExecuteEmbed("", embed);
+    delete embed;
 }

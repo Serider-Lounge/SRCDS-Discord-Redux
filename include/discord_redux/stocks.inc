@@ -1,5 +1,3 @@
-#include <sdktools_gamerules> // Added include so GameRules_* and RoundState are defined.
-
 stock int GetOnlinePlayers()
 {
     int playerCount = 0;
