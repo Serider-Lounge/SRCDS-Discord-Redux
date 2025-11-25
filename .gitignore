@@ -4,7 +4,6 @@
 *.sh
 
 .archive
-
 admin*.inc
 adt*.inc
 banning.inc
@@ -44,14 +43,15 @@ sourcemod.inc
 string.inc
 testing.inc
 textparse.inc
-tf2*.inc
+tf2.inc
+tf2_stocks.inc
 timers.inc
 topmenus.inc
 usermessages.inc
 vector.inc
 version*.inc
 
-!*discord_redux/*
+!include/discord_redux/**
 
 accelerator.inc
 discord.inc
