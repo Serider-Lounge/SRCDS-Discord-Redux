@@ -115,10 +115,9 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     char messageChannelID[SNOWFLAKE_SIZE];
     message.GetChannelId(messageChannelID, sizeof(messageChannelID));
 
-    // Convert Discord markdown hyperlinks '[text](link)' to 'text (link)'
+    // Convert Discord markdown hyperlinks from '[text](link)' to 'text (link)'
     Regex hyperlinkRegex = new Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", PCRE_UTF8);
-    RegexError hyperlinkErr;
-    int hyperlinkMatches = hyperlinkRegex.MatchAll(content, hyperlinkErr);
+    int hyperlinkMatches = hyperlinkRegex.MatchAll(content);
 
     char parsedContent[MAX_DISCORD_MESSAGE_LENGTH];
     strcopy(parsedContent, sizeof(parsedContent), content);
@@ -146,8 +145,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
     // Parse mentions
     Regex mentionRegex = new Regex("<@([0-9]+)>", PCRE_UTF8);
-    RegexError error;
-    int matches = mentionRegex.MatchAll(parsedContent, error);
+    int matches = mentionRegex.MatchAll(parsedContent);
 
     if (matches > 0)
     {
@@ -172,7 +170,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     delete mentionRegex;
 
     Regex roleRegex = new Regex("<@&([0-9]+)>", PCRE_UTF8);
-    int roleMatches = roleRegex.MatchAll(parsedContent, error);
+    int roleMatches = roleRegex.MatchAll(parsedContent);
 
     if (roleMatches > 0)
     {
@@ -199,7 +197,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     delete roleRegex;
 
     Regex channelRegex = new Regex("<#([0-9]+)>", PCRE_UTF8);
-    int channelMatches = channelRegex.MatchAll(parsedContent, error);
+    int channelMatches = channelRegex.MatchAll(parsedContent);
 
     if (channelMatches > 0)
     {
@@ -281,20 +279,23 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, parsedContent);
         }
         CPrintToChatAll("%s", discordMsg);
-        // Remove color codes from username before printing to console
+
         char rawUsername[MAX_DISCORD_NAME_LENGTH + 1];
-        int j = 0;
-        for (int i = 0; username[i] != '\0' && j < sizeof(rawUsername) - 1; i++)
+        Regex colorRegex = new Regex("\\{#[0-9a-fA-F]{6}\\}", PCRE_UTF8);
+        strcopy(rawUsername, sizeof(rawUsername), username);
+        int colorMatches = colorRegex.MatchAll(rawUsername);
+        if (colorMatches > 0)
         {
-            if (username[i] == '{' && username[i+1] == '#')
+            for (int i = colorMatches - 1; i >= 0; i--)
             {
-                i += 2;
-                while (username[i] != '\0' && username[i] != '}') i++;
-                if (username[i] == '}') continue;
+                char match[16];
+                if (colorRegex.GetSubString(0, match, sizeof(match), i))
+                {
+                    ReplaceString(rawUsername, sizeof(rawUsername), match, "", false);
+                }
             }
-            rawUsername[j++] = username[i];
         }
-        rawUsername[j] = '\0';
+        delete colorRegex;
         PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, parsedContent);
 
         int attachmentCount = message.AttachmentCount;
@@ -397,8 +398,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
                 Format(pattern, sizeof(pattern), "^%s", prefix);
 
                 Regex regex = new Regex(pattern, PCRE_UTF8);
-                RegexError err;
-                if (regex.Match(sArgs, err) > 0)
+                if (regex.Match(sArgs) > 0)
                 {
                     delete regex;
                     return;
@@ -482,7 +482,7 @@ public void OnClientAvatarRetrieved(int client)
     char steamID2[32];
     GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
 
-        g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
+    g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
     
     g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
     
