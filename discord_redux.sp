@@ -23,7 +23,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48b"
+#define PLUGIN_VERSION     "25w48c"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -144,10 +144,10 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     }
     delete hyperlinkRegex;
 
-    // Parse user/role mentions
+    // Parse mentions
     Regex mentionRegex = new Regex("<@([0-9]+)>", PCRE_UTF8);
-    RegexError err;
-    int matches = mentionRegex.MatchAll(parsedContent, err);
+    RegexError error;
+    int matches = mentionRegex.MatchAll(parsedContent, error);
 
     if (matches > 0)
     {
@@ -170,6 +170,58 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         }
     }
     delete mentionRegex;
+
+    Regex roleRegex = new Regex("<@&([0-9]+)>", PCRE_UTF8);
+    int roleMatches = roleRegex.MatchAll(parsedContent, error);
+
+    if (roleMatches > 0)
+    {
+        char guildID[SNOWFLAKE_SIZE];
+        g_ConVars[guild_id].GetString(guildID, sizeof(guildID));
+        for (int i = 0; i < roleMatches; i++)
+        {
+            char roleId[SNOWFLAKE_SIZE];
+            if (roleRegex.GetSubString(1, roleId, sizeof(roleId), i))
+            {
+                DiscordRole mentionedRole = DiscordRole.FindRole(discord, guildID, roleId);
+                char roleName[MAX_DISCORD_NAME_LENGTH];
+                if (mentionedRole != null)
+                {
+                    mentionedRole.GetName(roleName, sizeof(roleName));
+                    char rolePattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 2];
+                    Format(rolePattern, sizeof(rolePattern), "<@&%s>", roleId);
+                    Format(replacement, sizeof(replacement), "@%s", roleName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), rolePattern, replacement, false);
+                }
+            }
+        }
+    }
+    delete roleRegex;
+
+    Regex channelRegex = new Regex("<#([0-9]+)>", PCRE_UTF8);
+    int channelMatches = channelRegex.MatchAll(parsedContent, error);
+
+    if (channelMatches > 0)
+    {
+        for (int i = 0; i < channelMatches; i++)
+        {
+            char channelId[SNOWFLAKE_SIZE];
+            if (channelRegex.GetSubString(1, channelId, sizeof(channelId), i))
+            {
+                DiscordChannel mentionedChannel = DiscordChannel.FindChannel(discord, channelId);
+                char channelName[MAX_DISCORD_CHANNEL_NAME_LENGTH];
+                if (mentionedChannel != null)
+                {
+                    mentionedChannel.GetName(channelName, sizeof(channelName));
+                    char channelPattern[32], replacement[MAX_DISCORD_CHANNEL_NAME_LENGTH + 2];
+                    Format(channelPattern, sizeof(channelPattern), "<#%s>", channelId);
+                    Format(replacement, sizeof(replacement), "#%s", channelName);
+                    ReplaceString(parsedContent, sizeof(parsedContent), channelPattern, replacement, false);
+                }
+            }
+        }
+    }
+    delete channelRegex;
 
     /***** RCON *****/
     char rconChannelID[SNOWFLAKE_SIZE];
