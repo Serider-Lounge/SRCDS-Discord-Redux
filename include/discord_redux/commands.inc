@@ -239,33 +239,20 @@ public Action Command_BugReport(int client, int args)
     g_ReportWebhook.Modify();
 
     // Player Embed
-    DiscordEmbed playerEmbed = new DiscordEmbed();
     char profileURL[128];
     Format(profileURL, sizeof(profileURL), "http://www.steamcommunity.com/profiles/%s", steamID64);
-    playerEmbed.SetTitle("Steam Profile");
-    playerEmbed.SetDescription(message);
-    playerEmbed.SetUrl(profileURL);
-    playerEmbed.Color = embed.Color;
+    embed.SetTitle("Steam Profile");
+    embed.SetDescription(message);
+    embed.SetUrl(profileURL);
 
     // Set footer to SteamID2
     char steamID[MAX_AUTHID_LENGTH];
     GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
-    playerEmbed.SetFooter(steamID, "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png");
+    embed.SetFooter(steamID, "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png");
 
-    g_ReportWebhook.ExecuteEmbed("", playerEmbed);
-    delete playerEmbed;
-
-    // Game Metadata Embed
-    CreateTimer(0.1, Command_BugReport_Post, embed);
+    g_ReportWebhook.ExecuteEmbed("", embed);
+    delete embed;
 
     CReplyToCommand(client, "%s", message);
     return Plugin_Handled;
-}
-
-public Action Command_BugReport_Post(Handle timer, any data)
-{
-    DiscordEmbed embed = view_as<DiscordEmbed>(data);
-    g_ReportWebhook.ExecuteEmbed("", embed);
-    delete embed;
-    return Plugin_Stop;
 }
