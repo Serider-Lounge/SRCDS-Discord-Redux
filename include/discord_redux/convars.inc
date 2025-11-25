@@ -33,8 +33,8 @@ enum
 
     // Moderation
     staff_channel_id,
-    staff_role_id,
-    //calladmin_enabled,
+    staff_mention,
+    staff_mention_cooldown,
     report_webhook_url,
 
     // RCON
@@ -127,6 +127,8 @@ public void InitConVars()
     g_ConVars[player_status_channel_id] = CreateConVar("discord_redux_player_status_channel_id", "", "Discord channel ID for player join/leave messages.", FCVAR_PROTECTED);
     g_ConVars[map_status_channel_id] = CreateConVar("discord_redux_map_status_channel_id", "", "Discord channel ID for map status.", FCVAR_PROTECTED);
     g_ConVars[guild_id] = CreateConVar("discord_redux_guild_id", "", "Discord server ID.", FCVAR_NOTIFY);
+    g_ConVars[staff_mention] = CreateConVar("discord_redux_staff_mention", "", "Discord role/user mention(s) for sm_calladmin (leave blank to disable). https://help.zapier.com/hc/en-us/articles/8496165585165-Tips-for-formatting-Discord-messages", FCVAR_NOTIFY);
+    g_ConVars[staff_mention_cooldown] = CreateConVar("discord_redux_staff_mention_cooldown", "15", "Cooldown time in seconds between staff mentions for sm_calladmin.", FCVAR_NOTIFY);
 
     g_ConVars[chat_webhook_url] = CreateConVar("discord_redux_chat_webhook_url", "", "Discord webhook URL for relaying server chat to Discord.", FCVAR_PROTECTED);
     g_ConVars[username_mode] = CreateConVar("discord_redux_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = global name, 2 = nickname).", FCVAR_NOTIFY);

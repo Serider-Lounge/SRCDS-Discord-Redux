@@ -125,13 +125,19 @@
         // ```
         "en"		"```hs\n%s\n```" // Use '\n' for new lines
     }
+    // Staff
+    "discord_redux_staff_mention_cooldown" // Staff Mention Cooldown
+    {
+        "en"        "[Discord Redux] You must wait %d second(s) before you can mention staff again (but your message was sent anyway)."
+        "fr"        "[Discord Redux] Vous devez attendre %d seconde(s) avant de pouvoir appeler un modérateur de nouveau (mais votre message a quand même été envoyé)."
+    }
     // Bot Status
     "discord_redux_bot_success" // Start Success
     {
         // {1} = Bot Username
         // {2} = Bot ID
         "#format"   "{1:s},{2:s}"
-        "en"        "[Discord Redux] '{1}' is ready! ({2})"
-        "fr"        "[Discord Redux] '{1}' est prêt! ({2})"
+        "en"        "[Discord Redux] '{1}' is ready! (ID: {2})"
+        "fr"        "[Discord Redux] '{1}' est prêt! (ID: {2})"
     }
 }

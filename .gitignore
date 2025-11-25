@@ -53,6 +53,7 @@ version*.inc
 
 !*discord_redux/*
 
+accelerator.inc
 discord.inc
 multicolors*
 ripext*

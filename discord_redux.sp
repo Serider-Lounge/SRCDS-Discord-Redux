@@ -13,6 +13,7 @@
 #include <discord_redux/halflife>
 #include <discord_redux/steam>
 #include <discord_redux/commands>
+#include <discord_redux/tf2>
 
 /* Sources */
 #include "discord_redux/accelerator.sp"
@@ -91,7 +92,6 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
     PrintToServer("%s", botStatus);
 
     Embed_CurrentMapStatus();
-    if (Accelerator_IsDoneUploadingCrashes()) Accelerator_SendEmbed();
 }
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
@@ -350,7 +350,7 @@ public void OnClientAvatarRetrieved(int client)
     
     g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
     
-    delete g_PendingJoinEmbed[client]; g_PendingJoinEmbed[client] = null;
+    delete g_PendingJoinEmbed[client];
 }
 
 public void OnClientDisconnect(int client)

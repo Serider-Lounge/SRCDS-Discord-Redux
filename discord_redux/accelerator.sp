@@ -1,6 +1,23 @@
 #undef REQUIRE_EXTENSIONS
 #include <accelerator>
 
+public void Accelerator_OnDoneUploadingCrashes()
+{
+    if (!g_AcceleratorWebhook)
+        CreateTimer(1.0, Timer_SendAcceleratorEmbed, _, TIMER_REPEAT);
+    else
+        Accelerator_SendEmbed();
+}
+
+public Action Timer_SendAcceleratorEmbed(Handle timer)
+{
+    if (!g_AcceleratorWebhook)
+        return Plugin_Continue;
+    else
+        Accelerator_SendEmbed();
+    return Plugin_Stop;
+}
+
 public void Accelerator_SendEmbed()
 {
     char title[DISCORD_TITLE_LENGTH];

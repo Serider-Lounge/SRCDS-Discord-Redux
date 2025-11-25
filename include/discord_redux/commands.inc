@@ -1,8 +1,10 @@
+int g_LastStaffMentionTime = 0;
+
 stock void RegCommands()
 {
     RegConsoleCmd("sm_discord", Command_Discord, "Show Discord invite.");
-    //RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Notify admins. Usage: sm_calladmin <message>");
-    RegConsoleCmd("sm_report", Command_Report, "Report a bug to the admins. Usage: sm_report <message>");
+    RegConsoleCmd("sm_calladmin", Command_CallAdmin, "Notify admins. Usage: sm_calladmin <message>");
+    RegConsoleCmd("sm_bugreport", Command_BugReport, "Report a bug to the admins. Usage: sm_bugreport <message>");
 }
 
 public Action Command_Discord(int client, int args)
@@ -21,11 +23,65 @@ public Action Command_Discord(int client, int args)
     return Plugin_Handled;
 }
 
-public Action Command_Report(int client, int args)
+public Action Command_CallAdmin(int client, int args)
 {
     if (args < 1)
     {
-        ReplyToCommand(client, "Usage: sm_report <message>");
+        ReplyToCommand(client, "Usage: sm_calladmin <message>");
+        return Plugin_Handled;
+    }
+
+    char message[256];
+    GetCmdArgString(message, sizeof(message));
+    CReplyToCommand(client, "%s", message);
+
+    if (g_ChatWebhook == null)
+    {
+        return Plugin_Handled;
+    }
+
+    // Player name
+    char playerName[MAX_NAME_LENGTH];
+    GetClientName(client, playerName, sizeof(playerName));
+
+    // Fetch mention string and cooldown from convars
+    char mention[128];
+    g_ConVars[staff_mention].GetString(mention, sizeof(mention));
+    int cooldown = g_ConVars[staff_mention_cooldown].IntValue;
+
+    int now = GetTime();
+
+    // Set webhook name/avatar
+    g_ChatWebhook.SetName(playerName);
+    if (client > 0 && client <= MaxClients && g_SteamAvatar[client][0] != '\0')
+    {
+        g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+    }
+    g_ChatWebhook.Modify();
+
+    // Send the message itself
+    g_ChatWebhook.Execute(message);
+
+    // Ping admins afterwards
+    if (mention[0] != '\0')
+    {
+        int remaining = cooldown - (now - g_LastStaffMentionTime);
+        if (remaining > 0)
+        {
+            CReplyToCommand(client, "%t", "discord_redux_staff_mention_cooldown", remaining);
+            return Plugin_Handled;
+        }
+        g_ChatWebhook.Execute(mention, PARSE_ROLES | PARSE_USERS | REPLIED_USER);
+        g_LastStaffMentionTime = now;
+    }
+    return Plugin_Handled;
+}
+
+public Action Command_BugReport(int client, int args)
+{
+    if (args < 1)
+    {
+        ReplyToCommand(client, "Usage: sm_bugreport <message>");
         return Plugin_Handled;
     }
 
@@ -82,7 +138,7 @@ public Action Command_Report(int client, int args)
                 case TFClass_Soldier: strcopy(className, sizeof(className), "Soldier");
                 case TFClass_Pyro: strcopy(className, sizeof(className), "Pyro");
                 case TFClass_DemoMan: strcopy(className, sizeof(className), "Demoman");
-                case TFClass_Heavy: strcopy(className, sizeof(className), "Heavy");
+                case TFClass_Heavy: strcopy(className, sizeof(className), "Heavy Weapons Guy");
                 case TFClass_Engineer: strcopy(className, sizeof(className), "Engineer");
                 case TFClass_Medic: strcopy(className, sizeof(className), "Medic");
                 case TFClass_Sniper: strcopy(className, sizeof(className), "Sniper");
@@ -120,13 +176,44 @@ public Action Command_Report(int client, int args)
                     if (entry.GetNextKey("vscripts", scriptPath, sizeof(scriptPath)) != -1)
                     {
                         Format(scriptPath, sizeof(scriptPath), "- `%s`\n", scriptPath);
-                        embed.AddField("VScripts", scriptPath, true);
+                        embed.AddField("VScripts", scriptPath);
                     }
                 }
                 delete entry;
             }
+
+            // Mann Vs. Machine
+            if (GameRules_GetProp("m_bPlayingMannVsMachine") == 1)
+            {
+                TFResource popfile = TFResource(FindEntityByClassname(-1, "tf_objective_resource"));
+                if (popfile.index != -1)
+                {
+                    char popfileName[128];
+                    int len = popfile.GetPopfileName(popfileName, sizeof(popfileName));
+                    if (len > 0)
+                    {
+                        Format(popfileName, sizeof(popfileName), "- **Mission**\n  - `%s`", popfileName);
+                        embed.AddField("Mann Vs. Machine", popfileName);
+                    }
+                }
+            }
+
+            // Extra Settings
+            char extraSettings[DISCORD_FIELD_LENGTH];
+            extraSettings[0] = '\0';
+            if (GameRules_GetProp("m_bPlayingMedieval") == 1 || FindConVar("tf_medieval").BoolValue)
+                StrCat(extraSettings, sizeof(extraSettings), "- Medieval Mode\n");
+            if (FindConVar("mp_friendlyfire").BoolValue)
+                StrCat(extraSettings, sizeof(extraSettings), "- Friendly-Fire\n");
+            if (extraSettings[0] != '\0')
+                embed.AddField("Extra Settings", extraSettings, true);
         }
     }
+
+    // Assign embed color per client
+    char steamID64[32];
+    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
+    embed.Color = StringToInt(steamID64);
 
     // Webhook
     g_ReportWebhook.SetName(playerName);
