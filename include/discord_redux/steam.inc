@@ -56,10 +56,10 @@ public void GetClientAvatar_Callback(HTTPResponse response, int client)
         DiscordWebhook pending = g_PendingWebhooks[client];
         pending.SetAvatarUrl(avatarUrl);
 
-        pending.Execute(g_SteamAvatar[client]);
-
         g_PendingWebhooks[client] = null;
         g_PendingDiscordMessages[client][0] = '\0';
+
+        pending.Execute(g_SteamAvatar[client]);
     }
 
     delete player;
