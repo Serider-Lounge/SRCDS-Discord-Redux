@@ -26,31 +26,17 @@ public void Accelerator_SendEmbed()
     DiscordEmbed embed = new DiscordEmbed();
     embed.SetTitle(title);
 
-    int pos = StrContains(title, "Crash ID: ");
     char crashID[16];
-    if (pos != -1)
+    Regex regex = new Regex("Crash ID: ([A-Z\\-]+)");
+    if (regex && regex.Match(title) > 0)
     {
-        pos += strlen("Crash ID: ");
-        int i = 0;
-        // Copy 4 chars
-        for (int k = 0; k < 4 && title[pos] != '\0'; k++)
-            crashID[i++] = title[pos++];
-        // Skip dash
-        if (title[pos] == '-') pos++;
-        // Copy next 4 chars
-        for (int k = 0; k < 4 && title[pos] != '\0'; k++)
-            crashID[i++] = title[pos++];
-        // Skip dash
-        if (title[pos] == '-') pos++;
-        // Copy next 4 chars
-        for (int k = 0; k < 4 && title[pos] != '\0'; k++)
-            crashID[i++] = title[pos++];
-        crashID[i] = '\0';
-
+        regex.GetSubString(1, crashID, sizeof(crashID));
+        ReplaceString(crashID, sizeof(crashID), "-", "");
         char url[64];
         Format(url, sizeof(url), "https://crash.limetech.org/%s", crashID);
         embed.SetUrl(url);
     }
+    delete regex;
 
     embed.Color = 0xFF0000;
 
