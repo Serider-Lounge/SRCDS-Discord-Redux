@@ -14,11 +14,14 @@
 #include <discord_redux/steam>
 #include <discord_redux/commands>
 
+/* Sources */
+#include "discord_redux/accelerator.sp"
+
 /* Macros */
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w47a"
+#define PLUGIN_VERSION     "25w48a"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -49,22 +52,13 @@ public void OnPluginStart()
     {
         for (int i = 1; i <= MaxClients; i++)
         {
-            if (!IsClientInGame(i) || IsFakeClient(i)) continue;
+            if (!IsClientInGame(i) || IsFakeClient(i))
+                continue;
+
             if (g_SteamAvatar[i][0] == '\0')
-            {
                 GetClientAvatar(i, steamAPIKey);
-            }
         }
     }
-}
-
-public void OnPluginEnd()
-{
-    if (g_Discord != null)
-        g_Discord = null;
-
-    if (g_ChatWebhook != null)
-        g_ChatWebhook = null;
 }
 
 public void OnConfigsExecuted()
@@ -97,6 +91,7 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
     PrintToServer("%s", botStatus);
 
     Embed_CurrentMapStatus();
+    if (Accelerator_IsDoneUploadingCrashes()) Accelerator_SendEmbed();
 }
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
@@ -134,14 +129,8 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         // Username
         switch (g_ConVars[username_mode].IntValue)
         {
-            case USER_NAME:
-            {
-                author.GetUserName(username, sizeof(username));
-            }
-            case GLOBAL_NAME:
-            {
-                author.GetGlobalName(username, sizeof(username));
-            }
+            case USER_NAME: author.GetUserName(username, sizeof(username));
+            case GLOBAL_NAME: author.GetGlobalName(username, sizeof(username));
             case NICKNAME:
             {
                 char nickname[64];
@@ -151,10 +140,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 else
                     author.GetGlobalName(username, sizeof(username));
             }
-            default:
-            {
-                author.GetUserName(username, sizeof(username));
-            }
+            default: author.GetUserName(username, sizeof(username));
         }
 
         // discord_redux_randomize_color_names
@@ -186,7 +172,21 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, content);
         }
         CPrintToChatAll("%s", discordMsg);
-        PrintToServer("%t", "discord_redux_chat_format_console", username, content);
+        // Remove color codes from username before printing to console
+        char rawUsername[MAX_DISCORD_NAME_LENGTH + 1];
+        int j = 0;
+        for (int i = 0; username[i] != '\0' && j < sizeof(rawUsername) - 1; i++)
+        {
+            if (username[i] == '{' && username[i+1] == '#')
+            {
+                i += 2;
+                while (username[i] != '\0' && username[i] != '}') i++;
+                if (username[i] == '}') continue;
+            }
+            rawUsername[j++] = username[i];
+        }
+        rawUsername[j] = '\0';
+        PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, content);
     }
     else if (StrEqual(messageChannelID, rconChannelID))
     {
@@ -225,8 +225,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 {
     if (g_Discord == null ||
         g_ChatWebhook == null ||
-        (client > 0 &&
-        (!IsClientInGame(client) || IsFakeClient(client))) ||
+        (client > 0 && (!IsClientInGame(client) || IsFakeClient(client))) ||
         !g_Discord.IsRunning ||
         StrEqual(command, "say_team", false) &&
         !g_ConVars[show_team_chat].BoolValue) return Plugin_Continue;
@@ -252,7 +251,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-    // Hide Chat Commands (match only first character)
     char commandPrefixes[64];
     g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
 
