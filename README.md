@@ -27,7 +27,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_randomize_color_names` | Randomize Discord user name colors. |
 | `discord_redux_show_team_chat` | Relay team chat to Discord (requires relay_server_to_discord). |
 | `discord_redux_hide_command_prefix` | Hide specified command prefixes on Discord (separated by commas, e.g. `!,/`). |
-| `discord_redux_steam_api_key` | Steam Web API Key for fetching user avatars.<br>(See: [Steam API Key](https://steamcommunity.com/dev/apikey)) |
+| `discord_redux_steam_api_key` | Steam Web API Key for fetching user avatars.<br>(See: [Register Steam Web API Key](https://steamcommunity.com/dev/apikey)) |
 | `discord_redux_workshop_path` | Path to Steam Workshop add-ons folder, relative to the game directory. |
 | `discord_redux_relay_server_to_discord` | Relay server chat to Discord. |
 | `discord_redux_relay_discord_to_server` | Relay Discord chat to server. |
