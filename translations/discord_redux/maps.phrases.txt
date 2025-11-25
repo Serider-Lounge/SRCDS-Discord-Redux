@@ -1,6 +1,58 @@
 "Phrases"
 {
     // Team Fortress 2
+    "arena_afterlife"
+    {
+        "en" "Afterlife"
+    }
+    "arena_badlands"
+    {
+        "en" "Badlands"
+    }
+    "arena_byre"
+    {
+        "en" "Byre"
+    }
+    "arena_granary"
+    {
+        "en" "Granary"
+    }
+    "arena_lumberyard_event"
+    {
+        "en" "Graveyard"
+    }
+    "arena_lumberyard"
+    {
+        "en" "Lumberyard"
+    }
+    "arena_nucleus"
+    {
+        "en" "Nucleus"
+    }
+    "arena_offblast_final"
+    {
+        "en" "Offblast"
+    }
+    "arena_perks"
+    {
+        "en" "Perks"
+    }
+    "arena_ravine"
+    {
+        "en" "Ravine"
+    }
+    "arena_sawmill"
+    {
+        "en" "Sawmill"
+    }
+    "arena_watchtower"
+    {
+        "en" "Watchtower"
+    }
+    "arena_well"
+    {
+        "en" "Well"
+    }
     "ctf_2fort"
     {
         "en" "2Fort"
@@ -16,6 +68,10 @@
     "ctf_crasher"
     {
         "en" "Crasher"
+    }
+    "ctf_devilcross"
+    {
+        "en" "Devilcross"
     }
     "ctf_doublecross"
     {
@@ -81,9 +137,17 @@
     {
         "en" "Canaveral"
     }
+    "cp_cloak"
+    {
+        "en" "Cloak"
+    }
     "cp_coldfront"
     {
         "en" "Coldfront"
+    }
+    "cp_cowerhouse"
+    {
+        "en" "Cowerhouse"
     }
     "cp_fastlane"
     {
@@ -477,53 +541,9 @@
     {
         "en" "Pipeline"
     }
-    "arena_badlands"
+    "itemtest"
     {
-        "en" "Badlands"
-    }
-    "arena_byre"
-    {
-        "en" "Byre"
-    }
-    "arena_granary"
-    {
-        "en" "Granary"
-    }
-    "arena_lumberyard_event"
-    {
-        "en" "Graveyard"
-    }
-    "arena_lumberyard"
-    {
-        "en" "Lumberyard"
-    }
-    "arena_nucleus"
-    {
-        "en" "Nucleus"
-    }
-    "arena_offblast_final"
-    {
-        "en" "Offblast"
-    }
-    "arena_perks"
-    {
-        "en" "Perks"
-    }
-    "arena_ravine"
-    {
-        "en" "Ravine"
-    }
-    "arena_sawmill"
-    {
-        "en" "Sawmill"
-    }
-    "arena_watchtower"
-    {
-        "en" "Watchtower"
-    }
-    "arena_well"
-    {
-        "en" "Well"
+        "en" "Itemtest"
     }
     "koth_badlands"
     {
@@ -689,6 +709,10 @@
     {
         "en" "Doomsday"
     }
+    "sd_marshlands"
+    {
+        "en" "Marshlands"
+    }
     "tr_dustbowl"
     {
         "en" "Dustbowl"
@@ -696,14 +720,6 @@
     "tr_target"
     {
         "en" "Target"
-    }
-    "itemtest"
-    {
-        "en" "Itemtest"
-    }
-    "cp_cloak"
-    {
-        "en" "Cloak"
     }
     "mvm_bigrock"
     {

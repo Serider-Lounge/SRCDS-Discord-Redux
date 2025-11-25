@@ -102,20 +102,6 @@
         "en"        "Scoreboard"
         "fr"        "Tableau des Scores"
     }
-    // Accelerator
-    "discord_redux_crash_report_title" // Server Crash
-    {
-        "en"        "Server Crashed!"
-        "fr"        "Le serveur a planté!"
-    }
-    "discord_redux_crash_report_description" // Crash Report Link
-    {
-        // {1} = Crash Report ID (ABCD-EFGH-IJKL)
-        // {2} = Crash Report ID (abcdefghijkl)
-        "#format"   "{1:s},{2:s}"
-        "en"        "Crash Report Link: [{1}](https://crash.limetech.org/{2})"
-        "fr"        "Lien du rapport: [{1}](https://crash.limetech.org/{2})"
-    }
     // RCON
     "discord_redux_rcon_print_error" // Print Error
     {
