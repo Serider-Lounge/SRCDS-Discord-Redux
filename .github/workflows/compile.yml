@@ -122,15 +122,6 @@ jobs:
           zip -qq -y -r SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip release_artifacts
         working-directory: ${{ github.workspace }}
 
-      - name: Create Tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git fetch --tags origin +refs/heads/*:refs/remotes/origin/*
-          commit_sha=$(git rev-parse HEAD)
-          git tag ${{ needs.build.outputs.PLUGIN_VERSION }} $commit_sha
-          git push origin ${{ needs.build.outputs.PLUGIN_VERSION }}
-
       - name: Create Release
         uses: ncipollo/release-action@v1
         env:
@@ -139,7 +130,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.build.outputs.PLUGIN_VERSION }}
           artifacts: "./SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip"
-          body: "${{ needs.build.outputs.PLUGIN_VERSION }}"
+          body: "Release ${{ needs.build.outputs.PLUGIN_VERSION }}"
           draft: false
           allowUpdates: true
           prerelease: false
