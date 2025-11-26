@@ -94,4 +94,3 @@ jobs:
             translations/**
             scripting/discord_redux.sp
             scripting/discord_redux/**
-            scripting/include/discord_redux/**

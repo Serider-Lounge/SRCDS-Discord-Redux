@@ -7,14 +7,14 @@
 #include <regex>
 #include <tf2_stocks>
 
-#include <discord_redux/stocks>
-#include <discord_redux/convars>
-#include <discord_redux/embeds>
-#include <discord_redux/halflife>
-#include <discord_redux/steam>
-#include <discord_redux/commands>
-#include <discord_redux/tf2>
-#include <discord_redux/navmesh>
+#include "discord_redux/stocks.sp"
+#include "discord_redux/convars.sp"
+#include "discord_redux/embeds.sp"
+#include "discord_redux/halflife.sp"
+#include "discord_redux/steam.sp"
+#include "discord_redux/commands.sp"
+#include "discord_redux/tf2.sp"
+#include "discord_redux/navmesh.sp"
 
 /* Sources */
 #include "discord_redux/accelerator.sp"
