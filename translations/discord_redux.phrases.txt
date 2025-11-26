@@ -1,15 +1,14 @@
 "Phrases"
 {
     // Discord → Server
-    "discord_redux_chat_format"
+    "discord_redux_chat_format" // Default
     {
         // {1} = Player Name
         // {2} = Message
         "#format"   "{1:s},{2:s}"
         "en"        "*DISCORD* {1} :  {2}"
     }
-    // Discord → Server (Reply)
-    "discord_redux_chat_format_reply"
+    "discord_redux_chat_format_reply" // Reply
     {
         // {1} = Player Name
         // {2} = Message
@@ -17,8 +16,7 @@
         "en"        "*DISCORD* (Reply) {1} :  {2}"
         "fr"        "*DISCORD* (Réponse) {1} :  {2}"
     }
-    // Discord → Server (Console)
-    "discord_redux_chat_format_console"
+    "discord_redux_chat_format_console" // Console
     {
         // {1} = Player Name
         // {2} = Message
@@ -26,7 +24,7 @@
         "en"        "(Discord) {1}: {2}"
     }
     // Server → Discord
-    "discord_redux_message_format"
+    "discord_redux_message_format" // Default
     {
         // {1} = Message
         // {2} = Player Name

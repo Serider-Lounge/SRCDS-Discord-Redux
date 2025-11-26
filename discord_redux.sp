@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48f"
+#define PLUGIN_VERSION     "25w48g"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -272,9 +272,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         switch (message.Type)
         {
             case MessageType_Reply:
+            {
+
                 Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format_reply", username, parsedContent);
-            default:
-                Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, parsedContent);
+            }
+            default: Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, parsedContent);
         }
         CPrintToChatAll("%s", discordMsg);
 
