@@ -95,3 +95,35 @@ jobs:
             translations/**
             scripting/discord_redux.sp
             scripting/discord_redux/**
+
+      - name: Create release zip
+        run: |
+          mkdir -p release
+          cp plugins/discord_redux.smx release/
+          cp scripting/discord_redux.sp release/
+          cp -r scripting/discord_redux release/
+          cp -r translations release/
+          cd release
+          zip -r discord_redux_${{ env.PLUGIN_VERSION }}.zip ./*
+        shell: bash
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.PLUGIN_VERSION }}
+          release_name: "${{ env.PLUGIN_VERSION }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset (ZIP)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/discord_redux_${{ env.PLUGIN_VERSION }}.zip
+          asset_name: discord_redux_${{ env.PLUGIN_VERSION }}.zip
+          asset_content_type: application/zip
