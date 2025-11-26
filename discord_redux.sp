@@ -7,17 +7,20 @@
 #include <regex>
 #include <tf2_stocks>
 
+// Misc.
 #include "discord_redux/stocks.sp"
 #include "discord_redux/convars.sp"
 #include "discord_redux/embeds.sp"
 #include "discord_redux/halflife.sp"
 #include "discord_redux/steam.sp"
 #include "discord_redux/commands.sp"
-#include "discord_redux/tf2.sp"
 #include "discord_redux/navmesh.sp"
 
-/* Sources */
-#include "discord_redux/accelerator.sp"
+// Games
+#include "discord_redux/game/tf2.sp"
+
+// Third-Party
+#include "discord_redux/thirdparty/accelerator.sp"
 
 /* Macros */
 #define PLUGIN_NAME        "[ANY] Discord Redux"
