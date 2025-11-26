@@ -1,4 +1,4 @@
-name: Compile and Release
+name: Compile with SourceMod
 
 on:
   push:
@@ -24,15 +24,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-    outputs:
-      PLUGIN_VERSION: ${{ steps.get_version.outputs.PLUGIN_VERSION }}
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: Set environment variables
-        run: echo "SCRIPTS_PATH=$(pwd)" >> $GITHUB_ENV
+        run: echo SCRIPTS_PATH=$(pwd) >> $GITHUB_ENV
 
-      - name: Setup SourcePawn Compiler
+      - name: Setup SourcePawn Compiler ${{ matrix.SM_VERSION }}
         id: setup_sp
         uses: rumblefrog/setup-sp@master
         with:
@@ -83,57 +82,16 @@ jobs:
 
       - name: Extract plugin version
         id: get_version
-        working-directory: ${{ env.SCRIPTS_PATH }}
         run: |
           version=$(grep 'PLUGIN_VERSION' discord_redux.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
           echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
-          echo "PLUGIN_VERSION=$version" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "Discord Redux ${{ steps.get_version.outputs.PLUGIN_VERSION }}"
+          name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
           path: |
             plugins/discord_redux.smx
             translations/**
             scripting/discord_redux.sp
             scripting/discord_redux/**
-
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: write
-    if: "!contains(github.event.head_commit.message, '[ci]')"
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: "Discord Redux ${{ needs.build.outputs.PLUGIN_VERSION }}"
-          path: release_artifacts
-
-      - name: Install Zip
-        uses: montudor/action-zip@v1
-
-      - name: Zip output
-        run: |
-          zip -qq -y -r SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip release_artifacts
-        working-directory: ${{ github.workspace }}
-
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.build.outputs.PLUGIN_VERSION }}
-          artifacts: "./SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip"
-          name: "Discord Redux ${{ needs.build.outputs.PLUGIN_VERSION }}"
-          body: "Release ${{ needs.build.outputs.PLUGIN_VERSION }}"
-          draft: false
-          allowUpdates: true
-          prerelease: false
-          replacesArtifacts: true
-          commit: ${{ github.sha }}
