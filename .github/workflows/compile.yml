@@ -74,6 +74,7 @@ jobs:
         run: |
           mkdir -p scripting/discord_redux
           mkdir -p scripting/discord_redux/discord_redux
+          mkdir -p scripting/include
           mv discord_redux.sp scripting/
           mv discord_redux/* scripting/discord_redux/
 
