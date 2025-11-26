@@ -108,19 +108,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download build artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: "Discord Redux ${{ needs.build.outputs.PLUGIN_VERSION }}"
           path: release_artifacts
 
-      - name: Install zip
+      - name: Install Zip
         uses: montudor/action-zip@v1
 
       - name: Zip output
         run: |
           zip -qq -y -r SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip release_artifacts
         working-directory: ${{ github.workspace }}
+
+      - name: Create Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ needs.build.outputs.PLUGIN_VERSION }}
+          git push origin ${{ needs.build.outputs.PLUGIN_VERSION }}
 
       - name: Create Release
         uses: ncipollo/release-action@v1
