@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48g"
+#define PLUGIN_VERSION     "25w48h"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -255,7 +255,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             default: author.GetUserName(username, sizeof(username));
         }
 
-        // discord_redux_randomize_color_names
+        // ConVar: discord_redux_randomize_color_names
         if (g_ConVars[randomize_color_names] != null && g_ConVars[randomize_color_names].BoolValue)
         {
             char userId[SNOWFLAKE_SIZE], colorCode[7];
@@ -273,8 +273,9 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         {
             case MessageType_Reply:
             {
-
                 Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format_reply", username, parsedContent);
+                // Workaround: referenced message content not available synchronously
+                StrCat(discordMsg, sizeof(discordMsg), "\n↪ \x05[reply referenced message not available]");
             }
             default: Format(discordMsg, sizeof(discordMsg), "%t", "discord_redux_chat_format", username, parsedContent);
         }
@@ -352,10 +353,8 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 {
     if (g_Discord == null ||
         g_ChatWebhook == null ||
-        (client > 0 && (!IsClientInGame(client) || IsFakeClient(client))) ||
-        !g_Discord.IsRunning ||
-        StrEqual(command, "say_team", false) &&
-        !g_ConVars[show_team_chat].BoolValue) return Plugin_Continue;
+        (client > 0 && (!IsClientInGame(client) || IsFakeClient(client)) ) ||
+        !g_Discord.IsRunning) return Plugin_Continue;
 
     if (client == 0 && !IsClientInGame(client))
     {
@@ -378,6 +377,9 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
+    if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
+        return;
+
     char commandPrefixes[64];
     g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
 

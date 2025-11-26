@@ -27,10 +27,10 @@ public void Accelerator_SendEmbed()
     embed.SetTitle(title);
 
     char crashID[16];
-    Regex regex = new Regex("([A-Z]{4}-[A-Z]{4}-[A-Z]{4})");
+    Regex regex = new Regex("[A-Z0-9]{4}(?:-[A-Z0-9]{4}){2}");
     if (regex && regex.Match(title) > 0)
     {
-        regex.GetSubString(1, crashID, sizeof(crashID));
+        regex.GetSubString(0, crashID, sizeof(crashID));
         ReplaceString(crashID, sizeof(crashID), "-", "");
         char url[64];
         Format(url, sizeof(url), "https://crash.limetech.org/%s", crashID);
