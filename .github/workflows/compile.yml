@@ -38,8 +38,11 @@ jobs:
           version: '1.13.x'
           version-file: ./discord_redux.sp
 
+      - name: Create include directory
+        run: mkdir -p include
+
       - name: Download Third-Party Includes
-        working-directory: ${{ env.SCRIPTS_PATH }}/include
+        working-directory: include
         run: |
           mkdir -p ripext multicolors
           wget -q -L https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/main/scripting/include/discord.inc -O discord.inc
@@ -74,7 +77,6 @@ jobs:
         run: |
           mkdir -p scripting/discord_redux
           mkdir -p scripting/discord_redux/discord_redux
-          mkdir -p scripting/include
           mv discord_redux.sp scripting/
           mv discord_redux/* scripting/discord_redux/
 
