@@ -83,15 +83,16 @@ jobs:
 
       - name: Extract plugin version
         id: get_version
+        working-directory: ${{ env.SCRIPTS_PATH }}
         run: |
           version=$(grep 'PLUGIN_VERSION' discord_redux.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
           echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
-          echo "::set-output name=PLUGIN_VERSION::$version"
+          echo "PLUGIN_VERSION=$version" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
+          name: "Discord Redux ${{ steps.get_version.outputs.PLUGIN_VERSION }}"
           path: |
             plugins/discord_redux.smx
             translations/**
@@ -118,7 +119,7 @@ jobs:
 
       - name: Zip output
         run: |
-          zip -qq -y -r ${{ github.event.repository.name }}-${{ needs.build.outputs.PLUGIN_VERSION }}.zip release_artifacts
+          zip -qq -y -r SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip release_artifacts
         working-directory: ${{ github.workspace }}
 
       - name: Create Release
@@ -127,8 +128,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ needs.build.outputs.PLUGIN_VERSION }}
-          artifacts: "./${{ github.event.repository.name }}-${{ needs.build.outputs.PLUGIN_VERSION }}.zip"
+          tag: ${{ needs.build.outputs.PLUGIN_VERSION }}
+          artifacts: "./SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip"
           body: "${{ needs.build.outputs.PLUGIN_VERSION }}"
           draft: false
           allowUpdates: true
