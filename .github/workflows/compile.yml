@@ -110,22 +110,9 @@ jobs:
           path: release
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.PLUGIN_VERSION }}
-          release_name: "${{ env.PLUGIN_VERSION }}"
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/plugins/discord_redux.smx
-          asset_name: discord_redux.smx
-          asset_content_type: application/octet-stream
+        run: |
+          gh release create v${{ env.PLUGIN_VERSION }} \
+            release/plugins/discord_redux.smx \
+            --title "${{ env.PLUGIN_VERSION }}"
