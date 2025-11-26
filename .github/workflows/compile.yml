@@ -27,12 +27,12 @@ jobs:
     outputs:
       PLUGIN_VERSION: ${{ steps.get_version.outputs.PLUGIN_VERSION }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set environment variables
-        run: echo SCRIPTS_PATH=$(pwd) >> $GITHUB_ENV
+        run: echo "SCRIPTS_PATH=$(pwd)" >> $GITHUB_ENV
 
-      - name: Setup SourcePawn Compiler ${{ matrix.SM_VERSION }}
+      - name: Setup SourcePawn Compiler
         id: setup_sp
         uses: rumblefrog/setup-sp@master
         with:
@@ -126,8 +126,9 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git fetch --tags
-          git tag ${{ needs.build.outputs.PLUGIN_VERSION }} $GITHUB_SHA
+          git fetch --tags origin +refs/heads/*:refs/remotes/origin/*
+          commit_sha=$(git rev-parse HEAD)
+          git tag ${{ needs.build.outputs.PLUGIN_VERSION }} $commit_sha
           git push origin ${{ needs.build.outputs.PLUGIN_VERSION }}
 
       - name: Create Release
