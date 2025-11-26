@@ -95,27 +95,3 @@ jobs:
             translations/**
             scripting/discord_redux.sp
             scripting/discord_redux/**
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
-          path: release
-
-      - name: Install GitHub CLI
-        run: sudo apt-get install gh
-
-      - name: Create Release and Upload Artifact
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create v${{ env.PLUGIN_VERSION }} \
-            release/plugins/discord_redux.smx \
-            --title "${{ env.PLUGIN_VERSION }}"
