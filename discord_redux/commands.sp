@@ -173,8 +173,8 @@ public Action Command_BugReport(int client, int args)
 
             // Bot Support
             char botSupport[32]; char navLoaded[sizeof(botSupport)]; // Valve NavMesh
-            Format(navLoaded, sizeof(navLoaded), "Available (%d Areas)", NavMesh_GetNavAreaCount());
-            Format(botSupport, sizeof(botSupport), "%s", NavMesh_IsLoaded() ? navLoaded : "Unavailable");
+            Format(navLoaded, sizeof(navLoaded), "Available (%d Areas)", NavMesh.GetNavAreaCount());
+            Format(botSupport, sizeof(botSupport), "%s", NavMesh.IsLoaded() ? navLoaded : "Unavailable");
             embed.AddField("Bot Support", botSupport);
 
             // VScripts
