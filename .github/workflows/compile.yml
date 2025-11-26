@@ -130,8 +130,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ needs.build.outputs.PLUGIN_VERSION }}
           artifacts: "./SRCDS-Discord-Redux-${{ needs.build.outputs.PLUGIN_VERSION }}.zip"
+          name: "Discord Redux ${{ needs.build.outputs.PLUGIN_VERSION }}"
           body: "Release ${{ needs.build.outputs.PLUGIN_VERSION }}"
           draft: false
           allowUpdates: true
           prerelease: false
           replacesArtifacts: true
+          commit: ${{ github.sha }}
