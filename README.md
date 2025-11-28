@@ -31,6 +31,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_workshop_path` | Path to Steam Workshop add-ons folder, relative to the game directory. |
 | `discord_redux_relay_server_to_discord` | Relay server chat to Discord. |
 | `discord_redux_relay_discord_to_server` | Relay Discord chat to server. |
+| `discord_redux_relay_console_messages` | Relay server console messages to Discord. |
 | `discord_redux_bot_token` | Discord bot token.<br>(See: [Discord Developer Portal](https://discord.com/developers/applications/)) |
 | `discord_redux_chat_channel_id` | Discord channel ID to relay messages. |
 | `discord_redux_player_status_channel_id` | Discord channel ID for player join/leave messages. |
