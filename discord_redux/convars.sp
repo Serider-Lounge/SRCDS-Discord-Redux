@@ -19,6 +19,7 @@ enum
     // Relay
     relay_server_to_discord,
     relay_discord_to_server,
+    relay_console_messages,
 
     // Bot
     bot_token,
@@ -119,6 +120,7 @@ public void InitConVars()
 
     g_ConVars[relay_server_to_discord] = CreateConVar("discord_redux_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NOTIFY);
     g_ConVars[relay_discord_to_server] = CreateConVar("discord_redux_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NOTIFY);
+    g_ConVars[relay_console_messages] = CreateConVar("discord_redux_relay_console_messages", "1", "Relay server console messages to Discord.", FCVAR_NOTIFY);
 
     g_ConVars[bot_token] = CreateConVar("discord_redux_bot_token", "", "Discord bot token.", FCVAR_PROTECTED);
     g_ConVars[chat_channel_id] = CreateConVar("discord_redux_chat_channel_id", "", "Discord channel ID to relay messages.", FCVAR_PROTECTED);

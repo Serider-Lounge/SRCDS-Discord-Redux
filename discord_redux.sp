@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48i"
+#define PLUGIN_VERSION     "25w48j"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -144,7 +144,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
         }
     }
-    delete hyperlinkRegex;
+    if (hyperlinkRegex != null)
+    {
+        delete hyperlinkRegex;
+        hyperlinkRegex = null;
+    }
 
     // Parse mentions
     char guildID[SNOWFLAKE_SIZE];
@@ -172,7 +176,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
         }
     }
-    delete mentionRegex;
+    if (mentionRegex != null)
+    {
+        delete mentionRegex;
+        mentionRegex = null;
+    }
 
     Regex roleRegex = new Regex("<@&([0-9]+)>", PCRE_UTF8);
     int roleMatches = roleRegex.MatchAll(parsedContent);
@@ -200,7 +208,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
         }
     }
-    delete roleRegex;
+    if (roleRegex != null)
+    {
+        delete roleRegex;
+        roleRegex = null;
+    }
 
     Regex channelRegex = new Regex("<#([0-9]+)>", PCRE_UTF8);
     int channelMatches = channelRegex.MatchAll(parsedContent);
@@ -224,7 +236,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
         }
     }
-    delete channelRegex;
+    if (channelRegex != null)
+    {
+        delete channelRegex;
+        channelRegex = null;
+    }
 
     /***** RCON *****/
     char rconChannelID[SNOWFLAKE_SIZE];
@@ -291,7 +307,11 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 }
             }
         }
-        delete colorRegex;
+        if (colorRegex != null)
+        {
+            delete colorRegex;
+            colorRegex = null;
+        }
         PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, parsedContent);
 
         int attachmentCount = message.AttachmentCount;
@@ -351,22 +371,6 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         (client > 0 && (!IsClientInGame(client) || IsFakeClient(client)) ) ||
         !g_Discord.IsRunning) return Plugin_Continue;
 
-    if (client == 0 && !IsClientInGame(client))
-    {
-        DiscordEmbed embed = new DiscordEmbed();
-        embed.SetDescription(sArgs);
-
-        char hexColor[8];
-        g_ConVars[embed_console_color].GetString(hexColor, sizeof(hexColor));
-        embed.Color = StringToInt(hexColor, 16);
-
-        char channelID[SNOWFLAKE_SIZE];
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-        g_Discord.SendMessageEmbed(channelID, "", embed);
-        delete embed;
-        return Plugin_Continue;
-    }
-
     return Plugin_Continue;
 }
 
@@ -374,6 +378,23 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 {
     if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
         return;
+
+    if (g_ConVars[relay_console_messages].BoolValue && client == 0)
+    {
+        DiscordEmbed embed = new DiscordEmbed();
+        embed.SetDescription(sArgs);
+
+        char hexColor[8];
+        g_ConVars[embed_console_color].GetString(hexColor, sizeof(hexColor));
+        int color = StringToInt(hexColor, 16);
+        embed.Color = color;
+
+        char channelID[SNOWFLAKE_SIZE];
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+        g_Discord.SendMessageEmbed(channelID, "", embed);
+        delete embed;
+        return;
+    }
 
     char commandPrefixes[64];
     g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
@@ -397,10 +418,18 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
                 Regex regex = new Regex(pattern, PCRE_UTF8);
                 if (regex.Match(sArgs) > 0)
                 {
-                    delete regex;
+                    if (regex != null)
+                    {
+                        delete regex;
+                        regex = null;
+                    }
                     return;
                 }
-                delete regex;
+                if (regex != null)
+                {
+                    delete regex;
+                    regex = null;
+                }
             }
             start = i + 1;
         }
@@ -451,7 +480,11 @@ public void OnClientPutInServer(int client)
     GetClientName(client, playerName, sizeof(playerName));
 
     // Store embed for later sending
-    if (g_PendingJoinEmbed[client] != null) delete g_PendingJoinEmbed[client];    
+    if (g_PendingJoinEmbed[client] != null)
+    {
+        delete g_PendingJoinEmbed[client];
+        g_PendingJoinEmbed[client] = null;
+    }
     g_PendingJoinEmbed[client] = new DiscordEmbed();
 
     char desc[DISCORD_DESC_LENGTH];
@@ -482,8 +515,9 @@ public void OnClientAvatarRetrieved(int client)
     g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
     
     g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
-    
+
     delete g_PendingJoinEmbed[client];
+    g_PendingJoinEmbed[client] = null;
 }
 
 public void OnClientDisconnect(int client)
@@ -534,6 +568,7 @@ public void OnClientDisconnect(int client)
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
     g_Discord.SendMessageEmbed(channelID, "", embed);
     delete embed;
+    embed = null;
 }
 
 public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
