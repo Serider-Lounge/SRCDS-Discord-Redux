@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48o"
+#define PLUGIN_VERSION     "25w48p"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -55,7 +55,7 @@ public void OnPluginStart()
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientConnected(i) && !IsFakeClient(i))
+        if (IsClientConnected(i))
             GetClientAvatar(i, steamAPIKey, g_SteamAvatar[i], sizeof(g_SteamAvatar[]));
     }
 }
@@ -432,7 +432,7 @@ public void OnClientPutInServer(int client)
     if (g_Discord == null || g_ChatWebhook == null)
         return;
 
-    if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || !g_Discord.IsRunning)
+    if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
     char steamID64[32], steamID2[32], playerName[MAX_NAME_LENGTH];
@@ -448,7 +448,9 @@ public void OnClientPutInServer(int client)
     int color = StringToInt(hexColor, 16);
 
     char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0')
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
@@ -474,7 +476,7 @@ public void OnClientDisconnect(int client)
     if (g_Discord == null || g_ChatWebhook == null)
         return;
 
-    if (client <= 0 || !IsClientInGame(client) || IsFakeClient(client) || !g_Discord.IsRunning)
+    if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
     char steamID64[32], steamID2[32], playerName[MAX_NAME_LENGTH];
@@ -519,10 +521,12 @@ public void OnClientDisconnect(int client)
         Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), "%s", coloredSquare);
     }
 
-    embed.SetFooter(steamID2, g_SteamAvatar[client]);
-
     char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0')
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+
+    embed.SetFooter(steamID2, g_SteamAvatar[client]);
     g_Discord.SendMessageEmbed(channelID, "", embed);
     delete embed;
 }
