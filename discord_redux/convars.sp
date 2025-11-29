@@ -98,7 +98,10 @@ DiscordWebhook g_ChatWebhook,
                g_AcceleratorWebhook;
 
 bool g_bMapEnded,
-     g_bIsClientBanned[MAXPLAYERS+1];
+     g_bIsClientBanned[MAXPLAYERS+1],
+     g_IsAvatarReady[MAXPLAYERS];
+
+ArrayList g_Avatars;
 
 public void InitConVars()
 {

@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48q"
+#define PLUGIN_VERSION     "25w48r"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -42,6 +42,9 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
+    // Globals
+    g_bMapEnded = false;
+
     // Setup ConVars and Commands
     InitConVars();
     RegCommands();
@@ -50,6 +53,9 @@ public void OnPluginStart()
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
 
+    g_Avatars = new ArrayList(256, MaxClients); // Use ArrayList methodmap
+    for (int i = 1; i <= MaxClients; i++)
+        g_IsAvatarReady[i] = false;
 }
 
 public void OnConfigsExecuted()
@@ -59,7 +65,7 @@ public void OnConfigsExecuted()
     UpdateConVars();
 }
 
-public void OnMapStart()
+public void OnMapInit()
 {
     g_bMapEnded = false;
 }
@@ -94,7 +100,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     if (message.IsBot)
         return;
 
-    /***** Chat *****/
+    // Chat
     DiscordUser author = message.Author;
     char username[MAX_DISCORD_NAME_LENGTH];
     
@@ -105,7 +111,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     message.GetChannelId(messageChannelID, sizeof(messageChannelID));
 
     // Convert Discord markdown hyperlinks from '[text](link)' to 'text (link)'
-    Regex hyperlinkRegex = new Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)", PCRE_UTF8);
+    Regex hyperlinkRegex = new Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)");
     int hyperlinkMatches = hyperlinkRegex.MatchAll(content);
 
     char parsedContent[MAX_DISCORD_MESSAGE_LENGTH];
@@ -124,7 +130,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 hyperlinkRegex.GetSubString(0, match, sizeof(match), i);
 
                 char replacement[MAX_DISCORD_MESSAGE_LENGTH];
-                Format(replacement, sizeof(replacement), "%s (%s)", text, link);
+                Format(replacement, sizeof(replacement), "%s (%s)", text, link);
 
                 ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
             }
@@ -135,90 +141,114 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     // Parse mentions
     char guildID[SNOWFLAKE_SIZE];
     g_ConVars[guild_id].GetString(guildID, sizeof(guildID));
-    
-    Regex mentionRegex = new Regex("<@([0-9]+)>", PCRE_UTF8);
-    int matches = mentionRegex.MatchAll(parsedContent);
-    if (matches > 0) // Users
+
+    // User mentions
+    Regex userRegex = new Regex("<@([0-9]+)>");
+    int userMatches = userRegex.MatchAll(parsedContent);
+    if (userMatches > 0)
     {
-        for (int i = 0; i < matches; i++)
+        for (int i = 0; i < userMatches; i++)
         {
             char userID[SNOWFLAKE_SIZE];
-            if (mentionRegex.GetSubString(1, userID, sizeof(userID), i))
+            if (userRegex.GetSubString(1, userID, sizeof(userID), i))
             {
-                DiscordUser mentionedUser = DiscordUser.FindUser(discord, userID);
+                DiscordUser user;
+                if (guildID[0] != '\0')
+                    user = DiscordUser.FindUser(g_Discord, userID, guildID);
+                else
+                    user = DiscordUser.FindUser(g_Discord, userID);
+
                 char mentionedName[MAX_DISCORD_NAME_LENGTH];
-                if (mentionedUser != null)
+                if (user != null)
+                    user.GetUserName(mentionedName, sizeof(mentionedName));
+                else
+                    Format(mentionedName, sizeof(mentionedName), "<@%s>", userID);
+
+                char match[32];
+                userRegex.GetSubString(0, match, sizeof(match), i);
+
+                char replacement[MAX_DISCORD_NAME_LENGTH + 12];
+                int color = StringToInt(userID) & 0xFFFFFF;
+                if (user != null)
                 {
-                    mentionedUser.GetUserName(mentionedName, sizeof(mentionedName));
-                    char mentionPattern[MAX_DISCORD_NAME_LENGTH], replacement[MAX_DISCORD_NAME_LENGTH + 12];
-                    Format(mentionPattern, sizeof(mentionPattern), "{#959DF7}<@%s>", userID);
-                    Format(replacement, sizeof(replacement), "{#959DF7}@%s", mentionedName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), mentionPattern, replacement);
+                    if (g_ConVars[randomize_color_names].BoolValue)
+                        Format(replacement, sizeof(replacement), "{#%06X}@%s", color, mentionedName);
+                    else
+                        Format(replacement, sizeof(replacement), "@%s", mentionedName);
                 }
+                else
+                {
+                    Format(replacement, sizeof(replacement), "<@%s>", userID); // Fallback: keep original mention
+                }
+                ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
             }
         }
     }
-    delete mentionRegex;
+    delete userRegex;
 
-    Regex roleRegex = new Regex("<@&([0-9]+)>", PCRE_UTF8);
+    // Role mentions
+    Regex roleRegex = new Regex("<@&([0-9]+)>");
     int roleMatches = roleRegex.MatchAll(parsedContent);
-    if (roleMatches > 0) // Roles
+    if (roleMatches > 0)
     {
         for (int i = 0; i < roleMatches; i++)
         {
             char roleId[SNOWFLAKE_SIZE];
             if (roleRegex.GetSubString(1, roleId, sizeof(roleId), i))
             {
-                DiscordRole mentionedRole = DiscordRole.FindRole(discord, guildID, roleId);
+                DiscordRole mentionedRole = DiscordRole.FindRole(g_Discord, guildID, roleId);
                 char roleName[MAX_DISCORD_NAME_LENGTH];
                 if (mentionedRole != null)
                 {
                     mentionedRole.GetName(roleName, sizeof(roleName));
                     char colorCode[16];
                     if (mentionedRole.Color == 0x000000)
-                    {
-                        strcopy(colorCode, sizeof(colorCode), "");
-                    }
+                        strcopy(colorCode, sizeof(colorCode), "");
                     else
-                    {
                         Format(colorCode, sizeof(colorCode), "{#%06x}", mentionedRole.Color);
-                    }
 
-                    char rolePattern[32], replacement[MAX_DISCORD_NAME_LENGTH + 10];
-                    Format(rolePattern, sizeof(rolePattern), "<@&%s>", roleId);
-                    Format(replacement, sizeof(replacement), "%s@%s", colorCode, roleName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), rolePattern, replacement);
+                    char match[32];
+                    roleRegex.GetSubString(0, match, sizeof(match), i);
+
+                    char replacement[MAX_DISCORD_NAME_LENGTH + 10];
+                    Format(replacement, sizeof(replacement), "%s@%s", colorCode, roleName);
+
+                    ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
                 }
             }
         }
     }
     delete roleRegex;
 
-    Regex channelRegex = new Regex("<#([0-9]+)>", PCRE_UTF8);
+    // Channel mentions
+    Regex channelRegex = new Regex("<#([0-9]+)>");
     int channelMatches = channelRegex.MatchAll(parsedContent);
-    if (channelMatches > 0) // Channels
+    if (channelMatches > 0)
     {
         for (int i = 0; i < channelMatches; i++)
         {
             char channelID[SNOWFLAKE_SIZE];
             if (channelRegex.GetSubString(1, channelID, sizeof(channelID), i))
             {
-                DiscordChannel mentionedChannel = DiscordChannel.FindChannel(discord, channelID);
+                DiscordChannel mentionedChannel = DiscordChannel.FindChannel(g_Discord, channelID);
                 char channelName[MAX_DISCORD_CHANNEL_NAME_LENGTH];
                 if (mentionedChannel != null)
                 {
                     mentionedChannel.GetName(channelName, sizeof(channelName));
-                    char channelPattern[32], replacement[MAX_DISCORD_CHANNEL_NAME_LENGTH + 2];
-                    Format(channelPattern, sizeof(channelPattern), "<#%s>", channelID);
-                    Format(replacement, sizeof(replacement), "{#959DF7}#%s", channelName);
-                    ReplaceString(parsedContent, sizeof(parsedContent), channelPattern, replacement);
+                    char match[32];
+                    channelRegex.GetSubString(0, match, sizeof(match), i);
+
+                    char replacement[MAX_DISCORD_CHANNEL_NAME_LENGTH + 2];
+                    Format(replacement, sizeof(replacement), "#%s", channelName);
+
+                    ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
                 }
             }
         }
     }
     delete channelRegex;
 
-    /***** RCON *****/
+    // RCON
     char rconChannelID[SNOWFLAKE_SIZE];
     g_ConVars[rcon_channel_id].GetString(rconChannelID, sizeof(rconChannelID));
 
@@ -269,7 +299,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         CPrintToChatAll("%s", discordMsg);
 
         char rawUsername[MAX_DISCORD_NAME_LENGTH + 1];
-        Regex colorRegex = new Regex("\\{#[0-9a-fA-F]{6}\\}", PCRE_UTF8);
+        Regex colorRegex = new Regex("\\{#[0-9a-fA-F]{6}\\}");
         strcopy(rawUsername, sizeof(rawUsername), username);
         int colorMatches = colorRegex.MatchAll(rawUsername);
         if (colorMatches > 0)
@@ -342,7 +372,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
         return;
 
-    if (g_ConVars[relay_console_messages].BoolValue && client == 0)
+    if (client == 0 && g_ConVars[relay_console_messages].BoolValue)
     {
         DiscordEmbed embed = new DiscordEmbed();
         embed.SetDescription(sArgs);
@@ -378,7 +408,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
                 char pattern[32];
                 Format(pattern, sizeof(pattern), "^%s", prefix);
 
-                Regex regex = new Regex(pattern, PCRE_UTF8);
+                Regex regex = new Regex(pattern);
                 if (regex.Match(sArgs) > 0)
                 {
                     delete regex;
@@ -402,11 +432,10 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     if (g_ChatWebhook != null)
     {
         g_ChatWebhook.SetName(playerName);
-        
-        char APIKey[128];
-        g_ConVars[steam_api_key].GetString(APIKey, sizeof(APIKey));
-        GetClientAvatar(client, APIKey);
-        g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+
+        char avatarUrl[256];
+        g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
+        g_ChatWebhook.SetAvatarUrl(avatarUrl);
         g_ChatWebhook.Execute(content);
     }
 }
@@ -418,9 +447,53 @@ public void OnClientAuthorized(int client)
     if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
+    g_IsAvatarReady[client] = false;
+
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    GetClientAvatar(client, steamAPIKey);
+    GetClientAvatar(client, steamAPIKey, g_Avatars);
+
+    CreateTimer(0.1, Timer_OnPlayerJoin, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_OnPlayerJoin(Handle timer, any client)
+{
+    if (!g_IsAvatarReady[client])
+        return Plugin_Continue;
+
+    char avatarUrl[256];
+    g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
+
+    char steamID2[32], steamID64[32], playerName[MAX_NAME_LENGTH];
+    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
+    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
+    GetClientName(client, playerName, sizeof(playerName));
+
+    char desc[DISCORD_DESC_LENGTH];
+    Format(desc, sizeof(desc), "%T", "discord_redux_player_join", LANG_SERVER, playerName, steamID64);
+
+    char hexColor[8];
+    g_ConVars[embed_join_color].GetString(hexColor, sizeof(hexColor));
+    int color = StringToInt(hexColor, 16);
+
+    char channelID[SNOWFLAKE_SIZE];
+    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0')
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetDescription(desc);
+    embed.Color = color;
+    embed.SetFooter(steamID2, avatarUrl);
+    g_Discord.SendMessageEmbed(channelID, "", embed);
+    delete embed;
+
+    return Plugin_Stop;
+}
+
+public void OnClientAvatarRetrieved(int client)
+{
+    g_IsAvatarReady[client] = true;
 }
 
 public void OnClientDisconnect(int client)
@@ -430,10 +503,6 @@ public void OnClientDisconnect(int client)
 
     if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
         return;
-
-    char APIKey[128];
-    g_ConVars[steam_api_key].GetString(APIKey, sizeof(APIKey));
-    GetClientAvatar(client, APIKey);
 
     char steamID64[32], steamID2[32], playerName[MAX_NAME_LENGTH];
     GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64), true);
@@ -471,7 +540,9 @@ public void OnClientDisconnect(int client)
     if (channelID[0] == '\0')
         g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 
-    embed.SetFooter(steamID2, g_SteamAvatar[client]);
+    char avatarUrl[256];
+    g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
+    embed.SetFooter(steamID2, avatarUrl);
     g_Discord.SendMessageEmbed(channelID, "", embed);
     delete embed;
 }
@@ -480,31 +551,4 @@ public Action OnBanClient(int client, int time, int flags, const char[] reason, 
 {
     g_bIsClientBanned[client] = true;
     return Plugin_Continue;
-}
-
-public void OnSteamAvatarReady(int client)
-{
-    char steamID2[32], steamID64[32], playerName[MAX_NAME_LENGTH];
-    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
-    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
-    GetClientName(client, playerName, sizeof(playerName));
-
-    char desc[DISCORD_DESC_LENGTH];
-    Format(desc, sizeof(desc), "%T", "discord_redux_player_join", LANG_SERVER, playerName, steamID64);
-
-    char hexColor[8];
-    g_ConVars[embed_join_color].GetString(hexColor, sizeof(hexColor));
-    int color = StringToInt(hexColor, 16);
-
-    char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
-    if (channelID[0] == '\0')
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-    DiscordEmbed embed = new DiscordEmbed();
-    embed.SetDescription(desc);
-    embed.Color = color;
-    embed.SetFooter(steamID2, g_SteamAvatar[client]);
-    g_Discord.SendMessageEmbed(channelID, "", embed);
-    delete embed;
 }
