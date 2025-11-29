@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48l"
+#define PLUGIN_VERSION     "25w48m"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -329,9 +329,6 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 }
 
 /* ========[Client]======== */
-DiscordEmbed g_PendingJoinEmbed[MAXPLAYERS];
-char g_PendingJoinChannel[MAXPLAYERS][SNOWFLAKE_SIZE];
-
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
     if (g_Discord == null ||
@@ -410,12 +407,14 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
         char apiKey[128];
         g_ConVars[steam_api_key].GetString(apiKey, sizeof(apiKey));
-        if (g_SteamAvatar[client][0] == '\0')
+        GetClientAvatar(client, apiKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+        if (g_ConVars[anonymous_pfp].BoolValue || g_SteamAvatar[client][0] == '\0')
         {
-            GetClientAvatar(client, apiKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
-            return;
+            int uniqueColor = StringToInt(steamID) & 0xFFFFFF;
+            char coloredSquare[256];
+            Format(coloredSquare, sizeof(coloredSquare), "https://dummyimage.com/184/%d/%d.png", uniqueColor, uniqueColor);
+            Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), "%s", coloredSquare);
         }
-
         g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
         g_ChatWebhook.Execute(content);
     }
@@ -434,46 +433,33 @@ public void OnClientPutInServer(int client)
     GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
     GetClientName(client, playerName, sizeof(playerName));
 
-    if (g_PendingJoinEmbed[client] != null)
-    {
-        delete g_PendingJoinEmbed[client];
-        g_PendingJoinEmbed[client] = new DiscordEmbed();
-    }
-
     char desc[DISCORD_DESC_LENGTH];
     Format(desc, sizeof(desc), "%T", "discord_redux_player_join", LANG_SERVER, playerName, steamID64);
-    g_PendingJoinEmbed[client].SetDescription(desc);
 
     char hexColor[8];
     g_ConVars[embed_join_color].GetString(hexColor, sizeof(hexColor));
     int color = StringToInt(hexColor, 16);
-    g_PendingJoinEmbed[client].Color = color;
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-    strcopy(g_PendingJoinChannel[client], sizeof(g_PendingJoinChannel[]), channelID);
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    if (g_SteamAvatar[client][0] == '\0')
+    GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+    if (g_ConVars[anonymous_pfp].BoolValue || g_SteamAvatar[client][0] == '\0')
     {
-        GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
-        return;
+        int uniqueColor = StringToInt(steamID64) & 0xFFFFFF;
+        char coloredSquare[256];
+        Format(coloredSquare, sizeof(coloredSquare), "https://dummyimage.com/184/%d/%d.png", uniqueColor, uniqueColor);
+        Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), "%s", coloredSquare);
     }
-    OnClientAvatarRetrieved(client);
-}
 
-public void OnClientAvatarRetrieved(int client)
-{
-    if (g_PendingJoinEmbed[client] == null)
-        return;
-
-    char steamID2[32];
-    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
-
-    g_PendingJoinEmbed[client].SetFooter(steamID2, g_SteamAvatar[client]);
-    g_Discord.SendMessageEmbed(g_PendingJoinChannel[client], "", g_PendingJoinEmbed[client]);
-    delete g_PendingJoinEmbed[client];
+    DiscordEmbed embed = new DiscordEmbed();
+    embed.SetDescription(desc);
+    embed.Color = color;
+    embed.SetFooter(steamID2, g_SteamAvatar[client]);
+    g_Discord.SendMessageEmbed(channelID, "", embed);
+    delete embed;
 }
 
 public void OnClientDisconnect(int client)
@@ -517,10 +503,13 @@ public void OnClientDisconnect(int client)
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    if (g_SteamAvatar[client][0] == '\0')
+    GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+    if (g_ConVars[anonymous_pfp].BoolValue || g_SteamAvatar[client][0] == '\0')
     {
-        GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
-        return;
+        int uniqueColor = StringToInt(steamID64) & 0xFFFFFF;
+        char coloredSquare[256];
+        Format(coloredSquare, sizeof(coloredSquare), "https://dummyimage.com/184/%d/%d.png", uniqueColor, uniqueColor);
+        Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), "%s", coloredSquare);
     }
 
     embed.SetFooter(steamID2, g_SteamAvatar[client]);

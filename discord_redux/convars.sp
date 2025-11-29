@@ -14,6 +14,7 @@ enum
     /* Steam */
     steam_api_key,
     workshop_path,
+    anonymous_pfp,
 
     /* Discord */
     // Relay
@@ -117,6 +118,7 @@ public void InitConVars()
 
     g_ConVars[steam_api_key] = CreateConVar("discord_redux_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
     g_ConVars[workshop_path] = CreateConVar("discord_redux_workshop_path", "../steamapps/workshop/content/", "Path to Steam Workshop add-ons folder, relative to the game directory (use \"..\" to go up a directory).", FCVAR_NOTIFY);
+    g_ConVars[anonymous_pfp] = CreateConVar("discord_redux_anonymous_pfp", "0", "Generate a unique colored square for in-game player avatars.", FCVAR_NOTIFY);
 
     g_ConVars[relay_server_to_discord] = CreateConVar("discord_redux_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NOTIFY);
     g_ConVars[relay_discord_to_server] = CreateConVar("discord_redux_relay_discord_to_server", "1", "Relay Discord chat to server.", FCVAR_NOTIFY);
