@@ -1,7 +1,7 @@
-# [ANY] Discord Redux | x64 support
+# <img src="https://store.steampowered.com/favicon.ico" width="32" height="32" style="vertical-align: text-bottom;"> Discord Redux <img src="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/66e3d80db9971f10a9757c99_Symbol.svg" width="40" height="40" style="vertical-align: text-bottom;"> | x64 support
 Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discordrelay).
 > [!NOTE]
-> This plugin has only been developed in [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) and, albeit not as much, [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/550/1a8d50f6078b5d023582ea1793b0e53813d57b7f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Left 4 Dead 2**](https://store.steampowered.com/app/550); but pull requests to extend support for other games are VERY MUCH welcome!
+> This plugin has only been tested in [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) and, albeit not as much, [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/550/1a8d50f6078b5d023582ea1793b0e53813d57b7f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Left 4 Dead 2**](https://store.steampowered.com/app/550); but pull requests to extend support for other games are VERY MUCH welcome!
 
 ## Dependencies
 - [sm-ext-discord](https://github.com/ProjectSky/sm-ext-discord/actions)
@@ -11,7 +11,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
   - If you're on **64-bits**, get the extension [there](https://github.com/irql-notlessorequal/SteamWorks/actions) instead.
 - [multicolors](https://github.com/JoinedSenses/SourceMod-IncludeLibrary/blob/master/include/multicolors.inc) (Compile-only)
 
-## How to install?
+##  How to install?
 - Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions/workflows/compile.yml).
 - Click on the latest ✅.
 - Download the package under **Artifacts**.
@@ -79,4 +79,4 @@ You need to set up a [Discord Webhook](https://support.discord.com/hc/en-us/arti
 You need to register your [Steam Web API Key](https://steamcommunity.com/dev/apikey).
 
 ### Why using `!` commands instead of Discord slash commands❓
-Eventually™
+I'm thinking of a good implementation.
