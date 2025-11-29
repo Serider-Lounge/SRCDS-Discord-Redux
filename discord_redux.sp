@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48k"
+#define PLUGIN_VERSION     "25w48l"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -50,20 +50,7 @@ public void OnPluginStart()
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
 
-    // Cache Player Avatars
-    char steamAPIKey[128];
-    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    if (steamAPIKey[0] != '\0')
-    {
-        for (int i = 1; i <= MaxClients; i++)
-        {
-            if (!IsClientInGame(i) || IsFakeClient(i))
-                continue;
-
-            if (g_SteamAvatar[i][0] == '\0')
-                GetClientAvatar(i, steamAPIKey);
-        }
-    }
+    // Remove avatar cache loop, avatar is now retrieved on demand
 }
 
 public void OnConfigsExecuted()
@@ -423,19 +410,14 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
         char apiKey[128];
         g_ConVars[steam_api_key].GetString(apiKey, sizeof(apiKey));
-
-        if (g_SteamAvatar[client][0] != '\0')
+        if (g_SteamAvatar[client][0] == '\0')
         {
-            g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
-            g_ChatWebhook.Execute(content);
+            GetClientAvatar(client, apiKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+            return;
         }
-        else
-        {
-            g_PendingWebhooks[client] = g_ChatWebhook;
-            strcopy(g_PendingDiscordMessages[client], sizeof(g_PendingDiscordMessages[]), content);
 
-            GetClientAvatar(client, apiKey);
-        }
+        g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+        g_ChatWebhook.Execute(content);
     }
 }
 
@@ -473,7 +455,12 @@ public void OnClientPutInServer(int client)
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    GetClientAvatar(client, steamAPIKey);
+    if (g_SteamAvatar[client][0] == '\0')
+    {
+        GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+        return;
+    }
+    OnClientAvatarRetrieved(client);
 }
 
 public void OnClientAvatarRetrieved(int client)
@@ -523,13 +510,18 @@ public void OnClientDisconnect(int client)
     // Always use leave color for kick/ban/leave
     char hexColor[8];
     g_ConVars[embed_leave_color].GetString(hexColor, sizeof(hexColor));
-    embed.Color = StringToInt(hexColor, 16);
+    int color = StringToInt(hexColor, 16);
+    embed.Color = color;
 
     embed.SetDescription(desc);
 
     char steamAPIKey[128];
     g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    GetClientAvatar(client, steamAPIKey);
+    if (g_SteamAvatar[client][0] == '\0')
+    {
+        GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+        return;
+    }
 
     embed.SetFooter(steamID2, g_SteamAvatar[client]);
 

@@ -1,8 +1,6 @@
-DiscordWebhook g_PendingWebhooks[MAXPLAYERS];
-char g_PendingDiscordMessages[MAXPLAYERS][MAX_MESSAGE_LENGTH];
 char g_SteamAvatar[MAXPLAYERS][256];
 
-public void GetClientAvatar(int client, const char[] steamAPIKey)
+public void GetClientAvatar(int client, const char[] steamAPIKey, char[] buffer, int maxlen)
 {
     char steamID[32];
     GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));
@@ -11,17 +9,15 @@ public void GetClientAvatar(int client, const char[] steamAPIKey)
     Format(url, sizeof(url), "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=%s&steamids=%s", steamAPIKey, steamID);
 
     HTTPRequest req = new HTTPRequest(url);
-    req.Get(GetClientAvatar_Callback, client);
+    req.Get(GetClientAvatar_Post, client);
 }
 
-public void GetClientAvatar_Callback(HTTPResponse response, int client)
+public void GetClientAvatar_Post(HTTPResponse response, int client)
 {
-    if (response.Status != HTTPStatus_OK)
-        return;
+    if (response.Status != HTTPStatus_OK) return;
 
     JSON data = response.Data;
-    if (data == null)
-        return;
+    if (data == null) return;
 
     JSONObject root = view_as<JSONObject>(data);
     JSONObject responseObj = view_as<JSONObject>(root.Get("response"));
@@ -43,24 +39,7 @@ public void GetClientAvatar_Callback(HTTPResponse response, int client)
         delete root;
         return;
     }
-
-    // Store the avatar URL in g_SteamAvatar
     strcopy(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), avatarUrl);
-
-    // Notify main plugin that avatar is ready (used for join embeds)
-    OnClientAvatarRetrieved(client);
-
-    // If there's a pending webhook/message for this client (chat relay), use it
-    if (g_PendingWebhooks[client] != null && g_PendingDiscordMessages[client][0] != '\0')
-    {
-        DiscordWebhook pending = g_PendingWebhooks[client];
-        pending.SetAvatarUrl(avatarUrl);
-
-        g_PendingWebhooks[client] = null;
-        g_PendingDiscordMessages[client][0] = '\0';
-
-        pending.Execute(g_SteamAvatar[client]);
-    }
 
     delete player;
     delete players;

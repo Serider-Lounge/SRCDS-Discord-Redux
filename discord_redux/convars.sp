@@ -185,16 +185,12 @@ public void UpdateConVars()
             {
                 case bot_token:
                 {
-                    if (g_Discord != null)
-                    {
-                        delete g_Discord;
-                    }
-
                     char token[256];
                     g_ConVars[bot_token].GetString(token, sizeof(token));
+                    if (token[0] == '\0') return;
 
                     g_Discord = new Discord(token);
-                    g_Discord.SetReadyCallback(OnDiscordReady, _);
+                    g_Discord.SetReadyCallback(OnDiscordReady);
 
                     if (!g_Discord.IsRunning)
                         g_Discord.Start();
@@ -202,42 +198,32 @@ public void UpdateConVars()
                 case chat_channel_id:
                 {
                     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-                    if (channelID[0] != '\0')
-                        g_Discord.SetMessageCallback(OnDiscordMessage);
+                    g_Discord.SetMessageCallback(OnDiscordMessage);
                 }
                 case rcon_channel_id:
                 {
                     g_ConVars[rcon_channel_id].GetString(channelID, sizeof(channelID));
-
-                    if (channelID[0] != '\0')
-                        g_Discord.SetMessageCallback(OnDiscordMessage);
+                    g_Discord.SetMessageCallback(OnDiscordMessage);
                 }
                 case chat_webhook_url:
                 {
                     g_ConVars[chat_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-                    
-                    if (webhookURL[0] != '\0')
-                        g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
                 case report_webhook_url:
                 {
                     g_ConVars[report_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-
-                    if (webhookURL[0] != '\0')
-                        g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
                 case player_status_channel_id:
                 {
                     g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
-                    if (channelID[0] == '\0')
-                        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+                    if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case map_status_channel_id:
                 {
                     g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
-                    if (channelID[0] == '\0')
-                        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+                    if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case hide_command_prefix:
                 {
@@ -247,8 +233,9 @@ public void UpdateConVars()
                 case accelerator_webhook_url:
                 {
                     g_ConVars[accelerator_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-                    if (webhookURL[0] != '\0')
-                        g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    if (webhookURL[0] == '\0') return;
+
+                    g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
             }
 		}
