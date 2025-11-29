@@ -190,12 +190,9 @@ public void UpdateConVars()
                     char token[256];
                     g_ConVars[bot_token].GetString(token, sizeof(token));
                     if (token[0] == '\0') return;
-
-                    g_Discord = new Discord(token);
+                    if (!g_Discord) g_Discord = new Discord(token);
                     g_Discord.SetReadyCallback(OnDiscordReady);
-
-                    if (!g_Discord.IsRunning)
-                        g_Discord.Start();
+                    if (!g_Discord.IsRunning) g_Discord.Start();
                 }
                 case chat_channel_id:
                 {
@@ -236,7 +233,6 @@ public void UpdateConVars()
                 {
                     g_ConVars[accelerator_webhook_url].GetString(webhookURL, sizeof(webhookURL));
                     if (webhookURL[0] == '\0') return;
-
                     g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
             }

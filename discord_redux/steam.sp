@@ -1,7 +1,9 @@
 char g_SteamAvatar[MAXPLAYERS][256];
 
-public void GetClientAvatar(int client, const char[] steamAPIKey, char[] buffer, int maxlen)
+public void GetClientAvatar(int client, const char[] steamAPIKey)
 {
+    if (g_SteamAvatar[client][0] != '\0') return;
+
     char steamID[32];
     GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));
 
@@ -22,24 +24,26 @@ public void GetClientAvatar_Post(HTTPResponse response, int client)
     JSONObject root = view_as<JSONObject>(data);
     JSONObject responseObj = view_as<JSONObject>(root.Get("response"));
     JSONArray players = view_as<JSONArray>(responseObj.Get("players"));
-    if (players.Length == 0)
+    JSONObject player = view_as<JSONObject>(players.Get(0));
+    
+    char avatarUrl[256];
+    if (player.GetString("avatarfull", avatarUrl, sizeof(avatarUrl)))
     {
-        delete root;
-        delete responseObj;
-        return;
+        Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), avatarUrl);
+        PrintToServer("[Discord Redux] Retrieved avatar for %N: %s", client, g_SteamAvatar[client]);
     }
 
-    JSONObject player = view_as<JSONObject>(players.Get(0));
-    char avatarUrl[256];
-    if (!player.GetString("avatarfull", avatarUrl, sizeof(avatarUrl)))
+    char steamID64[32];
+    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
+    if (g_ConVars[anonymous_pfp].BoolValue)
     {
-        delete player;
-        delete players;
-        delete responseObj;
-        delete root;
-        return;
+        int uniqueColor = StringToInt(steamID64) & 0xFFFFFF;
+        char coloredSquare[256];
+        Format(coloredSquare, sizeof(coloredSquare), "https://dummyimage.com/184/%d/%d.png", uniqueColor, uniqueColor);
+        Format(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), "%s", coloredSquare);
     }
-    strcopy(g_SteamAvatar[client], sizeof(g_SteamAvatar[]), avatarUrl);
+
+    OnSteamAvatarReady(client);
 
     delete player;
     delete players;
