@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48m"
+#define PLUGIN_VERSION     "25w48n"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -50,7 +50,14 @@ public void OnPluginStart()
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
 
-    // Remove avatar cache loop, avatar is now retrieved on demand
+    // Fetch avatars
+    char steamAPIKey[128];
+    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientConnected(i) && !IsFakeClient(i))
+            GetClientAvatar(i, steamAPIKey, g_SteamAvatar[i], sizeof(g_SteamAvatar[]));
+    }
 }
 
 public void OnConfigsExecuted()
@@ -420,6 +427,19 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     }
 }
 
+public void OnClientConnected(int client)
+{
+    if (g_Discord == null || g_ChatWebhook == null)
+        return;
+
+    if (client == 0 || IsFakeClient(client))
+        return;
+
+    char steamAPIKey[128];
+    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
+    GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
+}
+
 public void OnClientPutInServer(int client)
 {
     if (g_Discord == null || g_ChatWebhook == null)
@@ -443,9 +463,6 @@ public void OnClientPutInServer(int client)
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 
-    char steamAPIKey[128];
-    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    GetClientAvatar(client, steamAPIKey, g_SteamAvatar[client], sizeof(g_SteamAvatar[]));
     if (g_ConVars[anonymous_pfp].BoolValue || g_SteamAvatar[client][0] == '\0')
     {
         int uniqueColor = StringToInt(steamID64) & 0xFFFFFF;
