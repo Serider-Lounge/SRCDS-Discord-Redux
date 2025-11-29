@@ -11,7 +11,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
   - If you're on **64-bits**, get the extension [there](https://github.com/irql-notlessorequal/SteamWorks/actions) instead.
 - [multicolors](https://github.com/JoinedSenses/SourceMod-IncludeLibrary/blob/master/include/multicolors.inc) (Compile-only)
 
-##  How to install?
+## How to install?
 - Go to [Actions](https://github.com/Serider-Lounge/SRCDS-Discord-Redux/actions/workflows/compile.yml).
 - Click on the latest ✅.
 - Download the package under **Artifacts**.
