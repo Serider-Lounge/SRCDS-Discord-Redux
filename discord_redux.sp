@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48r"
+#define PLUGIN_VERSION     "25w48s"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -42,9 +42,6 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
-    // Globals
-    g_bMapEnded = false;
-
     // Setup ConVars and Commands
     InitConVars();
     RegCommands();
@@ -65,9 +62,10 @@ public void OnConfigsExecuted()
     UpdateConVars();
 }
 
-public void OnMapInit()
+public void OnMapStart()
 {
     g_bMapEnded = false;
+    Embed_CurrentMapStatus();
 }
 
 public void OnMapEnd()
