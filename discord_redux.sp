@@ -6,16 +6,19 @@
 #include <SteamWorks>
 #include <regex>
 #include <tf2_stocks>
+#undef REQUIRE_PLUGIN
+#include <maprate>
+#define REQUIRE_PLUGIN
+#include <system2>
 
 // Misc.
-#include "discord_redux/stocks.sp"
 #include "discord_redux/convars.sp"
+#include "discord_redux/stocks.sp"
 #include "discord_redux/embeds.sp"
 #include "discord_redux/halflife.sp"
 #include "discord_redux/steam.sp"
 #include "discord_redux/commands.sp"
 #include "discord_redux/navmesh.sp"
-
 // Games
 #include "discord_redux/game/tf2.sp"
 
@@ -26,7 +29,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w48s"
+#define PLUGIN_VERSION     "25w49a"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -42,7 +45,10 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
-    // Setup ConVars and Commands
+    // Libraries
+    g_IsMapRateLoaded = LibraryExists("maprate");
+
+    // ConVars & Commands
     InitConVars();
     RegCommands();
 
@@ -64,13 +70,13 @@ public void OnConfigsExecuted()
 
 public void OnMapStart()
 {
-    g_bMapEnded = false;
+    g_HasMapEnded = false;
     Embed_CurrentMapStatus();
 }
 
 public void OnMapEnd()
 {
-    g_bMapEnded = true;
+    g_HasMapEnded = true;
     Embed_CurrentMapStatus();
 }
 

@@ -3,7 +3,8 @@
 *.bat
 *.sh
 
-.archive
+.*
+
 admin*.inc
 adt*.inc
 banning.inc
@@ -58,3 +59,5 @@ discord.inc
 multicolors*
 ripext*
 SteamWorks*
+maprate.inc
+system2*

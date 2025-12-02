@@ -54,6 +54,7 @@ jobs:
           wget -q -L https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/multicolors/colors.inc -O multicolors/colors.inc
           wget -q -L https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/multicolors/morecolors.inc -O multicolors/morecolors.inc
           wget -q -L https://raw.githubusercontent.com/caxanga334/accelerator/refs/heads/pr-feat-upload-forward/scripting/include/accelerator.inc -O accelerator.inc
+          wget -q -L https://raw.githubusercontent.com/saxybois/sm-maprate/refs/heads/main/maprate.inc -O maprate.inc
           ls -lah
 
       - name: Compile plugins

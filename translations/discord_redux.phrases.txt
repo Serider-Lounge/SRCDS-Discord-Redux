@@ -94,6 +94,11 @@
         "en"        "Chapter:"
         "fr"        "Chapitre:"
     }
+    "discord_redux_maprate_average" // Average Map Rating
+    {
+        "en"        "Average Rating:"
+        "fr"        "Note Moyenne:"
+    }
     // Scoreboard
     "discord_redux_scoreboard"
     {
@@ -130,7 +135,7 @@
         "fr"        "[Discord Redux] Vous devez attendre %d seconde(s) avant de pouvoir appeler un modérateur de nouveau (mais votre message a quand même été envoyé)."
     }
     // Bot Status
-    "discord_redux_bot_success" // Start Success
+    "discord_redux_bot_success" // Bot Started
     {
         // {1} = Bot Username
         // {2} = Bot ID

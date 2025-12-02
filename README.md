@@ -20,7 +20,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 > If the packages have been expired, run the workflow again.
 
 ## ConVars
-
+### Discord Redux
 | Name | Description |
 |------|-------------|
 | `discord_redux_enabled` | Toggle Discord Redux altogether. |
@@ -58,13 +58,18 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 | `discord_redux_map_thumbnail_url` | Discord map thumbnail URL. |
 | `discord_redux_map_thumbnail_format` | Discord map thumbnail format. |
 | `discord_redux_invite` | Discord invite link. |
-| `discord_redux_accelerator_webhook_url` | Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions)‼ |
 | `discord_redux_version` | Discord Redux version. |
 > [!WARNING]
 > Only give access to the RCON channel to ***trusted*** individuals‼
 
 > [!NOTE]
-> If your game doesn't support HEX chat colors, `discord_redux_randomize_color_names` won't be available.
+> If the game doesn't support HEX chat colors, `discord_redux_randomize_color_names` won't be available.
+
+### Third-Party
+|Name|Description|
+|-|-|
+| `discord_redux_accelerator_webhook_url` | Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions). |
+|`discord_redux_maprate`|Show average map rating in map embeds.<br>⚠ Requires [Map Rate](https://github.com/saxybois/sm-maprate).|
 
 ## QNA
 ### Why does **Discord → Server** not work❓

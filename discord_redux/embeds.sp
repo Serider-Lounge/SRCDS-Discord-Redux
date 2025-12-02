@@ -9,20 +9,9 @@ public void Embed_CurrentMapStatus()
     GetGameDescription(gameDesc, sizeof(gameDesc));
 
     // Map field
-    char mapName[64];
+    char mapName[64], displayMapName[64];
     GetCurrentMap(mapName, sizeof(mapName));
-
-    // Strip "workshop/" and ".ugc123456789" from workshop map names
-    if (strncmp(mapName, "workshop/", 9) == 0)
-    {
-        // Remove "workshop/" prefix
-        strcopy(mapName, sizeof(mapName), mapName[9]);
-
-        // Remove ".ugc*" suffix
-        int workshopID = FindCharInString(mapName, '.', false);
-        if (workshopID != -1 && StrContains(mapName[workshopID], ".ugc", false) != -1)
-            mapName[workshopID] = '\0';
-    }
+    GetMapDisplayName(mapName, displayMapName, sizeof(displayMapName));
 
     // Player count field
     int maxPlayers = GetMaxHumanPlayers();
@@ -51,7 +40,7 @@ public void Embed_CurrentMapStatus()
 
     // Map Start/End embeds
     char hexColor[8];
-    if (g_bMapEnded)
+    if (g_HasMapEnded)
         g_ConVars[embed_previous_map_color].GetString(hexColor, sizeof(hexColor));
     else
         g_ConVars[embed_current_map_color].GetString(hexColor, sizeof(hexColor));
@@ -83,7 +72,7 @@ public void Embed_CurrentMapStatus()
         }
     }
 
-    // Workshop clickable link logic
+    // Steam Workshop
     char ugcID[32];
     if (GetWorkshopMapID(mapName, ugcID, sizeof(ugcID)))
     {
@@ -96,8 +85,26 @@ public void Embed_CurrentMapStatus()
         embed.AddField(mapField, translatedMapName, true);
     }
 
-    if (!g_bMapEnded)
+    if (!g_HasMapEnded)
         embed.AddField(playerCountField, playerField, true);
+
+    // Map Rate Average
+    if (g_ConVars[map_rating_enabled].BoolValue && g_HasMapEnded)
+    {
+        char ratingValue[16];
+        int stars = RoundFloat(MapRate_GetAverage(mapName));        
+        for (int i = 0; i < stars; i++)
+        {
+            StrCat(ratingValue, sizeof(ratingValue), "⭐");
+        }
+
+        if (stars > 0)
+        {
+            char ratingField[DISCORD_FIELD_LENGTH];
+            Format(ratingField, sizeof(ratingField), "%T", "discord_redux_maprate_average", LANG_SERVER);
+            embed.AddField(ratingField, ratingValue, true);
+        }
+    }
 
     // Map Thumbnail
     if (g_ConVars[map_thumbnail_enabled].BoolValue)
@@ -108,6 +115,12 @@ public void Embed_CurrentMapStatus()
 
         char mapThumb[320];
         Format(mapThumb, sizeof(mapThumb), "%s%s.%s", thumbUrl, mapName, thumbFormat);
+
+        if (GetWorkshopMapID(mapName, ugcID, sizeof(ugcID)))
+        {
+            Format(mapThumb, sizeof(mapThumb), "https://community.cloudflare.steamstatic.com/public/images/sharedfiles/steam_workshop_default_image.png");
+        }
+
         embed.SetThumbnail(mapThumb);
     }
 
@@ -115,43 +128,9 @@ public void Embed_CurrentMapStatus()
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-    if (g_Discord != null && g_Discord.IsRunning)
+    if (g_Discord.IsRunning)
     {
         g_Discord.SendMessageEmbed(channelID, "", embed);
     }
     delete embed;
-}
-
-stock bool GetWorkshopMapID(const char[] mapName, char[] buffer, int maxlen)
-{
-    char workshopPath[PLATFORM_MAX_PATH];
-    g_ConVars[workshop_path].GetString(workshopPath, sizeof(workshopPath));
-    int appID = GetAppID();
-
-    char searchPath[PLATFORM_MAX_PATH];
-    Format(searchPath, sizeof(searchPath), "%s/%d/", workshopPath, appID);
-
-    DirectoryListing dir = OpenDirectory(searchPath);
-    if (dir == null)
-        return false;
-
-    char entry[256];
-    FileType fileType;
-    while (dir.GetNext(entry, sizeof(entry), fileType))
-    {
-        if (fileType != FileType_Directory)
-            continue;
-
-        char mapFile[PLATFORM_MAX_PATH];
-        Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", searchPath, entry, mapName);
-        if (FileExists(mapFile))
-        {
-            strcopy(buffer, maxlen, entry);
-            delete dir;
-            return true;
-        }
-    }
-    delete dir;
-    return false;
 }

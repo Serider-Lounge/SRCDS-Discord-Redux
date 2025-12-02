@@ -45,11 +45,35 @@ stock void TF2_GetRoundState(char[] buffer, int maxlen)
         }
         case RoundState_Stalemate:
         {
-            strcopy(buffer, maxlen, "Sudden Death");
+            switch (GetEngineVersion())
+            {
+                case Engine_TF2: strcopy(buffer, maxlen, "Sudden Death");
+                default:         strcopy(buffer, maxlen, "Stalemate");
+            }
         }
         case RoundState_GameOver:
         {
             strcopy(buffer, maxlen, "Game Over");
+        }
+        case RoundState_Bonus:
+        {
+            strcopy(buffer, maxlen, "Bonus Round");
+        }
+        case RoundState_BetweenRounds:
+        {
+            strcopy(buffer, maxlen, "Between Rounds");
+        }
+        case RoundState_Init:
+        {
+            strcopy(buffer, maxlen, "Initializing");
+        }
+        case RoundState_Pregame:
+        {
+            strcopy(buffer, maxlen, "Pregame");
+        }
+        case RoundState_StartGame:
+        {
+            strcopy(buffer, maxlen, "Starting Game");
         }
         default:
         {
@@ -69,4 +93,41 @@ stock void TF2_GetRoundState(char[] buffer, int maxlen)
     {
         strcopy(buffer, maxlen, "Waiting For Players");
     }
+    else if (GameRules_GetProp("m_bTruceActive") == 1)
+    {
+        strcopy(buffer, maxlen, "Truce");
+    }
+}
+
+stock bool GetWorkshopMapID(const char[] mapName, char[] buffer, int maxlen)
+{
+    char workshopPath[PLATFORM_MAX_PATH];
+    g_ConVars[workshop_path].GetString(workshopPath, sizeof(workshopPath));
+    
+    int appID = GetAppID();
+    char searchPath[PLATFORM_MAX_PATH];
+    Format(searchPath, sizeof(searchPath), "%s/%d/", workshopPath, appID);
+
+    DirectoryListing dir = OpenDirectory(searchPath);
+    if (dir == null)
+        return false;
+
+    char entry[256];
+    FileType fileType;
+    while (dir.GetNext(entry, sizeof(entry), fileType))
+    {
+        if (fileType != FileType_Directory)
+            continue;
+
+        char mapFile[PLATFORM_MAX_PATH];
+        Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", searchPath, entry, mapName);
+        if (FileExists(mapFile))
+        {
+            strcopy(buffer, maxlen, entry);
+            delete dir;
+            return true;
+        }
+    }
+    delete dir;
+    return false;
 }

@@ -55,10 +55,11 @@ enum
     footer_server_ip,
     footer_icon,
 
-    // Thumbnail
+    // Map Status
     map_thumbnail_enabled,
     map_thumbnail_url,
     map_thumbnail_format,
+    map_rating_enabled,
 
     /* Community */
     discord_invite,
@@ -97,9 +98,10 @@ DiscordWebhook g_ChatWebhook,
                g_ReportWebhook,
                g_AcceleratorWebhook;
 
-bool g_bMapEnded,
+bool g_HasMapEnded,
      g_bIsClientBanned[MAXPLAYERS+1],
-     g_IsAvatarReady[MAXPLAYERS];
+     g_IsAvatarReady[MAXPLAYERS],
+     g_IsMapRateLoaded;
 
 ArrayList g_Avatars;
 
@@ -161,9 +163,10 @@ public void InitConVars()
 
     // Third-Party
     if (GetExtensionFileStatus("accelerator.ext"))
-    {
         g_ConVars[accelerator_webhook_url] = CreateConVar("discord_redux_accelerator_webhook_url", "", "Discord webhook URL for crash reports.", FCVAR_PROTECTED);
-    }
+    
+    if (g_IsMapRateLoaded)
+        g_ConVars[map_rating_enabled] = CreateConVar("discord_redux_maprate", "1", "Show average map rating in map embeds.", FCVAR_NOTIFY);
 
     AutoExecConfig(true, "discord_redux");
 }
