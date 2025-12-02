@@ -89,7 +89,7 @@ public void Embed_CurrentMapStatus()
         embed.AddField(playerCountField, playerField, true);
 
     // Map Rate Average
-    if (g_ConVars[map_rating_enabled].BoolValue && g_HasMapEnded)
+    if (g_IsMapRateLoaded && g_ConVars[map_rating_enabled].BoolValue && g_HasMapEnded)
     {
         char ratingValue[16];
         int stars = RoundFloat(MapRate_GetAverage(mapName));        
