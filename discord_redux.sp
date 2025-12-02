@@ -9,7 +9,6 @@
 #undef REQUIRE_PLUGIN
 #include <maprate>
 #define REQUIRE_PLUGIN
-#include <system2>
 
 // Misc.
 #include "discord_redux/convars.sp"
