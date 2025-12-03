@@ -21,44 +21,43 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 
 ## ConVars
 ### Discord Redux
-| Name | Description |
-|------|-------------|
-| `discord_redux_enabled` | Toggle Discord Redux altogether. |
-| `discord_redux_randomize_color_names` | Randomize Discord user name colors. |
-| `discord_redux_show_team_chat` | Relay team chat to Discord (requires relay_server_to_discord). |
-| `discord_redux_hide_command_prefix` | Hide specified command prefixes on Discord (separated by commas, e.g. `!,/`). |
-| `discord_redux_steam_api_key` | Steam Web API Key for fetching user avatars.<br>(See: [Register Steam Web API Key](https://steamcommunity.com/dev/apikey)) |
-| `discord_redux_workshop_path` | Path to Steam Workshop add-ons folder, relative to the game directory. |
-| `discord_redux_relay_server_to_discord` | Relay server chat to Discord. |
-| `discord_redux_relay_discord_to_server` | Relay Discord chat to server. |
-| `discord_redux_relay_console_messages` | Relay server console messages to Discord. |
-| `discord_redux_anonymous_pfp` | Generate a unique colored square for in-game player avatars. |
-| `discord_redux_bot_token` | Discord bot token.<br>(See: [Discord Developer Portal](https://discord.com/developers/applications/)) |
-| `discord_redux_chat_channel_id` | Discord channel ID to relay messages. |
-| `discord_redux_player_status_channel_id` | Discord channel ID for player join/leave messages. |
-| `discord_redux_map_status_channel_id` | Discord channel ID for map status. |
-| `discord_redux_guild_id` | Discord server ID. |
-| `discord_redux_staff_mention` | Discord role/user mention(s) for staff alerts (leave blank to disable). |
-| `discord_redux_staff_mention_cooldown` | Cooldown time in seconds between staff mentions for sm_calladmin. |
-| `discord_redux_chat_webhook_url` | Discord webhook URL for relaying server chat to Discord. |
-| `discord_redux_username_mode` | Use Discord display name instead of username.<br>(0 = Username | 1 = Global Name | 2 = Nickname) |
-| `discord_redux_rcon_channel_id` | Discord channel ID for RCON messages. |
-| `discord_redux_report_webhook_url` | Discord webhook URL for bug reports. |
-| `discord_redux_embed_current_map_color` | Embed color for current map embeds. |
-| `discord_redux_embed_previous_map_color` | Embed color for previous map embeds. |
-| `discord_redux_embed_join_color` | Embed color for join embeds. |
-| `discord_redux_embed_leave_color` | Embed color for leave embeds. |
-| `discord_redux_embed_kick_color` | Embed color for kick embeds. |
-| `discord_redux_embed_ban_color` | Embed color for ban embeds. |
-| `discord_redux_embed_console_color` | Embed color for console messages. |
-| `discord_redux_embed_scoreboard_color` | Embed color for the scoreboard. |
-| `discord_redux_footer_server_ip` | Show server public IP in embed footer. |
-| `discord_redux_footer_icon` | Footer icon URL for Discord embeds. |
-| `discord_redux_map_thumbnail_enabled` | Show map thumbnail in map embeds. |
-| `discord_redux_map_thumbnail_url` | Discord map thumbnail URL. |
-| `discord_redux_map_thumbnail_format` | Discord map thumbnail format. |
-| `discord_redux_invite` | Discord invite link. |
-| `discord_redux_version` | Discord Redux version. |
+|Name| Description|
+|-|-|
+|`discord_redux_enabled`| Toggle Discord Redux altogether.|
+|`discord_redux_randomize_color_names`| Randomize Discord user name colors.|
+|`discord_redux_show_team_chat`| Relay team chat to Discord (requires relay_server_to_discord).|
+|`discord_redux_hide_command_prefix`| Hide specified command prefixes on Discord (separated by commas, e.g. `!,/`).|
+|`discord_redux_steam_api_key`| Steam Web API Key for fetching user avatars.<br>(See: [Register Steam Web API Key](https://steamcommunity.com/dev/apikey))|
+|`discord_redux_relay_server_to_discord`| Relay server chat to Discord.|
+|`discord_redux_relay_discord_to_server`| Relay Discord chat to server.|
+|`discord_redux_relay_console_messages`| Relay server console messages to Discord.|
+|`discord_redux_anonymous_pfp`| Generate a unique colored square for in-game player avatars.|
+|`discord_redux_bot_token`| Discord bot token.<br>(See: [Discord Developer Portal](https://discord.com/developers/applications/))|
+|`discord_redux_chat_channel_id`| Discord channel ID to relay messages.|
+|`discord_redux_player_status_channel_id`| Discord channel ID for player join/leave messages.|
+|`discord_redux_map_status_channel_id`| Discord channel ID for map status.|
+|`discord_redux_guild_id`| Discord server ID.|
+|`discord_redux_staff_mention`| Discord role/user mention(s) for staff alerts (leave blank to disable).|
+|`discord_redux_staff_mention_cooldown`| Cooldown time in seconds between staff mentions for sm_calladmin.|
+|`discord_redux_chat_webhook_url`| Discord webhook URL for relaying server chat to Discord.|
+|`discord_redux_username_mode`| Use Discord display name instead of username.<br>(0 = Username| 1 = Global Name| 2 = Nickname)|
+|`discord_redux_rcon_channel_id`| Discord channel ID for RCON messages.|
+|`discord_redux_report_webhook_url`| Discord webhook URL for bug reports.|
+|`discord_redux_embed_current_map_color`| Embed color for current map embeds.|
+|`discord_redux_embed_previous_map_color`| Embed color for previous map embeds.|
+|`discord_redux_embed_join_color`| Embed color for join embeds.|
+|`discord_redux_embed_leave_color`| Embed color for leave embeds.|
+|`discord_redux_embed_kick_color`| Embed color for kick embeds.|
+|`discord_redux_embed_ban_color`| Embed color for ban embeds.|
+|`discord_redux_embed_console_color`| Embed color for console messages.|
+|`discord_redux_embed_scoreboard_color`| Embed color for the scoreboard.|
+|`discord_redux_footer_server_ip`| Show server public IP in embed footer.|
+|`discord_redux_footer_icon`| Footer icon URL for Discord embeds.|
+|`discord_redux_map_thumbnail_enabled`| Show map thumbnail in map embeds.|
+|`discord_redux_map_thumbnail_url`| Discord map thumbnail URL.|
+|`discord_redux_map_thumbnail_format`| Discord map thumbnail format.|
+|`discord_redux_invite`| Discord invite link.|
+|`discord_redux_version`| Discord Redux version.|
 > [!WARNING]
 > Only give access to the RCON channel to ***trusted*** individuals‼
 
@@ -68,7 +67,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 ### Third-Party
 |Name|Description|
 |-|-|
-| `discord_redux_accelerator_webhook_url` | Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions). |
+|`discord_redux_accelerator_webhook_url`| Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions).|
 |`discord_redux_maprate`|Show average map rating in map embeds.<br>⚠ Requires [Map Rate](https://github.com/saxybois/sm-maprate).|
 
 ## QNA
