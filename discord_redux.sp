@@ -10,14 +10,16 @@
 #include <maprate>
 #define REQUIRE_PLUGIN
 
-// Misc.
+// Discord Redux 
 #include "discord_redux/convars.sp"
-#include "discord_redux/stocks.sp"
-#include "discord_redux/embeds.sp"
-#include "discord_redux/halflife.sp"
-#include "discord_redux/steam.sp"
+#include <discord_redux/stocks>
+#include "discord_redux/clients.sp"
 #include "discord_redux/commands.sp"
-#include "discord_redux/navmesh.sp"
+
+#include <discord_redux/embeds>
+#include <discord_redux/steam>
+#include <discord_redux/shared/navmesh>
+
 // Games
 #include "discord_redux/game/tf2.sp"
 
@@ -28,7 +30,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w49a"
+#define PLUGIN_VERSION     "25w49b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -44,8 +46,6 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
-    // Libraries
-    g_IsMapRateLoaded = LibraryExists("maprate");
 
     // ConVars & Commands
     InitConVars();
@@ -55,31 +55,40 @@ public void OnPluginStart()
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
 
-    g_Avatars = new ArrayList(256, MaxClients); // Use ArrayList methodmap
-    for (int i = 1; i <= MaxClients; i++)
-        g_IsAvatarReady[i] = false;
+    // Fetch Game Info
+    GameInfo gameinfo;
+    int appid = gameinfo.appid;
+    Steam_GetAppDetails(appid, g_SteamWebAPIKey, Callback_OnAppDetailsFetched);
+
+    // Cache avatars for all connected clients on plugin start
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (IsClientInGame(client) && !IsFakeClient(client))
+        {
+            GetClientAvatar(client, g_SteamWebAPIKey, GetClientAvatar_Post);
+        }
+    }
+
+    // Libraries
+    g_IsMapRateLoaded = LibraryExists("maprate");
+}
+
+public void Callback_OnAppDetailsFetched(int appid, const char[] name, const char[] icon, any data)
+{
+    strcopy(g_GameName, sizeof(g_GameName), name);
+    strcopy(g_GameIcon, sizeof(g_GameIcon), icon);
 }
 
 public void OnConfigsExecuted()
 {
-    g_ConVars[version] = CreateConVar("discord_redux_version", PLUGIN_VERSION, "Discord Redux version.", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-    
-    UpdateConVars();
-}
-
-public void OnMapStart()
-{
-    g_HasMapEnded = false;
-    Embed_CurrentMapStatus();
+    Embed_MapStatus();
 }
 
 public void OnMapEnd()
 {
-    g_HasMapEnded = true;
-    Embed_CurrentMapStatus();
+    Embed_MapStatus(true);
 }
 
-/* ========[Discord]======== */
 void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int guild_count, const char[] guild_ids, int guild_id_count, any data)
 {
     char botName[64], botID[32];
@@ -90,7 +99,7 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
     FormatEx(botStatus, sizeof(botStatus), "%T", "discord_redux_bot_success", LANG_SERVER, botName, botID);
     PrintToServer("%s", botStatus);
 
-    Embed_CurrentMapStatus();
+    Embed_MapStatus();
 }
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
@@ -156,10 +165,10 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             if (userRegex.GetSubString(1, userID, sizeof(userID), i))
             {
                 DiscordUser user;
-                if (guildID[0] != '\0')
-                    user = DiscordUser.FindUser(g_Discord, userID, guildID);
-                else
-                    user = DiscordUser.FindUser(g_Discord, userID);
+                //if (guildID[0] != '\0')
+                //    user = DiscordUser.FindUser(g_Discord, userID, guildID);
+                //else
+                user = DiscordUser.FindUser(g_Discord, userID);
 
                 char mentionedName[MAX_DISCORD_NAME_LENGTH];
                 if (user != null)
@@ -181,7 +190,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 }
                 else
                 {
-                    Format(replacement, sizeof(replacement), "<@%s>", userID); // Fallback: keep original mention
+                    Format(replacement, sizeof(replacement), "<@%s>", userID);
                 }
                 ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
             }
@@ -260,15 +269,22 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         // Commands
         if (StrEqual(content, "!map", false) || StrEqual(content, "!status", false))
         {
-            Embed_CurrentMapStatus();
+            Embed_MapStatus();
         }
 
         // Username
-        switch (g_ConVars[username_mode].IntValue)
+        UsernameMode mode = view_as<UsernameMode>(g_ConVars[username_mode].IntValue);
+        switch (mode)
         {
-            case USER_NAME: author.GetUserName(username, sizeof(username));
-            case GLOBAL_NAME: author.GetGlobalName(username, sizeof(username));
-            case NICKNAME:
+            case Mode_UserName:
+            {
+                author.GetUserName(username, sizeof(username));
+            }
+            case Mode_GlobalName:
+            {
+                author.GetGlobalName(username, sizeof(username));
+            }
+            case Mode_NickName:
             {
                 char nickname[64];
                 author.GetNickName(nickname, sizeof(nickname));
@@ -357,201 +373,4 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         g_Discord.SendMessageEmbed(rconChannelID, "", embed);
         delete embed;
     }
-}
-
-/* ========[Client]======== */
-public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
-{
-    if (g_Discord == null ||
-        g_ChatWebhook == null ||
-        (client > 0 && (!IsClientInGame(client) || IsFakeClient(client)) ) ||
-        !g_Discord.IsRunning) return Plugin_Continue;
-
-    return Plugin_Continue;
-}
-
-public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
-{
-    if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
-        return;
-
-    if (client == 0 && g_ConVars[relay_console_messages].BoolValue)
-    {
-        DiscordEmbed embed = new DiscordEmbed();
-        embed.SetDescription(sArgs);
-
-        char hexColor[8];
-        g_ConVars[embed_console_color].GetString(hexColor, sizeof(hexColor));
-        int color = StringToInt(hexColor, 16);
-        embed.Color = color;
-
-        char channelID[SNOWFLAKE_SIZE];
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-        g_Discord.SendMessageEmbed(channelID, "", embed);
-        delete embed;
-        return;
-    }
-
-    char commandPrefixes[64];
-    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
-
-    int len = strlen(commandPrefixes);
-    int start = 0;
-    for (int i = 0; i <= len; i++)
-    {
-        if (commandPrefixes[i] == ',' || commandPrefixes[i] == '\0')
-        {
-            int prefixLen = i - start;
-            if (prefixLen > 0)
-            {
-                char prefix[16];
-                strcopy(prefix, sizeof(prefix), commandPrefixes[start]);
-                prefix[prefixLen] = '\0';
-
-                char pattern[32];
-                Format(pattern, sizeof(pattern), "^%s", prefix);
-
-                Regex regex = new Regex(pattern);
-                if (regex.Match(sArgs) > 0)
-                {
-                    delete regex;
-                    return;
-                }
-                delete regex;
-            }
-            start = i + 1;
-        }
-    }
-
-    char steamID[32];
-    GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));
-
-    char playerName[MAX_DISCORD_NAME_LENGTH];
-    GetClientName(client, playerName, sizeof(playerName));
-
-    char content[MAX_DISCORD_MESSAGE_LENGTH];
-    Format(content, sizeof(content), "%T", "discord_redux_message_format", client, sArgs, playerName, steamID, "", "");
-
-    if (g_ChatWebhook != null)
-    {
-        g_ChatWebhook.SetName(playerName);
-
-        char avatarUrl[256];
-        g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
-        g_ChatWebhook.SetAvatarUrl(avatarUrl);
-        g_ChatWebhook.Execute(content);
-    }
-}
-
-public void OnClientAuthorized(int client)
-{
-    if (g_Discord == null || g_ChatWebhook == null)
-        return;
-    if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
-        return;
-
-    g_IsAvatarReady[client] = false;
-
-    char steamAPIKey[128];
-    g_ConVars[steam_api_key].GetString(steamAPIKey, sizeof(steamAPIKey));
-    GetClientAvatar(client, steamAPIKey, g_Avatars);
-
-    CreateTimer(0.1, Timer_OnPlayerJoin, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action Timer_OnPlayerJoin(Handle timer, any client)
-{
-    if (!g_IsAvatarReady[client])
-        return Plugin_Continue;
-
-    char avatarUrl[256];
-    g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
-
-    char steamID2[32], steamID64[32], playerName[MAX_NAME_LENGTH];
-    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
-    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
-    GetClientName(client, playerName, sizeof(playerName));
-
-    char desc[DISCORD_DESC_LENGTH];
-    Format(desc, sizeof(desc), "%T", "discord_redux_player_join", LANG_SERVER, playerName, steamID64);
-
-    char hexColor[8];
-    g_ConVars[embed_join_color].GetString(hexColor, sizeof(hexColor));
-    int color = StringToInt(hexColor, 16);
-
-    char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
-    if (channelID[0] == '\0')
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-    DiscordEmbed embed = new DiscordEmbed();
-    embed.SetDescription(desc);
-    embed.Color = color;
-    embed.SetFooter(steamID2, avatarUrl);
-    g_Discord.SendMessageEmbed(channelID, "", embed);
-    delete embed;
-
-    return Plugin_Stop;
-}
-
-public void OnClientAvatarRetrieved(int client)
-{
-    g_IsAvatarReady[client] = true;
-}
-
-public void OnClientDisconnect(int client)
-{
-    if (g_Discord == null || g_ChatWebhook == null)
-        return;
-
-    if (client == 0 || IsFakeClient(client) || !g_Discord.IsRunning)
-        return;
-
-    char steamID64[32], steamID2[32], playerName[MAX_NAME_LENGTH];
-    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64), true);
-    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2), true);
-    GetClientName(client, playerName, sizeof(playerName));
-
-    DiscordEmbed embed = new DiscordEmbed();
-
-    char desc[DISCORD_DESC_LENGTH];
-
-    if (g_bIsClientBanned[client])
-    {
-        Format(desc, sizeof(desc), "%T", "discord_redux_player_banned", LANG_SERVER, playerName, steamID64);
-        g_bIsClientBanned[client] = false;
-    }
-    else if (IsClientInKickQueue(client))
-    {
-        Format(desc, sizeof(desc), "%T", "discord_redux_player_kicked", LANG_SERVER, playerName, steamID64);
-    }
-    else
-    {
-        Format(desc, sizeof(desc), "%T", "discord_redux_player_leave", LANG_SERVER, playerName, steamID64);
-    }
-
-    // Always use leave color for kick/ban/leave
-    char hexColor[8];
-    g_ConVars[embed_leave_color].GetString(hexColor, sizeof(hexColor));
-    int color = StringToInt(hexColor, 16);
-    embed.Color = color;
-
-    embed.SetDescription(desc);
-
-    char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
-    if (channelID[0] == '\0')
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-    char avatarUrl[256];
-    g_Avatars.GetString(client, avatarUrl, sizeof(avatarUrl));
-    embed.SetFooter(steamID2, avatarUrl);
-    g_Discord.SendMessageEmbed(channelID, "", embed);
-    delete embed;
-}
-
-public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
-{
-    g_bIsClientBanned[client] = true;
-    return Plugin_Continue;
 }

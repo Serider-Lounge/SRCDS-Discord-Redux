@@ -1,3 +1,5 @@
+#include <discord_redux/steam/clients>
+
 int g_LastStaffMentionTime = 0;
 
 stock void RegCommands()
@@ -53,9 +55,9 @@ public Action Command_CallAdmin(int client, int args)
 
     // Set webhook name/avatar
     g_ChatWebhook.SetName(playerName);
-    if (client > 0 && client <= MaxClients && g_SteamAvatar[client][0] != '\0')
+    if (client > 0 && client <= MaxClients)
     {
-        g_ChatWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+        GetClientAvatar(client, g_SteamWebAPIKey, OnAvatarForChatCommand, g_ChatWebhook);
     }
     g_ChatWebhook.Modify();
 
@@ -75,6 +77,14 @@ public Action Command_CallAdmin(int client, int args)
         g_LastStaffMentionTime = now;
     }
     return Plugin_Handled;
+}
+
+// Callback for chat avatar
+public void OnAvatarForChatCommand(int client, const char[] url, any webhookHandle)
+{
+    DiscordWebhook webhook = view_as<DiscordWebhook>(webhookHandle);
+    webhook.SetAvatarUrl(url);
+    // ...send message logic...
 }
 
 public Action Command_BugReport(int client, int args)
@@ -140,27 +150,27 @@ public Action Command_BugReport(int client, int args)
             char className[32];
             switch (TF2_GetPlayerClass(client))
             {
-                case TFClass_Unknown: strcopy(className, sizeof(className), "Undefined");
-                case TFClass_Scout: strcopy(className, sizeof(className), "Scout");
-                case TFClass_Soldier: strcopy(className, sizeof(className), "Soldier");
-                case TFClass_Pyro: strcopy(className, sizeof(className), "Pyro");
-                case TFClass_DemoMan: strcopy(className, sizeof(className), "Demoman");
-                case TFClass_Heavy: strcopy(className, sizeof(className), "Heavy Weapons Guy");
-                case TFClass_Engineer: strcopy(className, sizeof(className), "Engineer");
-                case TFClass_Medic: strcopy(className, sizeof(className), "Medic");
-                case TFClass_Sniper: strcopy(className, sizeof(className), "Sniper");
-                case TFClass_Spy: strcopy(className, sizeof(className), "Spy");
+                case TFClass_Unknown:          strcopy(className, sizeof(className), "Undefined");
+                case TFClass_Scout:            strcopy(className, sizeof(className), "Scout");
+                case TFClass_Soldier:          strcopy(className, sizeof(className), "Soldier");
+                case TFClass_Pyro:             strcopy(className, sizeof(className), "Pyro");
+                case TFClass_DemoMan:          strcopy(className, sizeof(className), "Demoman");
+                case TFClass_Heavy:            strcopy(className, sizeof(className), "Heavy Weapons Guy");
+                case TFClass_Engineer:         strcopy(className, sizeof(className), "Engineer");
+                case TFClass_Medic:            strcopy(className, sizeof(className), "Medic");
+                case TFClass_Sniper:           strcopy(className, sizeof(className), "Sniper");
+                case TFClass_Spy:              strcopy(className, sizeof(className), "Spy");
                 case view_as<TFClassType>(10): strcopy(className, sizeof(className), "Civilian");
-                default: strcopy(className, sizeof(className), "Unknown");
+                default:                       strcopy(className, sizeof(className), "Unknown");
             }
             char teamName[32];
             switch (TF2_GetClientTeam(client))
             {
-                case TFTeam_Red: strcopy(teamName, sizeof(teamName), "RED");
-                case TFTeam_Blue: strcopy(teamName, sizeof(teamName), "BLU");
-                case TFTeam_Spectator: strcopy(teamName, sizeof(teamName), "Spectator");
+                case TFTeam_Red:         strcopy(teamName, sizeof(teamName), "RED");
+                case TFTeam_Blue:        strcopy(teamName, sizeof(teamName), "BLU");
+                case TFTeam_Spectator:   strcopy(teamName, sizeof(teamName), "Spectator");
                 case view_as<TFTeam>(5): strcopy(teamName, sizeof(teamName), "Halloween Boss");
-                default: strcopy(teamName, sizeof(teamName), "Unassigned");
+                default:                 strcopy(teamName, sizeof(teamName), "Unassigned");
             }
             char playerInfo[64];
             Format(playerInfo, sizeof(playerInfo), "- **Class**\n  - %s\n- **Team**\n  - %s", className, teamName);
@@ -232,9 +242,13 @@ public Action Command_BugReport(int client, int args)
 
     // Webhook
     g_ReportWebhook.SetName(playerName);
-    if (client > 0 && client <= MaxClients && g_SteamAvatar[client][0] != '\0')
+    if (client > 0 && client <= MaxClients)
     {
-        g_ReportWebhook.SetAvatarUrl(g_SteamAvatar[client]);
+        GetClientAvatar(client, g_SteamWebAPIKey, OnAvatarForReportCommand, g_ReportWebhook);
+    }
+    else
+    {
+        g_ReportWebhook.SetAvatarUrl(""); // fallback or anonymous
     }
     g_ReportWebhook.Modify();
 
@@ -255,4 +269,12 @@ public Action Command_BugReport(int client, int args)
 
     CReplyToCommand(client, "%s", message);
     return Plugin_Handled;
+}
+
+// Callback for report avatar
+public void OnAvatarForReportCommand(int client, const char[] url, any webhookHandle)
+{
+    DiscordWebhook webhook = view_as<DiscordWebhook>(webhookHandle);
+    webhook.SetAvatarUrl(url);
+    // ...send message logic...
 }

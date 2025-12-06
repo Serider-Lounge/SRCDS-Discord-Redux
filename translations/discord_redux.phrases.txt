@@ -38,35 +38,23 @@
     // Player Status
     "discord_redux_player_join" // Connecting
     {
-        // {1} = Player Name
-        // {2} = SteamID
-        "#format"	"{1:s},{2:s}"
-        "en"		"[{1}](http://www.steamcommunity.com/profiles/{2}) joined the game"
-        "fr"		"[{1}](http://www.steamcommunity.com/profiles/{2}) a rejoint la partie"
+        "en"		"Player connected"
+        "fr"		"Joueur·euse connecté·e"
     }
     "discord_redux_player_leave" // Disconnecting
     {
-        // {1} = Player Name
-        // {2} = SteamID
-        "#format"	"{1:s},{2:s}"
-        "en" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) left the game"
-        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a quitté·e la partie"
+        "en" 		"Player disconnected"
+        "fr" 		"Joueur·euse déconnecté·e"
     }
     "discord_redux_player_kicked" // Kicked
     {
-        // {1} = Player Name
-        // {2} = SteamID
-        "#format"	"{1:s},{2:s}"
-        "en" 		"Kicked [{1}](http://www.steamcommunity.com/profiles/{2})"
-        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a été expulsé·e"
+        "en" 		"Player kicked"
+        "fr" 		"Joueur·euse expulsé·e"
     }
     "discord_redux_player_banned" // Banned
     {
-        // {1} = Player Name
-        // {2} = SteamID
-        "#format"	"{1:s},{2:s}"
-        "en" 		"Banned [{1}](http://www.steamcommunity.com/profiles/{2})"
-        "fr" 		"[{1}](http://www.steamcommunity.com/profiles/{2}) a été banni·e"
+        "en" 		"Player banned"
+        "fr" 		"Joueur·euse banni·e"
     }
     // Map Status
     "discord_redux_player_count" // Player Count

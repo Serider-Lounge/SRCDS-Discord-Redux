@@ -3,9 +3,6 @@
 enum
 {
     /* Settings */
-    // Plugin
-    plugin_enabled,
-
     // Chat
     randomize_color_names,
     show_team_chat,
@@ -13,7 +10,6 @@ enum
 
     /* Steam */
     steam_api_key,
-    workshop_path,
     anonymous_pfp,
 
     /* Discord */
@@ -59,7 +55,6 @@ enum
     map_thumbnail_enabled,
     map_thumbnail_url,
     map_thumbnail_format,
-    map_rating_enabled,
 
     /* Community */
     discord_invite,
@@ -67,49 +62,47 @@ enum
     /* Third-Party */
     // Accelerator
     accelerator_webhook_url,
+    // Map Rate
+    map_rating_enabled,
 
-    /* Advanced */
-    version,
-
-/********************************/
     MAX_CONVARS
-/********************************/
 }
 
 enum UsernameMode
 {
-    USER_NAME = 0,
-    GLOBAL_NAME,
-    NICKNAME
+    Mode_UserName = 0,
+    Mode_GlobalName,
+    Mode_NickName
 }
-/* -- TO-DO --
-enum ModAction
+
+enum ActionType
 {
-    MOD_WARN,
-    MOD_MUTE,
-    MOD_KICK,
-    MOD_BAN
+    Action_Join,
+    Action_Leave,
+    Action_Kick,
+    Action_Ban
 }
-*/
+
 ConVar g_ConVars[MAX_CONVARS];
 
-Discord g_Discord;
-DiscordWebhook g_ChatWebhook,
-               g_ReportWebhook,
-               g_AcceleratorWebhook;
+Discord g_Discord = null;
+DiscordWebhook g_ChatWebhook        = null,
+               g_ReportWebhook      = null,
+               g_AcceleratorWebhook = null;
 
-bool g_HasMapEnded,
-     g_bIsClientBanned[MAXPLAYERS+1],
-     g_IsAvatarReady[MAXPLAYERS],
+bool g_IsClientBanned[MAXPLAYERS+1],
      g_IsMapRateLoaded;
 
-ArrayList g_Avatars;
+char g_SteamWebAPIKey[64],
+     g_GameName[64],
+     g_GameIcon[128],
+     g_ClientAvatar[MAXPLAYERS][256];
+
+Workshop g_Map;
 
 public void InitConVars()
 {
     /* ConVars */
-    g_ConVars[plugin_enabled] = CreateConVar("discord_redux_enabled", "1", "Toggle Discord Redux altogether.", FCVAR_NOTIFY);
-
     switch (GetEngineVersion())
     {
         // Only these games support HEX chat colors as far as I know.
@@ -122,7 +115,7 @@ public void InitConVars()
     g_ConVars[hide_command_prefix] = CreateConVar("discord_redux_hide_command_prefix", "!,/", "Hide specified command prefixes on Discord (separated by commas).", FCVAR_NOTIFY);
 
     g_ConVars[steam_api_key] = CreateConVar("discord_redux_steam_api_key", "", "Steam Web API Key for fetching user avatars.", FCVAR_PROTECTED);
-    g_ConVars[workshop_path] = CreateConVar("discord_redux_workshop_path", "../steamapps/workshop/content/", "Path to Steam Workshop add-ons folder, relative to the game directory (use \"..\" to go up a directory).", FCVAR_NOTIFY);
+    GetConVarString(g_ConVars[steam_api_key], g_SteamWebAPIKey, sizeof(g_SteamWebAPIKey));
     g_ConVars[anonymous_pfp] = CreateConVar("discord_redux_anonymous_pfp", "0", "Generate a unique colored square for in-game player avatars.", FCVAR_NOTIFY);
 
     g_ConVars[relay_server_to_discord] = CreateConVar("discord_redux_relay_server_to_discord", "1", "Relay server chat to Discord.", FCVAR_NOTIFY);
@@ -167,7 +160,7 @@ public void InitConVars()
     
     if (g_IsMapRateLoaded)
         g_ConVars[map_rating_enabled] = CreateConVar("discord_redux_maprate", "1", "Show average map rating in map embeds.", FCVAR_NOTIFY);
-
+    
     AutoExecConfig(true, "discord_redux");
 }
 
@@ -176,72 +169,77 @@ public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] n
     char name[64];
     convar.GetName(name, sizeof(name));
 
-    ShowActivity(0, "[Discord Redux] Changed '%s' from '%s' to '%s'", name, oldValue, newValue);
-
-    UpdateConVars();
-}
-
-public void UpdateConVars()
-{
-    char webhookURL[256];
-    char channelID[SNOWFLAKE_SIZE];
+    char webhookURL[256], channelID[SNOWFLAKE_SIZE];
     for (int i = 0; i < MAX_CONVARS; i++)
     {
-        if (g_ConVars[i] != null)
+        if (g_ConVars[i] == convar)
         {
             switch (i)
             {
                 case bot_token:
                 {
                     char token[256];
-                    g_ConVars[bot_token].GetString(token, sizeof(token));
+                    convar.GetString(token, sizeof(token));
                     if (token[0] == '\0') return;
-                    if (!g_Discord) g_Discord = new Discord(token);
-                    g_Discord.SetReadyCallback(OnDiscordReady);
-                    if (!g_Discord.IsRunning) g_Discord.Start();
+                    if (g_Discord == null || !g_Discord.IsRunning)
+                    {
+                        g_Discord = new Discord(token);
+                        g_Discord.SetReadyCallback(OnDiscordReady);
+                        g_Discord.SetMessageCallback(OnDiscordMessage);
+                    }
                 }
                 case chat_channel_id:
                 {
-                    g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-                    g_Discord.SetMessageCallback(OnDiscordMessage);
+                    convar.GetString(channelID, sizeof(channelID));
                 }
                 case rcon_channel_id:
                 {
-                    g_ConVars[rcon_channel_id].GetString(channelID, sizeof(channelID));
-                    g_Discord.SetMessageCallback(OnDiscordMessage);
+                    convar.GetString(channelID, sizeof(channelID));
                 }
                 case chat_webhook_url:
                 {
-                    g_ConVars[chat_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-                    g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    convar.GetString(webhookURL, sizeof(webhookURL));
+                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
+                    {
+                        g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    }
                 }
                 case report_webhook_url:
                 {
-                    g_ConVars[report_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-                    g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    convar.GetString(webhookURL, sizeof(webhookURL));
+                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
+                    {
+                        g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    }
                 }
                 case player_status_channel_id:
                 {
-                    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
+                    convar.GetString(channelID, sizeof(channelID));
                     if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case map_status_channel_id:
                 {
-                    g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
+                    convar.GetString(channelID, sizeof(channelID));
                     if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case hide_command_prefix:
                 {
                     char commandPrefixes[64];
-                    g_ConVars[hide_command_prefix].GetString(commandPrefixes, sizeof(commandPrefixes));
+                    convar.GetString(commandPrefixes, sizeof(commandPrefixes));
                 }
                 case accelerator_webhook_url:
                 {
-                    g_ConVars[accelerator_webhook_url].GetString(webhookURL, sizeof(webhookURL));
-                    if (webhookURL[0] == '\0') return;
-                    g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    convar.GetString(webhookURL, sizeof(webhookURL));
+                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
+                    {
+                        g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    }
+                }
+                case steam_api_key:
+                {
+                    convar.GetString(g_SteamWebAPIKey, sizeof(g_SteamWebAPIKey));
                 }
             }
-		}
-	}
+        }
+    }
 }

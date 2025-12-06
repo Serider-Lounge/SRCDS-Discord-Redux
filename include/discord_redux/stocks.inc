@@ -1,3 +1,7 @@
+#include <discord_redux/steam>
+#include <discord_redux/embeds>
+#include <discord_redux/shared/navmesh>
+
 stock int GetOnlinePlayers()
 {
     int playerCount = 0;
@@ -21,6 +25,17 @@ stock int GetBotCount()
             botCount++;
     }
     return botCount;
+}
+
+stock int GetMaxPlayers()
+{
+    int maxplayers = GetMaxHumanPlayers();
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientSourceTV(i) || IsClientReplay(i))
+            maxplayers--;
+    }
+    return maxplayers;
 }
 
 stock void TF2_GetRoundState(char[] buffer, int maxlen)
@@ -97,37 +112,4 @@ stock void TF2_GetRoundState(char[] buffer, int maxlen)
     {
         strcopy(buffer, maxlen, "Truce");
     }
-}
-
-stock bool GetWorkshopMapID(const char[] mapName, char[] buffer, int maxlen)
-{
-    char workshopPath[PLATFORM_MAX_PATH];
-    g_ConVars[workshop_path].GetString(workshopPath, sizeof(workshopPath));
-    
-    int appID = GetAppID();
-    char searchPath[PLATFORM_MAX_PATH];
-    Format(searchPath, sizeof(searchPath), "%s/%d/", workshopPath, appID);
-
-    DirectoryListing dir = OpenDirectory(searchPath);
-    if (dir == null)
-        return false;
-
-    char entry[256];
-    FileType fileType;
-    while (dir.GetNext(entry, sizeof(entry), fileType))
-    {
-        if (fileType != FileType_Directory)
-            continue;
-
-        char mapFile[PLATFORM_MAX_PATH];
-        Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", searchPath, entry, mapName);
-        if (FileExists(mapFile))
-        {
-            strcopy(buffer, maxlen, entry);
-            delete dir;
-            return true;
-        }
-    }
-    delete dir;
-    return false;
 }
