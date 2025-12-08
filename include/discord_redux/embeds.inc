@@ -8,21 +8,27 @@ stock void Embed_MapStatus(bool mapEnded = false)
     /* Vars */
     DiscordEmbed embed = new DiscordEmbed();
 
-    char mapName[96], displayMapName[96];
-    GetCurrentMap(mapName, sizeof(mapName));
-    GetMapDisplayName(mapName, displayMapName, sizeof(displayMapName));
-
     char hostname[DISCORD_TITLE_LENGTH];
     GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
+
+    embed.SetTitle(hostname);
 
     char gameDesc[DISCORD_DESC_LENGTH];
     GetGameDescription(gameDesc, sizeof(gameDesc));
     
+    embed.SetDescription(gameDesc);
+
+    // Footer
     int ip[4];
     SteamWorks_GetPublicIP(ip);
     int port = FindConVar("hostport").IntValue;
     char addr[64];
     Format(addr, sizeof(addr), "steam://connect/%d.%d.%d.%d:%d", ip[0], ip[1], ip[2], ip[3], port);
+
+    char footerIcon[256];
+    g_ConVars[footer_icon].GetString(footerIcon, sizeof(footerIcon));
+
+    embed.SetFooter(addr, footerIcon);
 
     // Player Count
     int onlineCount = GetOnlinePlayers();
@@ -34,15 +40,17 @@ stock void Embed_MapStatus(bool mapEnded = false)
     else
         Format(playerCount, sizeof(playerCount), "%d/%d", onlineCount, maxPlayers);
 
-    char footerIcon[256];
-    g_ConVars[footer_icon].GetString(footerIcon, sizeof(footerIcon));
-
     char hexColor[8];
     if (mapEnded)
         g_ConVars[embed_previous_map_color].GetString(hexColor, sizeof(hexColor));
     else
         g_ConVars[embed_current_map_color].GetString(hexColor, sizeof(hexColor));
     embed.Color = StringToInt(hexColor, 16);
+
+    // Map
+    char mapName[96], displayMapName[96];
+    GetCurrentMap(mapName, sizeof(mapName));
+    GetMapDisplayName(mapName, displayMapName, sizeof(displayMapName));
 
     Workshop bsp = new Workshop(displayMapName);
 
@@ -51,19 +59,9 @@ stock void Embed_MapStatus(bool mapEnded = false)
     pack.WriteCell(mapEnded);
     pack.WriteCell(bsp);
 
-    bsp.GetDetails(Callback_OnWorkshopDetailsFetched, pack);
-
-    char channelID[SNOWFLAKE_SIZE];
-    g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
-    if (channelID[0] == '\0')
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
-
-    /* Embed */
-    embed.Color = StringToInt(hexColor, 16);
-
-    embed.SetTitle(hostname);
-    embed.SetDescription(gameDesc);
-    embed.SetFooter(addr, footerIcon);
+    char ugcID[64];
+    bsp.GetUgcID(ugcID, sizeof(ugcID));
+    bsp.GetDetails(ugcID, Callback_OnWorkshopDetailsFetched, pack);
 }
 
 stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] title, const char[] preview_url, const char[] creator, const char tags[][64], int numTags, DataPack pack)
