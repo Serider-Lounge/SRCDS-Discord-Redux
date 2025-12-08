@@ -64,22 +64,8 @@ methodmap Workshop < StringMap
      */
     public void GetDetails(WorkshopDetailsCallback callback, any data = 0)
     {
-        char ugcid[PLATFORM_MAX_PATH];
-        if (!this.GetUgcID(ugcid, sizeof(ugcid)))
-        {
-            // Call the callback immediately with empty/default values if no UGC ID found
-            char emptyTags[1][64];
-            Call_StartFunction(INVALID_HANDLE, callback);
-            Call_PushString("");
-            Call_PushString("");
-            Call_PushString("");
-            Call_PushString("");
-            Call_PushArray(emptyTags, 1);
-            Call_PushCell(0);
-            Call_PushCell(data);
-            Call_Finish();
-            return;
-        }
+        char ugcid[64];
+        this.GetUgcID(ugcid, sizeof(ugcid));
 
         HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/");
         req.AppendFormParam("itemcount", "1");
@@ -140,7 +126,6 @@ stock void HTTPResponse_GetWorkshopDetails(HTTPResponse response, DataPack pack)
     }
     else
     {
-        // Always set fallback preview_url if not found
         strcopy(preview_url, sizeof(preview_url), "https://community.cloudflare.steamstatic.com/public/images/sharedfiles/steam_workshop_default_image.png");
     }
 

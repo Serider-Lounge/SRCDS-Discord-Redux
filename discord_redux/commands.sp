@@ -57,7 +57,7 @@ public Action Command_CallAdmin(int client, int args)
     g_ChatWebhook.SetName(playerName);
     if (client > 0 && client <= MaxClients)
     {
-        GetClientAvatar(client, g_SteamWebAPIKey, OnAvatarForChatCommand, g_ChatWebhook);
+        g_ChatWebhook.SetAvatarUrl(g_ClientAvatar[client]);
     }
     g_ChatWebhook.Modify();
 
@@ -77,14 +77,6 @@ public Action Command_CallAdmin(int client, int args)
         g_LastStaffMentionTime = now;
     }
     return Plugin_Handled;
-}
-
-// Callback for chat avatar
-public void OnAvatarForChatCommand(int client, const char[] url, any webhookHandle)
-{
-    DiscordWebhook webhook = view_as<DiscordWebhook>(webhookHandle);
-    webhook.SetAvatarUrl(url);
-    // ...send message logic...
 }
 
 public Action Command_BugReport(int client, int args)
@@ -244,11 +236,7 @@ public Action Command_BugReport(int client, int args)
     g_ReportWebhook.SetName(playerName);
     if (client > 0 && client <= MaxClients)
     {
-        GetClientAvatar(client, g_SteamWebAPIKey, OnAvatarForReportCommand, g_ReportWebhook);
-    }
-    else
-    {
-        g_ReportWebhook.SetAvatarUrl(""); // fallback or anonymous
+        g_ReportWebhook.SetAvatarUrl(g_ClientAvatar[client]);
     }
     g_ReportWebhook.Modify();
 
@@ -269,12 +257,4 @@ public Action Command_BugReport(int client, int args)
 
     CReplyToCommand(client, "%s", message);
     return Plugin_Handled;
-}
-
-// Callback for report avatar
-public void OnAvatarForReportCommand(int client, const char[] url, any webhookHandle)
-{
-    DiscordWebhook webhook = view_as<DiscordWebhook>(webhookHandle);
-    webhook.SetAvatarUrl(url);
-    // ...send message logic...
 }

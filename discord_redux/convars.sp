@@ -85,10 +85,10 @@ enum ActionType
 
 ConVar g_ConVars[MAX_CONVARS];
 
-Discord g_Discord = null;
-DiscordWebhook g_ChatWebhook        = null,
-               g_ReportWebhook      = null,
-               g_AcceleratorWebhook = null;
+Discord g_Discord;
+DiscordWebhook g_ChatWebhook,
+               g_ReportWebhook,
+               g_AcceleratorWebhook;
 
 bool g_IsClientBanned[MAXPLAYERS+1],
      g_IsMapRateLoaded;
@@ -98,7 +98,7 @@ char g_SteamWebAPIKey[64],
      g_GameIcon[128],
      g_ClientAvatar[MAXPLAYERS][256];
 
-Workshop g_Map;
+int g_AppID;
 
 public void InitConVars()
 {
@@ -160,84 +160,88 @@ public void InitConVars()
     
     if (g_IsMapRateLoaded)
         g_ConVars[map_rating_enabled] = CreateConVar("discord_redux_maprate", "1", "Show average map rating in map embeds.", FCVAR_NOTIFY);
-    
+
     AutoExecConfig(true, "discord_redux");
+
+    UpdateConVars();
 }
 
-public void OnConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
+public void UpdateConVars()
 {
-    char name[64];
-    convar.GetName(name, sizeof(name));
-
     char webhookURL[256], channelID[SNOWFLAKE_SIZE];
     for (int i = 0; i < MAX_CONVARS; i++)
     {
-        if (g_ConVars[i] == convar)
+        if (g_ConVars[i] != null)
         {
             switch (i)
             {
                 case bot_token:
                 {
                     char token[256];
-                    convar.GetString(token, sizeof(token));
+                    g_ConVars[i].GetString(token, sizeof(token));
                     if (token[0] == '\0') return;
-                    if (g_Discord == null || !g_Discord.IsRunning)
-                    {
-                        g_Discord = new Discord(token);
-                        g_Discord.SetReadyCallback(OnDiscordReady);
-                        g_Discord.SetMessageCallback(OnDiscordMessage);
-                    }
+                    if (!g_Discord) g_Discord = new Discord(token);
+                    g_Discord.SetReadyCallback(OnDiscordReady);
+                    if (!g_Discord.IsRunning) g_Discord.Start();
                 }
                 case chat_channel_id:
                 {
-                    convar.GetString(channelID, sizeof(channelID));
+                    if (g_Discord)
+                    {
+                        g_ConVars[i].GetString(channelID, sizeof(channelID));
+                        g_Discord.SetMessageCallback(OnDiscordMessage);
+                    }
                 }
                 case rcon_channel_id:
                 {
-                    convar.GetString(channelID, sizeof(channelID));
+                    if (g_Discord)
+                    {
+                        g_ConVars[i].GetString(channelID, sizeof(channelID));
+                        g_Discord.SetMessageCallback(OnDiscordMessage);
+                    }
                 }
                 case chat_webhook_url:
                 {
-                    convar.GetString(webhookURL, sizeof(webhookURL));
-                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
+                    if (g_Discord)
                     {
+                        g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
                         g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
                     }
                 }
                 case report_webhook_url:
                 {
-                    convar.GetString(webhookURL, sizeof(webhookURL));
-                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
+                    if (g_Discord)
                     {
+                        g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
                         g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    }
+                }
+                case accelerator_webhook_url:
+                {
+                    if (g_Discord)
+                    {
+                        g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
+                        g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
                     }
                 }
                 case player_status_channel_id:
                 {
-                    convar.GetString(channelID, sizeof(channelID));
+                    g_ConVars[i].GetString(channelID, sizeof(channelID));
                     if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case map_status_channel_id:
                 {
-                    convar.GetString(channelID, sizeof(channelID));
+                    g_ConVars[i].GetString(channelID, sizeof(channelID));
                     if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
                 }
                 case hide_command_prefix:
                 {
                     char commandPrefixes[64];
-                    convar.GetString(commandPrefixes, sizeof(commandPrefixes));
-                }
-                case accelerator_webhook_url:
-                {
-                    convar.GetString(webhookURL, sizeof(webhookURL));
-                    if ((g_Discord != null && g_Discord.IsRunning) && webhookURL[0] != '\0')
-                    {
-                        g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
-                    }
+                    g_ConVars[i].GetString(commandPrefixes, sizeof(commandPrefixes));
                 }
                 case steam_api_key:
                 {
-                    convar.GetString(g_SteamWebAPIKey, sizeof(g_SteamWebAPIKey));
+                    g_ConVars[i].GetString(g_SteamWebAPIKey, sizeof(g_SteamWebAPIKey));
                 }
             }
         }

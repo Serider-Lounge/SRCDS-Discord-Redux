@@ -7,7 +7,7 @@ stock int GetOnlinePlayers()
     int playerCount = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (!IsClientInGame(i) || IsClientSourceTV(i) || IsClientReplay(i) || IsFakeClient(i))
+        if (!IsClientConnected(i) || !IsClientInGame(i) || IsFakeClient(i))
             continue;
         playerCount++;
     }
@@ -19,7 +19,7 @@ stock int GetBotCount()
     int botCount = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (!IsClientInGame(i) || IsClientSourceTV(i) || IsClientReplay(i))
+        if (!IsClientConnected(i) || !IsClientInGame(i) || IsClientSourceTV(i) || IsClientReplay(i))
             continue;
         if (IsFakeClient(i))
             botCount++;
@@ -32,7 +32,7 @@ stock int GetMaxPlayers()
     int maxplayers = GetMaxHumanPlayers();
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientSourceTV(i) || IsClientReplay(i))
+        if (IsClientConnected(i) && (IsClientSourceTV(i) || IsClientReplay(i)))
             maxplayers--;
     }
     return maxplayers;

@@ -12,10 +12,10 @@
 
 // Discord Redux 
 #include "discord_redux/convars.sp"
-#include <discord_redux/stocks>
 #include "discord_redux/clients.sp"
 #include "discord_redux/commands.sp"
 
+#include <discord_redux/stocks>
 #include <discord_redux/embeds>
 #include <discord_redux/steam>
 #include <discord_redux/shared/navmesh>
@@ -30,7 +30,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w49b"
+#define PLUGIN_VERSION     "25w49b-dev"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -47,6 +47,9 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 
+    // Libraries
+    g_IsMapRateLoaded = LibraryExists("maprate");
+
     // ConVars & Commands
     InitConVars();
     RegCommands();
@@ -57,20 +60,17 @@ public void OnPluginStart()
 
     // Fetch Game Info
     GameInfo gameinfo;
-    int appid = gameinfo.appid;
-    Steam_GetAppDetails(appid, g_SteamWebAPIKey, Callback_OnAppDetailsFetched);
+    g_AppID = gameinfo.appid;
+    Steam_GetAppDetails(g_AppID, g_SteamWebAPIKey, Callback_OnAppDetailsFetched);
 
     // Cache avatars for all connected clients on plugin start
     for (int client = 1; client <= MaxClients; client++)
     {
         if (IsClientInGame(client) && !IsFakeClient(client))
         {
-            GetClientAvatar(client, g_SteamWebAPIKey, GetClientAvatar_Post);
+            GetClientAvatar(client, g_SteamWebAPIKey, Callback_OnClientAvatarFetched);
         }
     }
-
-    // Libraries
-    g_IsMapRateLoaded = LibraryExists("maprate");
 }
 
 public void Callback_OnAppDetailsFetched(int appid, const char[] name, const char[] icon, any data)
@@ -79,7 +79,7 @@ public void Callback_OnAppDetailsFetched(int appid, const char[] name, const cha
     strcopy(g_GameIcon, sizeof(g_GameIcon), icon);
 }
 
-public void OnConfigsExecuted()
+public void OnMapStart()
 {
     Embed_MapStatus();
 }
@@ -104,7 +104,7 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 {
-    if (g_Discord == null) return;
+    if (!g_Discord) return;
 
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));

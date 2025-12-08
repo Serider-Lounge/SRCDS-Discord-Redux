@@ -17,13 +17,14 @@ stock void Embed_MapStatus(bool mapEnded = false)
 
     char gameDesc[DISCORD_DESC_LENGTH];
     GetGameDescription(gameDesc, sizeof(gameDesc));
-
+    
     int ip[4];
     SteamWorks_GetPublicIP(ip);
     int port = FindConVar("hostport").IntValue;
     char addr[64];
     Format(addr, sizeof(addr), "steam://connect/%d.%d.%d.%d:%d", ip[0], ip[1], ip[2], ip[3], port);
 
+    // Player Count
     int onlineCount = GetOnlinePlayers();
     int maxPlayers = GetMaxPlayers();
     int botCount = GetBotCount();
@@ -43,18 +44,14 @@ stock void Embed_MapStatus(bool mapEnded = false)
         g_ConVars[embed_current_map_color].GetString(hexColor, sizeof(hexColor));
     embed.Color = StringToInt(hexColor, 16);
 
-    if (g_Map)
-    {
-        g_Map.Clear();
-    }
-    g_Map = new Workshop(displayMapName);
+    Workshop bsp = new Workshop(displayMapName);
 
     DataPack pack = new DataPack();
     pack.WriteCell(embed);
     pack.WriteCell(mapEnded);
-    pack.WriteCell(g_Map);
+    pack.WriteCell(bsp);
 
-    g_Map.GetDetails(Callback_OnWorkshopDetailsFetched, pack);
+    bsp.GetDetails(Callback_OnWorkshopDetailsFetched, pack);
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
@@ -74,7 +71,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
     pack.Reset();
     DiscordEmbed embed = pack.ReadCell();
     bool mapEnded = pack.ReadCell();
-    g_Map = pack.ReadCell();
+    Workshop bsp = pack.ReadCell();
     delete pack;    
 
     GameInfo gameinfo;
@@ -97,7 +94,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
 
     /* Embed Fields */
     char mapTitle[DISCORD_FIELD_LENGTH], displayMapName[96];
-    g_Map.GetString("map", displayMapName, sizeof(displayMapName));
+    bsp.GetString("map", displayMapName, sizeof(displayMapName));
     if (TranslationPhraseExists(mapTitle)) // Is it defined in 'discord_redux/maps.phrases.txt'?
     {
         Format(mapTitle, sizeof(mapTitle), "%T", displayMapName, LANG_SERVER);
@@ -174,4 +171,73 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
     }
 
     g_Discord.SendMessageEmbed(channelID, "", embed);
+    delete embed;
+}
+
+/**
+ * Player join/leave notification.
+ * 
+ * @param   client      The client index.
+ * @param   isLeaving   Whether the player is leaving.
+ */
+stock void Embed_PlayerStatus(int client, bool isLeaving = false)
+{
+    if (g_Discord == null || g_ChatWebhook == null)
+        return;
+
+    if (IsFakeClient(client) || !g_Discord.IsRunning)
+        return;
+
+    DiscordEmbed embed = new DiscordEmbed();
+
+    char playerName[MAX_NAME_LENGTH];
+    GetClientName(client, playerName, sizeof(playerName));
+
+    char steamID2[MAX_AUTHID_LENGTH], steamID64[MAX_AUTHID_LENGTH];
+    GetClientAuthId(client, AuthId_Steam2, steamID2, sizeof(steamID2));
+    GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
+
+    char steamProfile[256];
+    Format(steamProfile, sizeof(steamProfile), "http://steamcommunity.com/profiles/%s", steamID64);
+
+    char footerIcon[256];
+    g_ConVars[footer_icon].GetString(footerIcon, sizeof(footerIcon));
+
+    char message[MAX_DISCORD_MESSAGE_LENGTH], hexColor[8];
+    if (isLeaving)
+    {
+        if (g_IsClientBanned[client])
+        {
+            Format(message, sizeof(message), "%T", "discord_redux_player_banned", LANG_SERVER);
+            g_ConVars[embed_ban_color].GetString(hexColor, sizeof(hexColor));
+        }
+        else if (IsClientInKickQueue(client))
+        {
+            Format(message, sizeof(message), "%T", "discord_redux_player_kicked", LANG_SERVER);
+            g_ConVars[embed_kick_color].GetString(hexColor, sizeof(hexColor));
+        }
+        else
+        {
+            Format(message, sizeof(message), "%T", "discord_redux_player_leave", LANG_SERVER);
+            g_ConVars[embed_leave_color].GetString(hexColor, sizeof(hexColor));
+        }
+    }
+    else
+    {
+        Format(message, sizeof(message), "%T", "discord_redux_player_join", LANG_SERVER);
+        g_ConVars[embed_join_color].GetString(hexColor, sizeof(hexColor));
+    }
+
+    embed.SetAuthor(playerName, steamProfile, g_ClientAvatar[client]);
+    embed.SetDescription(message);
+    embed.SetFooter(steamID2, footerIcon);
+    embed.Color = StringToInt(hexColor, 16);
+
+    char channelID[SNOWFLAKE_SIZE];
+    g_ConVars[player_status_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0')
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+
+    g_Discord.SendMessageEmbed(channelID, "", embed);
+    delete embed;
 }

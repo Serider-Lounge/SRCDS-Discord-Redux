@@ -80,22 +80,24 @@ public void OnClientAuthorized(int client)
 {
     if (client > 0 && !IsFakeClient(client))
     {
-        GetClientAvatar(client, g_SteamWebAPIKey, GetClientAvatar_Post);
+        GetClientAvatar(client, g_SteamWebAPIKey, Callback_OnClientAvatarFetched);
     }
 }
 
-public void GetClientAvatar_Post(int client, const char[] url, any data)
+public void Callback_OnClientAvatarFetched(int client, const char[] url, any data)
 {
     strcopy(g_ClientAvatar[client], sizeof(g_ClientAvatar[]), url);
 }
 
-public void OnClientConnected(int client)
+public void OnClientPutInServer(int client)
 {
     if (g_Discord == null || g_ChatWebhook == null)
         return;
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)
         return;
+
+    Embed_PlayerStatus(client);
 }
 
 public void OnClientDisconnect(int client)
@@ -105,6 +107,8 @@ public void OnClientDisconnect(int client)
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)
         return;
+
+    Embed_PlayerStatus(client, true);
 }
 
 public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
