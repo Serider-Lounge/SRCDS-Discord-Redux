@@ -91,7 +91,7 @@ public void Callback_OnClientAvatarFetched(int client, const char[] url, any dat
 
 public void OnClientPutInServer(int client)
 {
-    if (g_Discord == null || g_ChatWebhook == null)
+    if (!g_Discord || !g_ChatWebhook)
         return;
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)
@@ -102,7 +102,7 @@ public void OnClientPutInServer(int client)
 
 public void OnClientDisconnect(int client)
 {
-    if (g_Discord == null || g_ChatWebhook == null)
+    if (!g_Discord || !g_ChatWebhook)
         return;
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)

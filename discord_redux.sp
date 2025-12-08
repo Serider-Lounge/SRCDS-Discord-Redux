@@ -8,12 +8,16 @@
 #include <tf2_stocks>
 #undef REQUIRE_PLUGIN
 #include <maprate>
+#include <rtd2>
 #define REQUIRE_PLUGIN
 
 // Discord Redux 
 #include "discord_redux/convars.sp"
 #include "discord_redux/clients.sp"
 #include "discord_redux/commands.sp"
+
+#include "discord_redux/thirdparty/accelerator.sp"
+#include "discord_redux/thirdparty/rtd.sp"
 
 #include <discord_redux/stocks>
 #include <discord_redux/embeds>
@@ -49,6 +53,7 @@ public void OnPluginStart()
 
     // Libraries
     g_IsMapRateLoaded = LibraryExists("maprate");
+    g_IsRTDLoaded = LibraryExists("RollTheDice2");
 
     // ConVars & Commands
     InitConVars();

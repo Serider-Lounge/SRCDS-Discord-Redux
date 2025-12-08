@@ -37,7 +37,7 @@ public Action Command_CallAdmin(int client, int args)
     GetCmdArgString(message, sizeof(message));
     CReplyToCommand(client, "%s", message);
 
-    if (g_ChatWebhook == null)
+    if (!g_ChatWebhook)
     {
         return Plugin_Handled;
     }

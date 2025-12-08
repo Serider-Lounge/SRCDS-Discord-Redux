@@ -154,7 +154,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
 
     if (g_ConVars[map_thumbnail_enabled].BoolValue)
     {
-        if (preview_url[0] == '\0')
+        if (StrEqual(preview_url, "https://community.cloudflare.steamstatic.com/public/images/sharedfiles/steam_workshop_default_image.png"))
         {
             char thumbnailUrl[256], thumbnailFormat[16], buffer[256];
             g_ConVars[map_thumbnail_url].GetString(thumbnailUrl, sizeof(thumbnailUrl));
@@ -180,7 +180,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
  */
 stock void Embed_PlayerStatus(int client, bool isLeaving = false)
 {
-    if (g_Discord == null || g_ChatWebhook == null)
+    if (!g_Discord || !g_ChatWebhook)
         return;
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)
