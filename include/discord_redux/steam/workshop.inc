@@ -62,11 +62,8 @@ methodmap Workshop < StringMap
      * Makes an HTTP request to get details about the workshop map.
      * @param callback    Callback to receive details.
      */
-    public void GetDetails(WorkshopDetailsCallback callback, any data = 0)
+    public void GetDetails(const char[] ugcid, WorkshopDetailsCallback callback, any data = 0)
     {
-        char ugcid[64];
-        this.GetUgcID(ugcid, sizeof(ugcid));
-
         HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/");
         req.AppendFormParam("itemcount", "1");
         req.AppendFormParam("publishedfileids[0]", ugcid);
