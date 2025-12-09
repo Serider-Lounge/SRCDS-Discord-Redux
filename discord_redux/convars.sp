@@ -61,7 +61,7 @@ enum
 
     /* Third-Party */
     accelerator_webhook_url,
-    map_rating_enabled,
+    maprate_enabled,
     rtd_enabled,
 
     MAX_CONVARS
@@ -72,14 +72,6 @@ enum UsernameMode
     Mode_UserName = 0,
     Mode_GlobalName,
     Mode_NickName
-}
-
-enum ActionType
-{
-    Action_Join,
-    Action_Leave,
-    Action_Kick,
-    Action_Ban
 }
 
 ConVar g_ConVars[MAX_CONVARS];
@@ -159,7 +151,7 @@ public void InitConVars()
         g_ConVars[accelerator_webhook_url] = CreateConVar("discord_redux_accelerator_webhook_url", "", "Discord webhook URL for crash reports.", FCVAR_PROTECTED);
     
     if (g_IsMapRateLoaded)
-        g_ConVars[map_rating_enabled] = CreateConVar("discord_redux_maprate", "1", "Show average map rating in map embeds.", FCVAR_NOTIFY);
+        g_ConVars[maprate_enabled] = CreateConVar("discord_redux_maprate_enabled", "1", "Show average map rating in map embeds.", FCVAR_NOTIFY);
 
     if (g_IsRTDLoaded)
         g_ConVars[rtd_enabled] = CreateConVar("discord_redux_rtd_enabled", "1", "Relay RTD rolls.", FCVAR_NOTIFY);
@@ -183,9 +175,9 @@ public void UpdateConVars()
                     char token[256];
                     g_ConVars[i].GetString(token, sizeof(token));
                     if (token[0] == '\0') return;
-                    if (!g_Discord) g_Discord = new Discord(token);
+                    g_Discord = new Discord(token);
                     g_Discord.SetReadyCallback(OnDiscordReady);
-                    if (!g_Discord.IsRunning) g_Discord.Start();
+                    g_Discord.Start();
                 }
                 case chat_channel_id:
                 {

@@ -50,7 +50,6 @@ public Plugin myinfo =
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
-
     // Libraries
     g_IsMapRateLoaded = LibraryExists("maprate");
     g_IsRTDLoaded = LibraryExists("RollTheDice2");
@@ -123,7 +122,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     
     char chatChannelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(chatChannelID, sizeof(chatChannelID));
-
+    
     char messageChannelID[SNOWFLAKE_SIZE];
     message.GetChannelId(messageChannelID, sizeof(messageChannelID));
 
@@ -370,7 +369,6 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
         Format(inputMsg, sizeof(inputMsg), "%T", "discord_redux_rcon_input", LANG_SERVER, content);
 
-        
         char embedMsg[sizeof(outputMsg) + sizeof(inputMsg)];
         Format(embedMsg, sizeof(embedMsg), "%s\n%s", outputMsg, inputMsg);
         embed.SetDescription(embedMsg);

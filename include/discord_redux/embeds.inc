@@ -135,7 +135,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
     }
 
     // Map Rate Average
-    if (g_IsMapRateLoaded && g_ConVars[map_rating_enabled].BoolValue && mapEnded)
+    if (g_IsMapRateLoaded && g_ConVars[maprate_enabled].BoolValue && mapEnded)
     {
         char ratingValue[16];
         int stars = RoundFloat(MapRate_GetAverage(displayMapName));        
@@ -180,7 +180,7 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
  */
 stock void Embed_PlayerStatus(int client, bool isLeaving = false)
 {
-    if (!g_Discord || !g_ChatWebhook)
+    if (!g_Discord)
         return;
 
     if (IsFakeClient(client) || !g_Discord.IsRunning)

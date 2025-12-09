@@ -310,9 +310,8 @@ methodmap RTDPerk{
 	// RTDPerk is a cell under the hood, therefor doesn't need
 	// to be freed with delete or CloseHandle().
 	//
-	// @param sToken	Token to bind the ID of
 	// @return			RTDPerk object
-	public RTDPerk(const char[] sToken){
+	public RTDPerk(){
 		return view_as<RTDPerk>(0);
 	}
 

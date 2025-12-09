@@ -68,7 +68,7 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 |Name|Description|
 |-|-|
 |`discord_redux_accelerator_webhook_url`| Discord webhook URL for crash reports.<br>⚠ Requires [Accelerator](https://github.com/asherkin/accelerator/actions).|
-|`discord_redux_maprate`|Show average map rating in map embeds.<br>⚠ Requires [Map Rate](https://github.com/saxybois/sm-maprate).|
+|`discord_redux_maprate_enabled`|Show average map rating in map embeds.<br>⚠ Requires [Map Rate](https://github.com/saxybois/sm-maprate).|
 
 ## QNA
 ### Why does **Discord → Server** not work❓
