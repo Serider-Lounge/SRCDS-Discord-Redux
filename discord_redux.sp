@@ -16,9 +16,6 @@
 #include "discord_redux/clients.sp"
 #include "discord_redux/commands.sp"
 
-#include "discord_redux/thirdparty/accelerator.sp"
-#include "discord_redux/thirdparty/rtd.sp"
-
 #include <discord_redux/stocks>
 #include <discord_redux/embeds>
 #include <discord_redux/steam>
@@ -29,6 +26,7 @@
 
 // Third-Party
 #include "discord_redux/thirdparty/accelerator.sp"
+#include "discord_redux/thirdparty/rtd.sp"
 
 /* Macros */
 #define PLUGIN_NAME        "[ANY] Discord Redux"
@@ -85,6 +83,7 @@ public void Callback_OnAppDetailsFetched(int appid, const char[] name, const cha
 
 public void OnMapStart()
 {
+    if (!g_Discord) UpdateConVars();
     Embed_MapStatus();
 }
 

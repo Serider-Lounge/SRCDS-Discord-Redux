@@ -1,3 +1,5 @@
+#include <discord_redux/embeds/map_status>
+
 /**
  * Map Status embed.
  * 
@@ -5,168 +7,116 @@
  */
 stock void Embed_MapStatus(bool mapEnded = false)
 {
-    /* Vars */
+    if (!g_Discord || !g_Discord.IsRunning)
+        return;
+
     DiscordEmbed embed = new DiscordEmbed();
 
-    char hostname[DISCORD_TITLE_LENGTH];
-    GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
-
-    embed.SetTitle(hostname);
-
-    char gameDesc[DISCORD_DESC_LENGTH];
-    GetGameDescription(gameDesc, sizeof(gameDesc));
-    
-    embed.SetDescription(gameDesc);
-
-    // Footer
-    int ip[4];
-    SteamWorks_GetPublicIP(ip);
-    int port = FindConVar("hostport").IntValue;
-    char addr[64];
-    Format(addr, sizeof(addr), "steam://connect/%d.%d.%d.%d:%d", ip[0], ip[1], ip[2], ip[3], port);
-
-    char footerIcon[256];
-    g_ConVars[footer_icon].GetString(footerIcon, sizeof(footerIcon));
-
-    embed.SetFooter(addr, footerIcon);
-
-    // Player Count
-    int onlineCount = GetOnlinePlayers();
-    int maxPlayers = GetMaxPlayers();
-    int botCount = GetBotCount();
-    char playerCount[16];
-    if (botCount > 0)
-        Format(playerCount, sizeof(playerCount), "%d/%d (+ %d)", onlineCount, maxPlayers, botCount);
-    else
-        Format(playerCount, sizeof(playerCount), "%d/%d", onlineCount, maxPlayers);
-
-    char hexColor[8];
-    if (mapEnded)
-        g_ConVars[embed_previous_map_color].GetString(hexColor, sizeof(hexColor));
-    else
-        g_ConVars[embed_current_map_color].GetString(hexColor, sizeof(hexColor));
-    embed.Color = StringToInt(hexColor, 16);
-
     // Map
-    char mapName[96], displayMapName[96];
+    char mapName[DISCORD_FIELD_LENGTH], displayMapName[32];
     GetCurrentMap(mapName, sizeof(mapName));
     GetMapDisplayName(mapName, displayMapName, sizeof(displayMapName));
 
-    Workshop bsp = new Workshop(displayMapName);
+    char ugcID[64], title[256], preview_url[256];
+    Workshop map = new Workshop(displayMapName);
+    bool isWorkshop = map.GetUgcID(ugcID, sizeof(ugcID));
+    char mapTitle[DISCORD_TITLE_LENGTH];
+    Format(mapTitle, sizeof(mapTitle), "%T", "discord_redux_map", LANG_SERVER);
 
-    DataPack pack = new DataPack();
-    pack.WriteCell(embed);
-    pack.WriteCell(mapEnded);
-    pack.WriteCell(bsp);
+    if (isWorkshop)
+    {
+        map.GetString("title", title, sizeof(title));
+        map.GetString("preview_url", preview_url, sizeof(preview_url));
 
-    char ugcID[64];
-    bsp.GetUgcID(ugcID, sizeof(ugcID));
-    bsp.GetDetails(ugcID, Callback_OnWorkshopDetailsFetched, pack);
-}
+        if (title[0] == '\0')
+        {
+            DataPack pack = new DataPack();
+            pack.WriteCell(embed);
+            pack.WriteCell(map);
+            pack.WriteCell(mapEnded);
+            pack.WriteString(displayMapName);
 
-stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] title, const char[] preview_url, const char[] creator, const char tags[][64], int numTags, DataPack pack)
-{
-    pack.Reset();
-    DiscordEmbed embed = pack.ReadCell();
-    bool mapEnded = pack.ReadCell();
-    Workshop bsp = pack.ReadCell();
-    delete pack;    
+            map.GetDetails(ugcID, Embed_WorkshopMapStatus, pack);
+            return;
+        }
+        Format(mapName, sizeof(mapName), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", title, ugcID);
+        embed.AddField(mapTitle, mapName, true);
+    }
+    else
+    {
+        if (TranslationPhraseExists(displayMapName)) Format(mapName, sizeof(mapName), "%T", displayMapName, LANG_SERVER);
+        embed.AddField(mapTitle, mapName, true);
+    }
 
-    GameInfo gameinfo;
-    int appid = gameinfo.appid;
-
-    char iconURL[256];
-    Format(iconURL, sizeof(iconURL), "https://shared.fastly.steamstatic.com/community_assets/images/apps/%d/%s.jpg", appid, g_GameIcon);
-
-    char storeURL[256];
-    Format(storeURL, sizeof(storeURL), "https://store.steampowered.com/app/%d", appid); 
-
-    char gameName[64];
-    gameinfo.GetGameName(gameName, sizeof(gameName));
-    embed.SetAuthor(gameName, storeURL, iconURL);
+    Embed_MapStatus_Color(embed, mapEnded);
+    Embed_MapStatus_Title(embed);
+    Embed_MapStatus_Description(embed);
+    Embed_MapStatus_Footer(embed);
+    Embed_MapStatus_Author(embed);
+    Embed_MapStatus_PlayerCount(embed, mapEnded);
+    Embed_MapStatus_MapRate(embed, mapEnded, displayMapName);
+    Embed_MapStatus_Thumbnail(embed);
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
-    if (channelID[0] == '\0')
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 
-    /* Embed Fields */
-    char mapTitle[DISCORD_FIELD_LENGTH], displayMapName[96];
-    bsp.GetString("map", displayMapName, sizeof(displayMapName));
-    if (TranslationPhraseExists(mapTitle)) // Is it defined in 'discord_redux/maps.phrases.txt'?
+    g_Discord.SendMessageEmbed(channelID, "", embed);
+    delete embed;
+}
+
+/**
+ * (Workshop) Map Status embed.
+ * 
+ * @param   ugcid       The UGC ID of the workshop map.
+ * @param   title       The title of the workshop map.
+ * @param   preview_url The preview URL of the workshop map.
+ * @param   creator     The creator of the workshop map.
+ * @param   tags        The tags of the workshop map.
+ * @param   numTags     The number of tags.
+ * @param   pack        The data-pack containing the stored variables.
+ */
+stock void Embed_WorkshopMapStatus(const char[] ugcid, const char[] title, const char[] preview_url, const char[] creator, const char tags[][64], int numTags, DataPack pack)
+{
+    pack.Reset();
+    DiscordEmbed embed = pack.ReadCell();
+    Workshop map = pack.ReadCell();
+    bool mapEnded = pack.ReadCell();
+    char displayMapName[32];
+    pack.ReadString(displayMapName, sizeof(displayMapName));
+    delete pack;
+
+    map.SetString("title", title);
+    map.SetString("preview_url", preview_url);
+
+    char mapName[DISCORD_FIELD_LENGTH];
+    Format(mapName, sizeof(mapName), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", title, ugcid);
+    char mapTitle[DISCORD_TITLE_LENGTH];
+    Format(mapTitle, sizeof(mapTitle), "%T", "discord_redux_map", LANG_SERVER);
+    embed.AddField(mapTitle, mapName, true);
+
+    Embed_MapStatus_Color(embed, mapEnded);
+    Embed_MapStatus_Title(embed);
+    Embed_MapStatus_Description(embed);
+    Embed_MapStatus_Footer(embed);
+    Embed_MapStatus_Author(embed);
+    Embed_MapStatus_PlayerCount(embed, mapEnded);
+    Embed_MapStatus_MapRate(embed, mapEnded, displayMapName);
+
+    char preview_url_latest[256];
+    map.GetString("preview_url", preview_url_latest, sizeof(preview_url_latest));
+    if (g_ConVars[map_thumbnail_enabled].BoolValue && preview_url_latest[0] != '\0')
     {
-        Format(mapTitle, sizeof(mapTitle), "%T", displayMapName, LANG_SERVER);
+        embed.SetThumbnail(preview_url_latest);
     }
-    else if (ugcid[0] != '\0') // Is it a workshop map?
+    else
     {
-        Format(mapTitle, sizeof(mapTitle), "[%s](https://steamcommunity.com/sharedfiles/filedetails/?id=%s)", (title[0] != '\0') ? title : displayMapName, ugcid);
-    }
-    else // Fallback to file name.
-    {
-        Format(mapTitle, sizeof(mapTitle), "%s", displayMapName);
-    }
-
-    char mapField[DISCORD_TITLE_LENGTH];
-    switch (GetEngineVersion())
-    {
-        case Engine_Left4Dead, Engine_Left4Dead2:
-            Format(mapField, sizeof(mapField), "%T", "discord_redux_campaign", LANG_SERVER);
-        default:
-            Format(mapField, sizeof(mapField), "%T", "discord_redux_map", LANG_SERVER);
-    }
-    embed.AddField(mapField, mapTitle, true);
-
-    // Player Count
-    if (!mapEnded)
-    {
-        int onlineCount = GetOnlinePlayers();
-        int maxPlayers = GetMaxPlayers();
-        int botCount = GetBotCount();
-
-        char playerCountStr[DISCORD_FIELD_LENGTH];
-        if (botCount > 0)
-            Format(playerCountStr, sizeof(playerCountStr), "%d/%d (+ %d)", onlineCount, maxPlayers, botCount);
-        else
-            Format(playerCountStr, sizeof(playerCountStr), "%d/%d", onlineCount, maxPlayers);
-
-        char playerField[DISCORD_TITLE_LENGTH];
-        Format(playerField, sizeof(playerField), "%T", "discord_redux_player_count", LANG_SERVER);
-        embed.AddField(playerField, playerCountStr, true);
-    }
-
-    // Map Rate Average
-    if (g_IsMapRateLoaded && g_ConVars[maprate_enabled].BoolValue && mapEnded)
-    {
-        char ratingValue[16];
-        int stars = RoundFloat(MapRate_GetAverage(displayMapName));        
-        for (int i = 0; i < stars; i++)
-        {
-            StrCat(ratingValue, sizeof(ratingValue), "⭐");
-        }
-
-        if (stars > 0)
-        {
-            char ratingField[DISCORD_TITLE_LENGTH];
-            Format(ratingField, sizeof(ratingField), "%T", "discord_redux_maprate_average", LANG_SERVER);
-            embed.AddField(ratingField, ratingValue, true);
-        }
+        Embed_MapStatus_Thumbnail(embed);
     }
 
-    if (g_ConVars[map_thumbnail_enabled].BoolValue)
-    {
-        if (StrEqual(preview_url, "https://community.cloudflare.steamstatic.com/public/images/sharedfiles/steam_workshop_default_image.png"))
-        {
-            char thumbnailUrl[256], thumbnailFormat[16], buffer[256];
-            g_ConVars[map_thumbnail_url].GetString(thumbnailUrl, sizeof(thumbnailUrl));
-            g_ConVars[map_thumbnail_format].GetString(thumbnailFormat, sizeof(thumbnailFormat));
-            Format(buffer, sizeof(buffer), "%s%s.%s", thumbnailUrl, displayMapName, thumbnailFormat);
-            embed.SetThumbnail(buffer);
-        }
-        else
-        {
-            embed.SetThumbnail(preview_url);
-        }
-    }
+    char channelID[SNOWFLAKE_SIZE];
+    g_ConVars[map_status_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0') g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 
     g_Discord.SendMessageEmbed(channelID, "", embed);
     delete embed;
@@ -180,10 +130,10 @@ stock void Callback_OnWorkshopDetailsFetched(const char[] ugcid, const char[] ti
  */
 stock void Embed_PlayerStatus(int client, bool isLeaving = false)
 {
-    if (!g_Discord)
+    if (!g_Discord || !g_Discord.IsRunning)
         return;
 
-    if (IsFakeClient(client) || !g_Discord.IsRunning)
+    if (IsFakeClient(client))
         return;
 
     DiscordEmbed embed = new DiscordEmbed();

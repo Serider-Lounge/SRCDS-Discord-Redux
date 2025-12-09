@@ -43,7 +43,7 @@ methodmap Workshop < StringMap
             if (fileType != FileType_Directory)
                 continue;
 
-            char mapName[96];
+            char mapName[32];
             this.GetString("map", mapName, sizeof(mapName));
             char mapFile[PLATFORM_MAX_PATH];
             Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", workshopPath, entry, mapName);

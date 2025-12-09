@@ -29,13 +29,16 @@ stock int GetBotCount()
 
 stock int GetMaxPlayers()
 {
-    int maxplayers = GetMaxHumanPlayers();
+    int undesired = 0;
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (IsClientConnected(i) && (IsClientSourceTV(i) || IsClientReplay(i)))
-            maxplayers--;
+        if (!IsClientConnected(i))
+            continue;
+
+        if (IsClientSourceTV(i) || IsClientReplay(i))
+            undesired++;
     }
-    return maxplayers;
+    return MaxClients - undesired;
 }
 
 stock void TF2_GetRoundState(char[] buffer, int maxlen)
