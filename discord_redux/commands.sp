@@ -1,5 +1,3 @@
-#include <discord_redux/steam/clients>
-
 int g_LastStaffMentionTime = 0;
 
 stock void RegCommands()
