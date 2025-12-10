@@ -55,6 +55,10 @@ stock void HTTPResponse_GetClientAvatar(HTTPResponse response, DataPack pack)
         delete responseObj;
         delete root;
     }
+    else
+    {
+        strcopy(avatarfull, sizeof(avatarfull), "https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4972be27ef9e82e517e_full.jpg");
+    }
 
     Call_StartFunction(INVALID_HANDLE, callback);
     Call_PushCell(client);
