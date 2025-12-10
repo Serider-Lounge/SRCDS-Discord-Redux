@@ -22,7 +22,8 @@ Rewrite and continuation of [Discord Relay](https://github.com/Heapons/sp-discor
 ## ConVars
 ### Discord Redux
 > [!WARNING]
-> If you need to unload the plugin, use `sm plugins unload` command. I'll add a proper convar once I figure out a better alternative to returning functions. 
+> If you need to unload the plugin, use `sm plugins unload` command. I'll add a proper convar once I figure out a better alternative to returning functions.
+
 |Name| Description|
 |-|-|
 |`discord_redux_randomize_color_names`| Randomize Discord user name colors.|
