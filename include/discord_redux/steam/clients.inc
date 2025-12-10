@@ -39,7 +39,7 @@ stock void HTTPResponse_GetClientAvatar(HTTPResponse response, DataPack pack)
     any data = pack.ReadCell();
     delete pack;
 
-    char avatarfull[256];
+    char avatarfull[256] = "https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4972be27ef9e82e517e_full.jpg";
     if (response.Status == HTTPStatus_OK && response.Data != null)
     {
         JSONObject root = view_as<JSONObject>(response.Data);
@@ -54,10 +54,6 @@ stock void HTTPResponse_GetClientAvatar(HTTPResponse response, DataPack pack)
         delete players;
         delete responseObj;
         delete root;
-    }
-    else
-    {
-        strcopy(avatarfull, sizeof(avatarfull), "https://avatars.steamstatic.com/b5bd56c1aa4644a474a2e4972be27ef9e82e517e_full.jpg");
     }
 
     Call_StartFunction(INVALID_HANDLE, callback);

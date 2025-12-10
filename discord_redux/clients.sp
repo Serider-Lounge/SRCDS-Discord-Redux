@@ -1,11 +1,5 @@
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-    if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
-        return;
-
-    if (!IsClientInGame(client) || IsFakeClient(client))
-        return;
-
     // Relay console messages (server say)
     if (!client && g_ConVars[relay_console_messages].BoolValue)
     {
@@ -23,6 +17,12 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         delete embed;
         return;
     }
+
+    if (StrEqual(command, "say_team") && !g_ConVars[show_team_chat].BoolValue)
+        return;
+
+    if (!IsClientInGame(client) || IsFakeClient(client))
+        return;
 
     // Hide command prefixes
     char commandPrefixes[64];
