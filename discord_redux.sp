@@ -5,7 +5,9 @@
 #include <ripext>
 #include <SteamWorks>
 #include <regex>
+#undef REQUIRE_EXTENSIONS
 #include <tf2_stocks>
+#define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #include <maprate>
 #include <rtd2>
@@ -32,7 +34,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w50a"
+#define PLUGIN_VERSION     "25w50b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
