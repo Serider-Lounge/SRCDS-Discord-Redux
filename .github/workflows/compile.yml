@@ -87,10 +87,13 @@ jobs:
           version=$(grep 'PLUGIN_VERSION' discord_redux.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
           echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
 
+      - name: Commit SHA
+        run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "Discord Redux ${{ env.PLUGIN_VERSION }}"
+          name: "Discord Redux (${{ env.COMMIT_SHA }})"
           path: |
             plugins/discord_redux.smx
             translations/**
