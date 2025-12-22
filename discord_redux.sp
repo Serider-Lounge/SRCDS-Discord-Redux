@@ -23,18 +23,11 @@
 #include <discord_redux/steam>
 #include <discord_redux/shared/navmesh>
 
-// Games
-#include "discord_redux/game/tf2.sp"
-
-// Third-Party
-#include "discord_redux/thirdparty/accelerator.sp"
-#include "discord_redux/thirdparty/rtd.sp"
-
 /* Macros */
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w50d"
+#define PLUGIN_VERSION     ""
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -378,3 +371,10 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         delete embed;
     }
 }
+
+// Games
+#include "discord_redux/game/tf2.sp"
+
+// Third-Party
+#include "discord_redux/thirdparty/accelerator.sp"
+#include "discord_redux/thirdparty/rtd.sp"

@@ -8,7 +8,7 @@ typedef AvatarQueryCallback = function void (int client, const char[] url, any d
  */
 stock void GetClientAvatar(int client, const char[] key, AvatarQueryCallback callback, any data = 0)
 {
-    if (!client) return;
+    if (client <= 0) return;
 
     char steamID[32];
     GetClientAuthId(client, AuthId_SteamID64, steamID, sizeof(steamID));

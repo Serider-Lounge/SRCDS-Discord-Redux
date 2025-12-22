@@ -94,25 +94,18 @@ public Action Command_BugReport(int client, int args)
     }
 
     // Player name
-    char playerName[64];
+    char playerName[MAX_NAME_LENGTH];
     GetClientName(client, playerName, sizeof(playerName));
 
     // Game, Map, Player Count
     char hostname[64]; GetConVarString(FindConVar("hostname"), hostname, sizeof(hostname));
     char gameDesc[64]; GetGameDescription(gameDesc, sizeof(gameDesc));
-    char mapName[64];  GetCurrentMap(mapName, sizeof(mapName));
-    if (strncmp(mapName, "workshop/", 9) == 0)
-    {
-        strcopy(mapName, sizeof(mapName), mapName[9]);
-        int ugcSuffix = FindCharInString(mapName, '.', false);
-        if (ugcSuffix != -1 && StrContains(mapName[ugcSuffix], ".ugc", false) != -1)
-            mapName[ugcSuffix] = '\0';
-    }
+    char mapName[96];  GetCurrentMap(mapName, sizeof(mapName));
 
     // Player count
-    int maxPlayers = GetMaxHumanPlayers();
+    int maxPlayers  = GetMaxHumanPlayers();
     int playerCount = GetOnlinePlayers();
-    int botCount = GetBotCount();
+    int botCount    = GetBotCount();
 
     char playerCountField[DISCORD_FIELD_LENGTH];
     if (botCount > 0)
@@ -178,21 +171,33 @@ public Action Command_BugReport(int client, int args)
             embed.AddField("Bot Support", botSupport);
 
             // VScripts
+            char vscriptsField[DISCORD_FIELD_LENGTH];
+            vscriptsField[0] = '\0';
+
             int total = EntityLump.Length();
             for (int i = 0; i < total; i++)
             {
                 EntityLumpEntry entry = EntityLump.Get(i);
+
                 char classname[64];
-                if (entry.GetNextKey("classname", classname, sizeof(classname)) != -1 && strcmp(classname, "logic_script") == 0)
+                if (entry.GetNextKey("classname", classname, sizeof(classname)) != -1
+                    && strcmp(classname, "logic_script") == 0)
                 {
                     char scriptPath[PLATFORM_MAX_PATH];
                     if (entry.GetNextKey("vscripts", scriptPath, sizeof(scriptPath)) != -1)
                     {
-                        Format(scriptPath, sizeof(scriptPath), "- `%s`\n", scriptPath);
-                        embed.AddField("VScripts", scriptPath);
+                        char line[PLATFORM_MAX_PATH + 8];
+                        Format(line, sizeof(line), "- `%s`\n", scriptPath);
+                        StrCat(vscriptsField, sizeof(vscriptsField), line);
                     }
                 }
+
                 delete entry;
+            }
+
+            if (vscriptsField[0] != '\0')
+            {
+                embed.AddField("VScripts", vscriptsField);
             }
 
             // Mann Vs. Machine

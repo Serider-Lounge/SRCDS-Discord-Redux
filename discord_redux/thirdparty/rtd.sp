@@ -3,6 +3,9 @@ public void RTD2_Rolled(int client, RTDPerk perk, int iDuration)
 	if (!g_IsRTDLoaded || !g_ConVars[rtd_enabled].BoolValue)
 		return;
 
+	if (IsFakeClient(client))
+		return;
+
 	char channelID[SNOWFLAKE_SIZE];
 	g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
 	if (channelID[0] == '\0')

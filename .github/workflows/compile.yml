@@ -57,12 +57,15 @@ jobs:
           wget -q -L https://raw.githubusercontent.com/saxybois/sm-maprate/refs/heads/main/maprate.inc -O maprate.inc
           ls -lah
 
+      - name: Commit SHA
+        run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Compile plugins
         run: |
           for file in discord_redux.sp
           do
             echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i include $file
+            spcomp -E -w234 -O2 -v2 -i include -D PLUGIN_VERSION="${COMMIT_SHA}" $file
           done
           echo "===OUT FILES==="
           ls
@@ -80,15 +83,6 @@ jobs:
           mkdir -p scripting/discord_redux/discord_redux
           mv discord_redux.sp scripting/
           mv discord_redux/* scripting/discord_redux/
-
-      - name: Extract plugin version
-        id: get_version
-        run: |
-          version=$(grep 'PLUGIN_VERSION' discord_redux.sp | head -n1 | sed 's/.*"\(.*\)".*/\1/')
-          echo "PLUGIN_VERSION=$version" >> $GITHUB_ENV
-
-      - name: Commit SHA
-        run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

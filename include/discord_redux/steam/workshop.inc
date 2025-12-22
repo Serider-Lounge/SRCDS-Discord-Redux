@@ -28,6 +28,22 @@ methodmap Workshop < StringMap
      */
     public bool GetUgcID(char[] buffer, int maxlen)
     {
+        char mapName[96];
+        GetCurrentMap(mapName, sizeof(mapName));
+        if (strncmp(mapName, "workshop/", 9, false) == 0)
+        {
+            char mapBuffer[87];
+            strcopy(mapBuffer, sizeof(mapBuffer), mapName[9]);
+
+            int ugcIndex = StrContains(mapBuffer, ".ugc", false);
+            if (ugcIndex != -1)
+            {
+                ugcIndex += 4;
+                strcopy(buffer, maxlen, mapBuffer[ugcIndex]);
+            }
+            return true;
+        }
+
         char workshopPath[128];
         GameInfo gameinfo;
         Format(workshopPath, sizeof(workshopPath), "../steamapps/workshop/content/%d", gameinfo.appid);
@@ -43,10 +59,11 @@ methodmap Workshop < StringMap
             if (fileType != FileType_Directory)
                 continue;
 
-            char mapName[32];
-            this.GetString("map", mapName, sizeof(mapName));
+            char displayMapName[64];
+            GetMapDisplayName(mapName, displayMapName, sizeof(displayMapName));
+
             char mapFile[PLATFORM_MAX_PATH];
-            Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", workshopPath, entry, mapName);
+            Format(mapFile, sizeof(mapFile), "%s/%s/%s.bsp", workshopPath, entry, displayMapName);
             if (FileExists(mapFile))
             {
                 strcopy(buffer, maxlen, entry);
