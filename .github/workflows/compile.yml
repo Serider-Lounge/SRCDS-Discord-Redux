@@ -26,10 +26,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set environment variables
-        run: echo SCRIPTS_PATH=$(pwd) >> $GITHUB_ENV
+      - uses: actions/checkout@v4
 
       - name: Setup SourcePawn Compiler ${{ matrix.SM_VERSION }}
         id: setup_sp
@@ -62,15 +59,15 @@ jobs:
 
       - name: Compile plugins
         run: |
-          for file in discord_redux.sp
-          do
-            echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i include -D PLUGIN_VERSION="${COMMIT_SHA}" $file
+          set -euo pipefail
+          for file in discord_redux.sp; do
+            echo -e "\nCompiling ${file}..."
+            spcomp -E -w234 -O2 -v2 -i./include -DPLUGIN_VERSION=\"${COMMIT_SHA}\" "${file}"
           done
           echo "===OUT FILES==="
           ls
           echo version = ${{ steps.setup_sp.outputs.plugin-version }}
-        working-directory: ${{ env.SCRIPTS_PATH }}
+        working-directory: ${{ github.workspace }}
 
       - name: Move smx to plugins directory
         run: |
