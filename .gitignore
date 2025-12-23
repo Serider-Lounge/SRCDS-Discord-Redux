@@ -54,6 +54,7 @@ vector.inc
 version*.inc
 
 !include/discord_redux/**
+!accelerator.smx
 
 accelerator.inc
 discord.inc

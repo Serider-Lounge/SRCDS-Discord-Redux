@@ -10,7 +10,7 @@ public Plugin myinfo =
     name = "[ANY] Discord Redux | Accelerator",
     author = "Heapons",
     description = "Accelerator ⇄ Discord Relay",
-    version = "25w50a",
+    version = "25w52a",
     url = "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 };
 
