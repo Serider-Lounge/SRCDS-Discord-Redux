@@ -66,7 +66,7 @@ jobs:
           for file in discord_redux.sp
           do
             echo -e "\nCompiling $file..."
-            spcomp -E -w234 -O2 -v2 -i include $file --warning=203
+            spcomp -E -w234 -O2 -v2 -i include $file --error=203
           done
           echo "===OUT FILES==="
           ls
