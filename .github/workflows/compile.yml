@@ -60,8 +60,7 @@ jobs:
 
       - name: Edit rtd2.inc
         working-directory: include
-        run: |
-            sed -i '315s/const char\[\] sToken//g' rtd2.inc   - name: Commit SHA
+        run: sed -i '315s/const char\[\] sToken//g' rtd2.inc
 
       - name: Commit SHA
         run: echo "COMMIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
