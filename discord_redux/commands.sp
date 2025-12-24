@@ -207,7 +207,7 @@ public Action Command_BugReport(int client, int args)
                 if (popfile.index != -1)
                 {
                     char popfileName[128];
-                    int len = popfile.GetName(popfileName, sizeof(popfileName));
+                    int len = popfile.GetPopFileName(popfileName, sizeof(popfileName));
                     if (len > 0)
                     {
                         Format(popfileName, sizeof(popfileName), "- **Mission**\n  - `%s`", popfileName);

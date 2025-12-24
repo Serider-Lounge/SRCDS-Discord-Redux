@@ -9,6 +9,8 @@ on:
       - .gitignore
       - .github/FUNDING.yml
       - .archive/**
+      - accelerator.smx
+      - accelerator.sp
   pull_request:
     paths-ignore:
       - README.md
@@ -17,6 +19,8 @@ on:
       - .gitignore
       - .github/FUNDING.yml
       - .archive/**
+      - accelerator.smx
+      - accelerator.sp
   workflow_dispatch:
 
 jobs:

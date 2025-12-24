@@ -240,6 +240,18 @@ public void UpdateConVars()
                 {
                     g_ConVars[i].GetString(g_SteamWebAPIKey, sizeof(g_SteamWebAPIKey));
                 }
+                case item_found:
+                {
+                    bool enabled = g_ConVars[i].BoolValue;
+                    if (enabled)
+                    {
+                        HookEvent("item_found", Event_ItemFound);
+                    }
+                    else
+                    {
+                        UnhookEvent("item_found", Event_ItemFound);
+                    }
+                }
             }
         }
     }

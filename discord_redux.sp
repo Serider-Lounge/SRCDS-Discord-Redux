@@ -27,7 +27,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w52a"
+#define PLUGIN_VERSION     "25w52b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -54,6 +54,7 @@ public void OnPluginStart()
     // Load Translations
     LoadTranslations("discord_redux.phrases");
     LoadTranslations("discord_redux/maps.phrases");
+    LoadTranslations("discord_redux/events.phrases");
 
     // Fetch Game Info
     GameInfo gameinfo;

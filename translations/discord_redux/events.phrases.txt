@@ -1,0 +1,118 @@
+"Phrases"
+{
+    "item_found_method_dropped"
+    {
+        "en"    "Found:"
+        "fr"    "A trouvé·e:"
+    }
+    "item_found_method_crafted"
+    {
+        "en"    "Crafted:"
+        "fr"    "A fabriqué·e:"
+    }
+    "item_found_method_traded"
+    {
+        "en"    "Traded for:"
+        "fr"    "A échangé·e:"
+    }
+    "item_found_method_purchased"
+    {
+        "en"    "Purchased:"
+        "fr"    "A acheté·e:"
+    }
+    "item_found_method_found_in_crate"
+    {
+        "en"    "Unboxed:"
+        "fr"    "A déballé·e:"
+    }
+    "item_found_method_gifted"
+    {
+        "en"    "Received a Gift:"
+        "fr"    "A reçu·e un cadeau:"
+    }
+    "item_found_method_promotion"
+    {
+        "en"    "Received a Store Promotion Item:"
+        "fr"    "A reçu·e un objet promotionnel:"
+    }
+    "item_found_method_earned"
+    {
+        "en"    "Earned:"
+        "fr"    "A gagné·e:"
+    }
+    "item_found_method_refunded"
+    {
+        "en"    "Were Refunded:"
+        "fr"    "A été remboursé·e:"
+    }
+    "item_found_method_support"
+    {
+        "en"    "Customer Support Granted:"
+        "fr"    "Le support client vous a accordé·e:"
+    }
+    "item_found_method_preview_item"
+    {
+        "en"    "Is now Testing:"
+        "fr"    "Est en train d'essayer:"
+    }
+    "item_found_method_preview_item_purchased"
+    {
+        "en"    "Purchased:"
+        "fr"    "A acheté·e:"
+    }
+    "item_found_method_periodic_score_reward"
+    {
+        "en"    "Earned:"
+        "fr"    "A gagné·e:"
+    }
+    "item_found_method_holiday_gift"
+    {
+        "en"    "Found A Holiday Gift:"
+        "fr"    "A trouvé·e un cadeau des fêtes:"
+    }
+    "item_found_method_community_market_purchase"
+    {
+        "en"    "Received from the Community Market:"
+        "fr"    "A acheté·e sur le marché de la communauté·e:"
+    }
+    "item_found_method_recipe_output"
+    {
+        "en"    "Received from a Recipe:"
+        "fr"    "A reçu·e d'une recette:"
+    }
+    "item_found_method_quest_output"
+    {
+        "en"    "Completed a Contract and Received:"
+        "fr"    "A complété un contrat et avez reçu·e:"
+    }
+    "item_found_method_quest_loaner"
+    {
+        "en"    "Borrowing for a Contract:"
+        "fr"    "A emprunté·e pour un contrat:"
+    }
+    "item_found_method_trade_up"
+    {
+        "en"    "Traded up for:"
+        "fr"    "A converti·e:"
+    }
+    "item_found_method_quest_merasmission_output"
+    {
+        "en"    "Completed a Merasmission and Received:"
+        "fr"    "A rempli·e une Merasmission et a reçu·e:"
+    }
+    "item_found_method_viral_competitive_beta_pass_spread"
+    {
+        "en"    "Competitive Beta Pass Generated:"
+        "fr"    "Passe compétitif bêta a généré·e:"
+    }
+    "item_found_method_blood_money_purchase"
+    {
+        "en"    "purchased with Blood Money:"
+        "fr"    "A acheté·e avec des tickets de sang:"
+    }
+    "item_found_method_paint_kit"
+    {
+        "en"    "Redeemed:"
+        "fr"    "A utilisé·e:"
+    }
+}
