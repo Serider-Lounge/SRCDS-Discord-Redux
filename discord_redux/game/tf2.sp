@@ -1,3 +1,23 @@
+static const int g_ItemQualityColors[] =
+{
+    0xB2B2B2, // Normal
+    0x4D7455, // Genuine
+    0xB2B2B2, // Customized
+    0x476291, // Vintage has to stay at 3 for backwards compatibility
+    0xB2B2B2, // Well-Designed
+    0x8650AC, // Unusual
+    0xFFD700, // Unique
+    0x70B04A, // Community
+    0xA50F79, // Valve / Developer
+    0x70B04A, // Self-Made
+    0xB2B2B2, // Customized
+    0xCF6A32, // Strange
+    0xB2B2B2, // Completed
+    0x38F3AB, // Haunted
+    0xAA0000, // Collector's
+    0xFAFAFA  // Decorated
+};
+
 methodmap TFResource
 {
     /**
@@ -45,6 +65,7 @@ public void Event_ItemFound(Event event, const char[] name, bool dontBroadcast)
     DataPack pack = new DataPack();
     pack.WriteCell(event.GetInt("player"));
     pack.WriteCell(event.GetInt("method"));
+    pack.WriteCell(event.GetInt("quality"));
 
     req.Get(HTTPResponse_ItemFound, pack);
 }
@@ -54,6 +75,7 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     pack.Reset();
     int client = pack.ReadCell();
     int method = pack.ReadCell();
+    int quality = pack.ReadCell();
     delete pack;
 
     // HTTP
@@ -210,7 +232,10 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     embed.AddField(itemName, used_by_classes, true);
     embed.SetThumbnail(image_url_large);
     embed.SetFooter(steamID2, footerIcon);
-    embed.Color = StringToInt(steamID64);
+    if (quality >= 0 && quality < sizeof(g_ItemQualityColors))
+        embed.Color = g_ItemQualityColors[quality];
+    else
+        embed.Color = 0xB2B2B2;
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
