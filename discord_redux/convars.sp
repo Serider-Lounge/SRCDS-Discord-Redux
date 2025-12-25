@@ -186,7 +186,7 @@ public void UpdateConVars()
                 {
                     char token[256];
                     g_ConVars[i].GetString(token, sizeof(token));
-                    if (token[0] == '\0') return;
+                    if (token[0] == '\0' || g_Discord) return;
                     g_Discord = new Discord(token);
                     g_Discord.SetReadyCallback(OnDiscordReady);
                     g_Discord.Start();
