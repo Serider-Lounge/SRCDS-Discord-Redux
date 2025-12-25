@@ -1,5 +1,5 @@
 #undef REQUIRE_EXTENSIONS
-#include <accelerator>
+#tryinclude <accelerator>
 
 public void Accelerator_OnDoneUploadingCrashes()
 {

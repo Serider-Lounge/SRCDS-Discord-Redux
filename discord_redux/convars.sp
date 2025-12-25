@@ -152,14 +152,9 @@ public void InitConVars()
     g_ConVars[discord_invite] = CreateConVar("discord_redux_invite", "", "Discord invite link.");
 
     // Third-Party
-    if (GetExtensionFileStatus("accelerator.ext"))
-        g_ConVars[accelerator_webhook_url] = CreateConVar("discord_redux_accelerator_webhook_url", "", "Discord webhook URL for crash reports.", FCVAR_PROTECTED);
-    
-    if (g_IsMapRateLoaded)
-        g_ConVars[maprate_enabled] = CreateConVar("discord_redux_maprate_enabled", "1", "Show average map rating in map embeds.");
-
-    if (g_IsRTDLoaded)
-        g_ConVars[rtd_enabled] = CreateConVar("discord_redux_rtd_enabled", "1", "Relay RTD rolls.");
+    g_ConVars[accelerator_webhook_url] = CreateConVar("discord_redux_accelerator_webhook_url", "", "Discord webhook URL for crash reports.", FCVAR_PROTECTED);
+    g_ConVars[maprate_enabled] = CreateConVar("discord_redux_maprate_enabled", "1", "Show average map rating in map embeds.");
+    g_ConVars[rtd_enabled] = CreateConVar("discord_redux_rtd_enabled", "1", "Relay RTD rolls.");
 
     AutoExecConfig(true, "discord_redux");
 
@@ -199,27 +194,27 @@ public void UpdateConVars()
                 case chat_channel_id:
                 {
                     g_ConVars[i].GetString(channelID, sizeof(channelID));
-                    g_Discord.SetMessageCallback(OnDiscordMessage);
+                    if (channelID[0] != '\0') g_Discord.SetMessageCallback(OnDiscordMessage);
                 }
                 case rcon_channel_id:
                 {
                     g_ConVars[i].GetString(channelID, sizeof(channelID));
-                    g_Discord.SetMessageCallback(OnDiscordMessage);
+                    if (channelID[0] != '\0') g_Discord.SetMessageCallback(OnDiscordMessage);
                 }
                 case chat_webhook_url:
                 {
                     g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
-                    g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    if (webhookURL[0] != '\0') g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
                 case report_webhook_url:
                 {
                     g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
-                    g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    if (webhookURL[0] != '\0') g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
                 case accelerator_webhook_url:
                 {
                     g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
-                    g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    if (webhookURL[0] != '\0') g_AcceleratorWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
                 case player_status_channel_id:
                 {
@@ -242,15 +237,10 @@ public void UpdateConVars()
                 }
                 case item_found:
                 {
-                    bool enabled = g_ConVars[i].BoolValue;
-                    if (enabled)
-                    {
+                    if (g_ConVars[i].BoolValue)
                         HookEvent("item_found", Event_ItemFound);
-                    }
                     else
-                    {
                         UnhookEvent("item_found", Event_ItemFound);
-                    }
                 }
             }
         }

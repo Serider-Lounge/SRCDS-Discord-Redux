@@ -82,13 +82,6 @@ jobs:
           mkdir -p plugins
           mv discord_redux.smx plugins/
 
-      - name: Create scripting directory and move source code
-        run: |
-          mkdir -p scripting/discord_redux
-          mkdir -p scripting/discord_redux/discord_redux
-          mv discord_redux.sp scripting/
-          mv discord_redux/* scripting/discord_redux/
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -96,5 +89,3 @@ jobs:
           path: |
             plugins/discord_redux.smx
             translations/**
-            scripting/discord_redux.sp
-            scripting/discord_redux/**

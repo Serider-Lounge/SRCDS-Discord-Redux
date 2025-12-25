@@ -2,17 +2,17 @@ static const int g_ItemQualityColors[] =
 {
     0xB2B2B2, // Normal
     0x4D7455, // Genuine
-    0xB2B2B2, // Customized
+    0x8D834B, // Customized
     0x476291, // Vintage has to stay at 3 for backwards compatibility
-    0xB2B2B2, // Well-Designed
+    0x70550F, // Well-Designed
     0x8650AC, // Unusual
     0xFFD700, // Unique
     0x70B04A, // Community
     0xA50F79, // Valve / Developer
     0x70B04A, // Self-Made
-    0xB2B2B2, // Customized
+    0x8D834B, // Customized
     0xCF6A32, // Strange
-    0xB2B2B2, // Completed
+    0x8650AC, // Completed
     0x38F3AB, // Haunted
     0xAA0000, // Collector's
     0xFAFAFA  // Decorated
@@ -79,7 +79,7 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     delete pack;
 
     // HTTP
-    if (response.Status != HTTPStatus_OK || !response.Data) return;
+    if (response.Status != HTTPStatus_OK) return;
 
     JSONObject root = view_as<JSONObject>(response.Data);
     JSONObject result = view_as<JSONObject>(root.Get("result"));
@@ -88,7 +88,7 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
 
     char itemName[DISCORD_TITLE_LENGTH], image_url_large[256], used_by_classes[DISCORD_DESC_LENGTH];
     item.GetString("name", itemName, sizeof(itemName));
-    item.GetString("image_url", image_url_large, sizeof(image_url_large));
+    item.GetString("image_url_large", image_url_large, sizeof(image_url_large));
 
     JSONArray classes = view_as<JSONArray>(item.Get("used_by_classes"));
     int count = classes.Length;
@@ -97,11 +97,9 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     for (int i = 0; i < count; i++)
     {
         classes.GetString(i, class, sizeof(class));
-
-        Format(class, sizeof(class), "[%s](https://wiki.teamfortress.com/wiki/%s)", class, class);
-        StrCat(used_by_classes, sizeof(used_by_classes), "- ");
-        StrCat(used_by_classes, sizeof(used_by_classes), class);
-        StrCat(used_by_classes, sizeof(used_by_classes), "\n");
+        char formatted[128];
+        Format(formatted, sizeof(formatted), "- [%s](https://wiki.teamfortress.com/wiki/%s)\n", class, class);
+        StrCat(used_by_classes, sizeof(used_by_classes), formatted);
     }
 
     delete classes;
