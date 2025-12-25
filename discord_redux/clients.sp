@@ -108,9 +108,13 @@ public void OnClientDisconnect(int client)
     if (IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
-    g_IsClientBanned[client] = false;
-
     Embed_PlayerStatus(client, true);
+}
+
+public void OnClientDisconnect_Post(int client)
+{
+    g_ClientAvatar[client][0] = '\0';
+    g_IsClientBanned[client] = false;
 }
 
 public Action OnBanClient(int client, int time, int flags, const char[] reason, const char[] kick_message, const char[] command, any source)
