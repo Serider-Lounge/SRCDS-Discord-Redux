@@ -1,3 +1,6 @@
+#undef REQUIRE_PLUGIN
+#tryinclude <rtd2>
+
 public void RTD2_Rolled(int client, RTDPerk perk, int iDuration)
 {
 	if (!g_IsRTDLoaded || !g_ConVars[rtd_enabled].BoolValue)

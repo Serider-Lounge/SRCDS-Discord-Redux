@@ -6,11 +6,10 @@
 #include <SteamWorks>
 #include <regex>
 #undef REQUIRE_EXTENSIONS
-#include <tf2_stocks>
+#tryinclude <tf2_stocks>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-#include <maprate>
-#include <rtd2>
+#tryinclude <maprate>
 #define REQUIRE_PLUGIN
 
 // Discord Redux 
@@ -27,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w52c"
+#define PLUGIN_VERSION     "25w52d"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -40,12 +39,15 @@ public Plugin myinfo =
     url = PLUGIN_URL
 };
 
+#define LIB_MAPRATE "maprate"
+#define LIB_RTD2    "RollTheDice2"
+
 /* ========[Forwards]======== */
 public void OnPluginStart()
 {
     // Libraries
-    g_IsMapRateLoaded = LibraryExists("maprate");
-    g_IsRTDLoaded = LibraryExists("RollTheDice2");
+    g_IsMapRateLoaded = LibraryExists(LIB_MAPRATE);
+    g_IsRTDLoaded = LibraryExists(LIB_RTD2);
 
     // ConVars & Commands
     InitConVars();
@@ -69,6 +71,22 @@ public void OnPluginStart()
             GetClientAvatar(client, g_SteamWebAPIKey, Callback_OnClientAvatarFetched);
         }
     }
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    if (StrEqual(name, LIB_MAPRATE))
+        g_IsMapRateLoaded = true;
+    else if (StrEqual(name, LIB_RTD2))
+        g_IsRTDLoaded = true;
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+    if (StrEqual(name, LIB_MAPRATE))
+        g_IsMapRateLoaded = false;
+    else if (StrEqual(name, LIB_RTD2))
+        g_IsRTDLoaded = false;
 }
 
 public void Callback_OnAppDetailsFetched(int appid, const char[] name, const char[] icon, any data)
