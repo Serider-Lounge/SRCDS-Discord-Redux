@@ -108,6 +108,8 @@ public void OnClientDisconnect(int client)
     if (IsFakeClient(client) || !g_Discord.IsRunning)
         return;
 
+    g_IsClientBanned[client] = false;
+
     Embed_PlayerStatus(client, true);
 }
 
