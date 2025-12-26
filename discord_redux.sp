@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "25w52g"
+#define PLUGIN_VERSION     "25w52h"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -98,11 +98,7 @@ public void Callback_OnAppDetailsFetched(int appid, const char[] name, const cha
 public void OnMapStart()
 {
     if (!g_Discord) UpdateConVars();
-    RequestFrame(OnMapStart_Post);
-}
 
-public void OnMapStart_Post()
-{
     Embed_MapStatus();
 }
 
@@ -121,7 +117,7 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
     FormatEx(botStatus, sizeof(botStatus), "%T", "discord_redux_bot_success", LANG_SERVER, botName, botID);
     PrintToServer("%s", botStatus);
 
-    Embed_MapStatus();
+    OnMapStart();
 }
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
