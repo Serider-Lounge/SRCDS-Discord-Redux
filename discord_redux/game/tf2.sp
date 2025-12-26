@@ -79,7 +79,8 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     delete pack;
 
     // HTTP
-    if (response.Status != HTTPStatus_OK) return;
+    if (response.Status != HTTPStatus_OK || response.Data == null)
+        return;
 
     JSONObject root = view_as<JSONObject>(response.Data);
     JSONObject result = view_as<JSONObject>(root.Get("result"));
