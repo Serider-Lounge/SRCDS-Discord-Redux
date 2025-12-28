@@ -88,11 +88,6 @@ public Action Command_BugReport(int client, int args)
     char message[256];
     GetCmdArgString(message, sizeof(message));
 
-    if (g_ReportWebhook == null)
-    {
-        return Plugin_Handled;
-    }
-
     // Player name
     char playerName[MAX_NAME_LENGTH];
     GetClientName(client, playerName, sizeof(playerName));
@@ -235,29 +230,41 @@ public Action Command_BugReport(int client, int args)
     GetClientAuthId(client, AuthId_SteamID64, steamID64, sizeof(steamID64));
     embed.Color = StringToInt(steamID64);
 
-    // Webhook
-    g_ReportWebhook.SetName(playerName);
-    if (client > 0 && client <= MaxClients)
-    {
-        g_ReportWebhook.SetAvatarUrl(g_ClientAvatar[client]);
-    }
-    g_ReportWebhook.Modify();
-
     // Player Embed
     char profileURL[128];
     Format(profileURL, sizeof(profileURL), "http://www.steamcommunity.com/profiles/%s", steamID64);
-    embed.SetTitle("Steam Profile");
+    if (client > 0 && client <= MaxClients)
+    {
+        embed.SetAuthor(playerName, profileURL, g_ClientAvatar[client]);
+    }
+    else
+    {
+        embed.SetAuthor(playerName, profileURL);
+    }
+
+    char title[DISCORD_TITLE_LENGTH];
+    Format(title, sizeof(title), "%T", "discord_redux_bug_report", LANG_SERVER);
+    embed.SetTitle(title);
     embed.SetDescription(message);
-    embed.SetUrl(profileURL);
 
     // Set footer to SteamID2
     char steamID[MAX_AUTHID_LENGTH];
     GetClientAuthId(client, AuthId_Steam2, steamID, sizeof(steamID));
     embed.SetFooter(steamID, "https://raw.githubusercontent.com/Serider-Lounge/SRCDS-Discord-Redux/refs/heads/main/steam.png");
 
-    g_ReportWebhook.ExecuteEmbed("", embed);
+    // Send embed
+    char channelID[SNOWFLAKE_SIZE];
+    g_ConVars[report_channel_id].GetString(channelID, sizeof(channelID));
+    if (channelID[0] == '\0')
+    {
+        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+    }
+    else
+    {
+        g_Discord.SendMessageEmbed(channelID, "", embed);
+    }
     delete embed;
 
-    CReplyToCommand(client, "%s", message);
+    CReplyToCommand(client, "\x03%s", message);
     return Plugin_Handled;
 }

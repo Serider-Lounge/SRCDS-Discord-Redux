@@ -1,5 +1,8 @@
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
+    char channelID[SNOWFLAKE_SIZE];
+    g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+    
     // Relay console messages (server say)
     if (!client && g_ConVars[relay_console_messages].BoolValue)
     {
@@ -11,8 +14,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
         int color = StringToInt(hexColor, 16);
         embed.Color = color;
 
-        char channelID[SNOWFLAKE_SIZE];
-        g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
+        
         g_Discord.SendMessageEmbed(channelID, "", embed);
         delete embed;
         return;
@@ -65,14 +67,40 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     Format(content, sizeof(content), "%T", "discord_redux_message_format", client, sArgs, playerName, steamID, "", "");
 
-    char avatarUrl[256];
-    strcopy(avatarUrl, sizeof(avatarUrl), g_ClientAvatar[client]);
-
     if (g_Discord != null && g_Discord.IsRunning && g_ChatWebhook != null)
     {
-        g_ChatWebhook.SetName(playerName);
-        g_ChatWebhook.SetAvatarUrl(avatarUrl);
-        g_ChatWebhook.Execute(content);
+        char webhookURL[256];
+        g_ConVars[chat_webhook_url].GetString(webhookURL, sizeof(webhookURL));
+
+        Regex threadID = new Regex("\\?thread_id=([0-9]+)");
+        if (threadID.Match(webhookURL) > 0)
+        {
+            JSONObject body = new JSONObject();
+            body.SetString("content", content);
+            body.SetString("username", playerName);
+            body.SetString("avatar_url", g_ClientAvatar[client]);
+
+            HTTPRequest req = new HTTPRequest(webhookURL);
+            req.SetHeader("Content-Type", "application/json");
+            req.Post(body, HTTPResponse_OnClientSayCommand_Post);
+
+            delete body;
+        }
+        else
+        {
+            g_ChatWebhook.SetName(playerName);
+            g_ChatWebhook.SetAvatarUrl(g_ClientAvatar[client]);
+            g_ChatWebhook.Execute(content);
+        }
+        delete threadID;
+    }
+}
+
+public void HTTPResponse_OnClientSayCommand_Post(HTTPResponse response, any data)
+{
+    if (response.Status != HTTPStatus_OK && response.Status != HTTPStatus_NoContent)
+    {
+        LogError("[Discord Redux | OnClientSayCommand_Post()] HTTP Status: %d", response.Status);
     }
 }
 

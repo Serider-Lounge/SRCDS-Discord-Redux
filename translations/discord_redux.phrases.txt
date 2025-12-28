@@ -131,4 +131,10 @@
         "en"        "[Discord Redux] '{1}' is ready! (ID: {2})"
         "fr"        "[Discord Redux] '{1}' est prêt! (ID: {2})"
     }
+    // Bug Report
+    "discord_redux_bug_report" // Embed Title
+    {
+        "en"        "Bug Report"
+        "fr"        "Rapport de Bug"
+    }
 }

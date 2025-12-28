@@ -33,7 +33,7 @@ enum
     // Moderation
     staff_mention,
     staff_mention_cooldown,
-    report_webhook_url,
+    report_channel_id,
 
     // RCON
     rcon_channel_id,
@@ -79,7 +79,6 @@ ConVar g_ConVars[MAX_CONVARS];
 
 Discord g_Discord;
 DiscordWebhook g_ChatWebhook,
-               g_ReportWebhook,
                g_AcceleratorWebhook;
 
 bool g_IsClientBanned[MAXPLAYERS+1],
@@ -131,7 +130,7 @@ public void InitConVars()
     g_ConVars[username_mode] = CreateConVar("discord_redux_username_mode", "1", "Use Discord display name instead of username (0 = username, 1 = global name, 2 = nickname).");
     g_ConVars[rcon_channel_id] = CreateConVar("discord_redux_rcon_channel_id", "", "Discord channel ID for RCON messages.", FCVAR_PROTECTED);
 
-    g_ConVars[report_webhook_url] = CreateConVar("discord_redux_report_webhook_url", "", "Discord webhook URL for bug reports.");
+    g_ConVars[report_channel_id] = CreateConVar("discord_redux_report_channel_id", "", "Discord channel ID for bug reports.", FCVAR_PROTECTED);
 
     g_ConVars[embed_current_map_color] = CreateConVar("discord_redux_embed_current_map_color", "f4900c", "Embed color for current map embeds.");
     g_ConVars[embed_previous_map_color] = CreateConVar("discord_redux_embed_previous_map_color", "31373d", "Embed color for previous map embeds.");
@@ -206,10 +205,9 @@ public void UpdateConVars()
                     g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
                     if (webhookURL[0] != '\0') g_ChatWebhook = new DiscordWebhook(g_Discord, webhookURL);
                 }
-                case report_webhook_url:
+                case report_channel_id:
                 {
-                    g_ConVars[i].GetString(webhookURL, sizeof(webhookURL));
-                    if (webhookURL[0] != '\0') g_ReportWebhook = new DiscordWebhook(g_Discord, webhookURL);
+                    g_ConVars[i].GetString(channelID, sizeof(channelID));
                 }
                 case accelerator_webhook_url:
                 {
