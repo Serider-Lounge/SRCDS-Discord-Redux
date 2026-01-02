@@ -58,14 +58,19 @@ methodmap TFResource
 
 public void Event_ItemFound(Event event, const char[] name, bool dontBroadcast)
 {
+    int itemdef = event.GetInt("itemdef"),
+        player  = event.GetInt("player"),
+        method  = event.GetInt("method"),
+        quality = event.GetInt("quality");
+
     HTTPRequest req = new HTTPRequest("https://api.steampowered.com/IEconItems_440/GetSchemaItems/v1/");
     req.AppendQueryParam("key", "%s", g_SteamWebAPIKey);
-    req.AppendQueryParam("start", "%d", event.GetInt("itemdef"));
+    req.AppendQueryParam("start", "%d", itemdef);
 
     DataPack pack = new DataPack();
-    pack.WriteCell(event.GetInt("player"));
-    pack.WriteCell(event.GetInt("method"));
-    pack.WriteCell(event.GetInt("quality"));
+    pack.WriteCell(player);
+    pack.WriteCell(method);
+    pack.WriteCell(quality);
 
     req.Get(HTTPResponse_ItemFound, pack);
 }
@@ -73,9 +78,9 @@ public void Event_ItemFound(Event event, const char[] name, bool dontBroadcast)
 public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
 {
     pack.Reset();
-    int client = pack.ReadCell();
-    int method = pack.ReadCell();
-    int quality = pack.ReadCell();
+    int client  = pack.ReadCell(),
+        method  = pack.ReadCell(),
+        quality = pack.ReadCell();
     delete pack;
 
     // HTTP
