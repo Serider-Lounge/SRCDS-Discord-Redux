@@ -134,112 +134,37 @@ public void HTTPResponse_ItemFound(HTTPResponse response, DataPack pack)
     char itemMethod[DISCORD_TITLE_LENGTH];
     switch (method)
     {
-        case 0:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_dropped", LANG_SERVER);
-        }
-        case 1:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_crafted", LANG_SERVER);
-        }
-        case 2:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_traded", LANG_SERVER);
-        }
-        case 3:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_purchased", LANG_SERVER);
-        }
-        case 4:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_found_in_crate", LANG_SERVER);
-        }
-        case 5:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_gifted", LANG_SERVER);
-        }
-        case 6:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_support", LANG_SERVER);
-        }
-        case 7:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_promotion", LANG_SERVER);
-        }
-        case 8:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_earned", LANG_SERVER);
-        }
-        case 9:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_refunded", LANG_SERVER);
-        }
-        case 13:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_preview_item", LANG_SERVER);
-        }
-        case 14:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_preview_item_purchased", LANG_SERVER);
-        }
-        case 15:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_periodic_score_reward", LANG_SERVER);
-        }
-        case 18:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_holiday_gift", LANG_SERVER);
-        }
-        case 19:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_community_market_purchase", LANG_SERVER);
-        }
-        case 20:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_recipe_output", LANG_SERVER);
-        }
-        case 22:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_output", LANG_SERVER);
-        }
-        case 23:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_loaner", LANG_SERVER);
-        }
-        case 24:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_trade_up", LANG_SERVER);
-        }
-        case 25:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_merasmission_output", LANG_SERVER);
-        }
-        case 26:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_viral_competitive_beta_pass_spread", LANG_SERVER);
-        }
-        case 27:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_blood_money_purchase", LANG_SERVER);
-        }
-        case 28:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_paint_kit", LANG_SERVER);
-        }
-        default:
-        {
-            Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_dropped", LANG_SERVER);
-        }
+        case 0:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_dropped", LANG_SERVER);
+        case 1:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_crafted", LANG_SERVER);
+        case 2:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_traded", LANG_SERVER);
+        case 3:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_purchased", LANG_SERVER);
+        case 4:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_found_in_crate", LANG_SERVER);
+        case 5:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_gifted", LANG_SERVER);
+        case 6:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_support", LANG_SERVER);
+        case 7:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_promotion", LANG_SERVER);
+        case 8:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_earned", LANG_SERVER);
+        case 9:  Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_refunded", LANG_SERVER);
+        case 13: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_preview_item", LANG_SERVER);
+        case 14: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_preview_item_purchased", LANG_SERVER);
+        case 15: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_periodic_score_reward", LANG_SERVER);
+        case 18: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_holiday_gift", LANG_SERVER);
+        case 19: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_community_market_purchase", LANG_SERVER);
+        case 20: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_recipe_output", LANG_SERVER);
+        case 22: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_output", LANG_SERVER);
+        case 23: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_loaner", LANG_SERVER);
+        case 24: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_trade_up", LANG_SERVER);
+        case 25: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_quest_merasmission_output", LANG_SERVER);
+        case 26: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_viral_competitive_beta_pass_spread", LANG_SERVER);
+        case 27: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_blood_money_purchase", LANG_SERVER);
+        case 28: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_paint_kit", LANG_SERVER);
+        default: Format(itemMethod, sizeof(itemMethod), "%T", "item_found_method_dropped", LANG_SERVER);
     }
     
     embed.SetTitle(itemMethod);
     embed.AddField(itemName, used_by_classes, true);
     embed.SetThumbnail(image_url_large);
     embed.SetFooter(steamID2, footerIcon);
-    if (quality >= 0 && quality < sizeof(g_ItemQualityColors))
-        embed.Color = g_ItemQualityColors[quality];
-    else
-        embed.Color = 0xB2B2B2;
+    embed.Color = g_ItemQualityColors[quality];
 
     char channelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(channelID, sizeof(channelID));
