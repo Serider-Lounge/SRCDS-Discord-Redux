@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "26w01b"
+#define PLUGIN_VERSION     "26w01c"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -105,9 +105,14 @@ public void OnMapEnd()
     Embed_MapStatus(true);
 }
 
+public void OnConfigsExecuted()
+{
+    UpdateConVars();
+}
+
 void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int guild_count, const char[] guild_ids, int guild_id_count, any data)
 {
-    char botName[64], botID[32];
+    char botName[MAX_DISCORD_NAME_LENGTH], botID[32];
     discord.GetBotName(botName, sizeof(botName));
     discord.GetBotId(botID, sizeof(botID));
     char botStatus[128];
@@ -158,7 +163,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 hyperlinkRegex.GetSubString(0, match, sizeof(match), i);
 
                 char replacement[MAX_DISCORD_MESSAGE_LENGTH];
-                Format(replacement, sizeof(replacement), "%s (%s)", text, link);
+                Format(replacement, sizeof(replacement), "%s \x05(%s)\x01", text, link);
 
                 ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
             }
@@ -200,13 +205,13 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                 if (user != null)
                 {
                     if (g_ConVars[randomize_color_names].BoolValue)
-                        Format(replacement, sizeof(replacement), "{#%06X}@%s", color, mentionedName);
+                        Format(replacement, sizeof(replacement), "\x07%06X@%s\x01", color, mentionedName);
                     else
-                        Format(replacement, sizeof(replacement), "@%s", mentionedName);
+                        Format(replacement, sizeof(replacement), "\x01\x03@%s\x01", mentionedName);
                 }
                 else
                 {
-                    Format(replacement, sizeof(replacement), "<@%s>", userID);
+                    Format(replacement, sizeof(replacement), "\x01\x03<@%s>\x01", userID);
                 }
                 ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
             }
@@ -233,13 +238,13 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
                     if (mentionedRole.Color == 0x000000)
                         strcopy(colorCode, sizeof(colorCode), "");
                     else
-                        Format(colorCode, sizeof(colorCode), "{#%06x}", mentionedRole.Color);
+                        Format(colorCode, sizeof(colorCode), "\x07%06X", mentionedRole.Color);
 
                     char match[32];
                     roleRegex.GetSubString(0, match, sizeof(match), i);
 
                     char replacement[MAX_DISCORD_NAME_LENGTH + 10];
-                    Format(replacement, sizeof(replacement), "%s@%s", colorCode, roleName);
+                    Format(replacement, sizeof(replacement), "\x05%s@%s\x01", colorCode, roleName);
 
                     ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
                 }
@@ -260,14 +265,14 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             {
                 DiscordChannel mentionedChannel = DiscordChannel.FindChannel(g_Discord, channelID);
                 char channelName[MAX_DISCORD_CHANNEL_NAME_LENGTH];
-                if (mentionedChannel != null)
+                if (channelName[0] != '\0')
                 {
                     mentionedChannel.GetName(channelName, sizeof(channelName));
                     char match[32];
                     channelRegex.GetSubString(0, match, sizeof(match), i);
 
                     char replacement[MAX_DISCORD_CHANNEL_NAME_LENGTH + 2];
-                    Format(replacement, sizeof(replacement), "#%s", channelName);
+                    Format(replacement, sizeof(replacement), "\x04#%s\x01", channelName);
 
                     ReplaceString(parsedContent, sizeof(parsedContent), match, replacement, false);
                 }
@@ -282,7 +287,6 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
     if (StrEqual(messageChannelID, chatChannelID))
     {
-        // Commands
         if (StrEqual(content, "!map", false) || StrEqual(content, "!status", false))
         {
             Embed_MapStatus();
@@ -357,7 +361,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
         {
             char url[512];
             message.GetAttachmentURL(i, url, sizeof(url));
-            Format(url, sizeof(url), "%d. %s", i + 1, url);
+            Format(url, sizeof(url), "%d. \x04%s", i + 1, url);
             CPrintToChatAll(url);
             PrintToServer(url);
         }
