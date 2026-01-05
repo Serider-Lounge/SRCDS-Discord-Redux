@@ -39,7 +39,7 @@ jobs:
         id: setup_sp
         uses: rumblefrog/setup-sp@master
         with:
-          version: '1.13.x'
+          version: '1.12.x'
           version-file: ./discord_redux.sp
 
       - name: Create include directory

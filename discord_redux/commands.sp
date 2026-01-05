@@ -214,7 +214,7 @@ public Action Command_BugReport(int client, int args)
             // Extra Settings
             char extraSettings[DISCORD_FIELD_LENGTH];
             extraSettings[0] = '\0';
-            if (GameRules_GetProp("m_bPlayingMedieval") == 1 || FindConVar("tf_medieval").BoolValue)
+            if (GameRules_GetProp("m_bPlayingMedieval") || FindConVar("tf_medieval").BoolValue)
                 StrCat(extraSettings, sizeof(extraSettings), "- Medieval Mode\n");
 
             if (FindConVar("mp_friendlyfire").BoolValue)

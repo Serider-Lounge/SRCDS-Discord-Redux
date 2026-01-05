@@ -112,6 +112,7 @@ public void InitConVars()
     if (GetEngineVersion() == Engine_TF2)
     {
         g_ConVars[item_found] = CreateConVar("discord_redux_item_found", "1", "Relay item found events.");
+        g_ConVars[item_found].AddChangeHook(ConVar_ItemFound);
     }
     g_ConVars[relay_server_to_discord] = CreateConVar("discord_redux_relay_server_to_discord", "1", "Relay server chat to Discord.");
     g_ConVars[relay_discord_to_server] = CreateConVar("discord_redux_relay_discord_to_server", "1", "Relay Discord chat to server.");
@@ -170,14 +171,11 @@ public void UpdateConVars()
                 {
                     char token[256];
                     g_ConVars[i].GetString(token, sizeof(token));
-                    if (token[0] == '\0')
-                        return;
-                    
+                    if (token[0] == '\0') return;
                     delete g_Discord;
-                    
                     g_Discord = new Discord(token);
                     g_Discord.SetReadyCallback(OnDiscordReady);
-                    g_Discord.Start();
+                    if (!g_Discord.IsRunning) g_Discord.Start();
                 }
                 case chat_channel_id:
                 {
@@ -232,4 +230,12 @@ public void UpdateConVars()
             }
         }
     }
+}
+
+public void ConVar_ItemFound(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+    if (StrEqual(newValue, "1"))
+        HookEvent("item_found", Event_ItemFound);
+    else
+        UnhookEvent("item_found", Event_ItemFound);
 }
