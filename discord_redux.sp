@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "26w02a"
+#define PLUGIN_VERSION     "26w02b"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -95,6 +95,11 @@ public void Callback_OnAppDetailsFetched(int appid, const char[] name, const cha
     strcopy(g_GameIcon, sizeof(g_GameIcon), icon);
 }
 
+public void OnConfigsExecuted()
+{
+    UpdateConVars();
+}
+
 public void OnMapStart()
 {
     Embed_MapStatus();
@@ -103,11 +108,6 @@ public void OnMapStart()
 public void OnMapEnd()
 {
     Embed_MapStatus(true);
-}
-
-public void OnConfigsExecuted()
-{
-    UpdateConVars();
 }
 
 void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int guild_count, const char[] guild_ids, int guild_id_count, any data)
@@ -125,7 +125,7 @@ void OnDiscordReady(Discord discord, const char[] session_id, int shard_id, int 
 
 void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 {
-    if (!g_Discord) return;
+    if (discord == null) return;
 
     char content[MAX_DISCORD_MESSAGE_LENGTH];
     message.GetContent(content, sizeof(content));
@@ -136,10 +136,10 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     // Chat
     DiscordUser author = message.Author;
     char username[MAX_DISCORD_NAME_LENGTH];
-    
+
     char chatChannelID[SNOWFLAKE_SIZE];
     g_ConVars[chat_channel_id].GetString(chatChannelID, sizeof(chatChannelID));
-    
+
     char messageChannelID[SNOWFLAKE_SIZE];
     message.GetChannelId(messageChannelID, sizeof(messageChannelID));
 
@@ -265,7 +265,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             {
                 DiscordChannel mentionedChannel = DiscordChannel.FindChannel(g_Discord, channelID);
                 char channelName[MAX_DISCORD_CHANNEL_NAME_LENGTH];
-                if (channelName[0] != '\0')
+                if (mentionedChannel != null)
                 {
                     mentionedChannel.GetName(channelName, sizeof(channelName));
                     char match[32];
@@ -306,7 +306,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
             case Mode_NickName:
             {
-                char nickname[64];
+                char nickname[MAX_DISCORD_NAME_LENGTH];
                 author.GetNickName(nickname, sizeof(nickname));
                 if (nickname[0] != '\0')
                     strcopy(username, sizeof(username), nickname);
@@ -353,7 +353,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             }
         }
         delete colorRegex;
-        
+
         PrintToServer("%t", "discord_redux_chat_format_console", rawUsername, parsedContent);
 
         int attachmentCount = message.AttachmentCount;
@@ -368,16 +368,15 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     }
     else if (StrEqual(messageChannelID, rconChannelID))
     {
-        DiscordEmbed embed = new DiscordEmbed();
         char response[MAX_CONSOLE_LENGTH],
-             inputMsg[MAX_DISCORD_NITRO_MESSAGE_LENGTH],
-             outputMsg[sizeof(response)];
-        
+             inputMsg[DISCORD_DESC_LENGTH],
+             outputMsg[DISCORD_DESC_LENGTH];
+
         ServerCommandEx(response, sizeof(response), "%s", content);
 
         if (StrContains(response, "Unknown Command", false) != -1)
             return;
-            
+
         if (response[0] == '\0')
             Format(outputMsg, sizeof(outputMsg), "%T", "discord_redux_rcon_print_error", LANG_SERVER);
         else
@@ -385,8 +384,10 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
 
         Format(inputMsg, sizeof(inputMsg), "%T", "discord_redux_rcon_input", LANG_SERVER, content);
 
-        char embedMsg[sizeof(outputMsg) + sizeof(inputMsg)];
+        char embedMsg[DISCORD_DESC_LENGTH];
         Format(embedMsg, sizeof(embedMsg), "%s\n%s", outputMsg, inputMsg);
+
+        DiscordEmbed embed = new DiscordEmbed();
         embed.SetDescription(embedMsg);
 
         g_Discord.SendMessageEmbed(rconChannelID, "", embed);

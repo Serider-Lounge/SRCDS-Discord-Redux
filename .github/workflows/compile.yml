@@ -8,7 +8,6 @@ on:
       - steam.png
       - .gitignore
       - .github/FUNDING.yml
-      - .archive/**
       - accelerator.smx
       - accelerator.sp
   pull_request:
@@ -18,7 +17,6 @@ on:
       - steam.png
       - .gitignore
       - .github/FUNDING.yml
-      - .archive/**
       - accelerator.smx
       - accelerator.sp
   workflow_dispatch:
