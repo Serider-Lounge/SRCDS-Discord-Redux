@@ -173,17 +173,17 @@ public void UpdateConVars()
                 {
                     char token[256];
                     g_ConVars[i].GetString(token, sizeof(token));
-                    if (token[0] == '\0') return;
+                    if (token[0] == '\0')
+                        return;
+                    
                     if (g_Discord != null)
-                    {
                         delete g_Discord;
-                    }
-                    else
-                    {
-                        g_Discord = new Discord(token);
-                        g_Discord.SetReadyCallback(OnDiscordReady);
-                        if (!g_Discord.IsRunning) g_Discord.Start();
-                    }
+                        
+                    g_Discord = new Discord(token);
+                    g_Discord.SetReadyCallback(OnDiscordReady);
+                    
+                    if (!g_Discord.IsRunning)
+                        g_Discord.Start();
                 }
                 case chat_channel_id:
                 {
