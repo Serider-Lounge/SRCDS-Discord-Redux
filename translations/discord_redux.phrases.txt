@@ -1,12 +1,3 @@
-// Radio and chat strings can have control characters embedded to set colors. For the control characters to be used, one must be at the start of the string.
-// The control characters can be copied and pasted in notepad.
-// \\x01 (SOH) - Use normal color from this point forward
-// \\x02 (STX) - Use team color up to the end of the player name.  This only works at the start of the string, and precludes using the other control characters.
-// \\x03 (ETX) - Use team color from this point forward
-// \\x04 (EOT) - Use location color from this point forward
-// \\x05 (ENQ) - Use achievement color from this point forward
-// \\x07 (BEL) - Use RGB color from this point forward
-// \\x08 (BS)  - Use RGBA color from this point forward 
 "Phrases"
 {
     // Discord → Server
@@ -15,15 +6,15 @@
         // {1} = Player Name
         // {2} = Message
         "#format"   "{1:s},{2:s}"
-        "en"        "\\x01*DISCORD* \\x03{1}\\x01 :  {2}"
+        "en"        "{default}*DISCORD* {teamcolor}{1}{default} :  {2}"
     }
     "discord_redux_chat_format_reply" // Reply
     {
         // {1} = Player Name
         // {2} = Message
         "#format"   "{1:s},{2:s}"
-        "en"        "\\x01*DISCORD* \\x03(Reply) {1}\\x01 :  {2}"
-        "fr"        "\\x01*DISCORD* \\x03(Réponse) {1}\\x01 :  {2}"
+        "en"        "{default}*DISCORD* {teamcolor}(Reply) {1}{default} :  {2}"
+        "fr"        "{default}*DISCORD* {teamcolor}(Réponse) {1}{default} :  {2}"
     }
     "discord_redux_chat_format_console" // Console
     {
@@ -128,8 +119,8 @@
     // Staff
     "discord_redux_staff_mention_cooldown" // Staff Mention Cooldown
     {
-        "en"        "\\x01[\\x04Discord Redux\\x01] You must wait \\x04%d\\x01 second(s) before you can mention staff again (but your message has been sent anyway)."
-        "fr"        "\\x01[\\x04Discord Redux\\x01] Vous devez attendre \\x04%d\\x01 seconde(s) avant de pouvoir appeler un modérateur de nouveau (mais votre message a quand même été envoyé)."
+        "en"        "[{teamcolor}Discord Redux{default}] You must wait {green}%d{default} second(s) before you can mention staff again (but your message has been sent anyway)."
+        "fr"        "[{teamcolor}Discord Redux{default}] Vous devez attendre {green}%d{default} seconde(s) avant de pouvoir appeler un modérateur de nouveau (mais votre message a quand même été envoyé)."
     }
     // Bot Status
     "discord_redux_bot_success" // Bot Started

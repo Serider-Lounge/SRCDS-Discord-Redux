@@ -24,13 +24,32 @@ methodmap GameInfo
                 delete kv;
                 return 0;
             }
-            int appid = kv.GetNum("SteamAppId", 0);
+            int appid = kv.GetNum("SteamAppId");
             delete kv;
             return appid;
         }
     }
 
-
+    /**
+     * Whether the mod is using the modern TF2 SDK.
+     * 
+     * @return True if using TF2 SDK, false otherwise.
+     */
+    property bool tf2_sdk
+    {
+        public get()
+        {
+            KeyValues kv = new KeyValues("GameInfo");
+            if (!kv.ImportFromFile("gameinfo.txt"))
+            {
+                delete kv;
+                return false;
+            }
+            int dependency = kv.GetNum("DependsOnAppID");
+            delete kv;
+            return dependency == 440;
+        }
+    }
 
     /**
      * Gets the game name from gameinfo.txt.

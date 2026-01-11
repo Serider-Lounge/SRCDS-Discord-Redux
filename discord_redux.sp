@@ -26,7 +26,7 @@
 #define PLUGIN_NAME        "[ANY] Discord Redux"
 #define PLUGIN_AUTHOR      "Heapons"
 #define PLUGIN_DESC        "Server ⇄ Discord Relay"
-#define PLUGIN_VERSION     "26w02c"
+#define PLUGIN_VERSION     "26w02d"
 #define PLUGIN_URL         "https://github.com/Serider-Lounge/SRCDS-Discord-Redux"
 
 /* Plugin Metadata */
@@ -97,7 +97,8 @@ public void Callback_OnAppDetailsFetched(int appid, const char[] name, const cha
 
 public void OnConfigsExecuted()
 {
-    UpdateConVars();
+    if (!g_Discord)
+        UpdateConVars();
 }
 
 public void OnMapStart()
@@ -143,7 +144,7 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
     char messageChannelID[SNOWFLAKE_SIZE];
     message.GetChannelId(messageChannelID, sizeof(messageChannelID));
 
-    // Convert Discord markdown hyperlinks from '[text](link)' to 'text (link)'
+    // Parse hyperlinks
     Regex hyperlinkRegex = new Regex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)");
     int hyperlinkMatches = hyperlinkRegex.MatchAll(content);
 
@@ -186,9 +187,6 @@ void OnDiscordMessage(Discord discord, DiscordMessage message, any data)
             if (userRegex.GetSubString(1, userID, sizeof(userID), i))
             {
                 DiscordUser user;
-                //if (guildID[0] != '\0')
-                //    user = DiscordUser.FindUser(g_Discord, userID, guildID);
-                //else
                 user = DiscordUser.FindUser(g_Discord, userID);
 
                 char mentionedName[MAX_DISCORD_NAME_LENGTH];
